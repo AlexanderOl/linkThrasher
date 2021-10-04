@@ -1,5 +1,6 @@
 from tldextract import tldextract
 
+from Managers.CacheManager import CacheManager
 from Managers.CookieManager import CookieManager
 from Managers.Hakrawler import Hakrawler
 from Managers.LinksManager import LinksManager
@@ -18,23 +19,25 @@ headers = {
 
 
 def main():
-
     # start_url = "https://www.deere.com/en/mowers/lawn-tractors/"
     # start_url = "https://oriondemo.solarwinds.com/Orion/SummaryView.aspx?ViewID=1"
-    start_url = "https://www.letgo.com/en-tr"
-    ngrok_url = 'http://5f47-91-196-101-94.ngrok.io/'
+    start_url = "https://xss-game.appspot.com/level2/frame"
+    ngrok_url = 'http://4cec-212-90-183-35.ngrok.io/'
+    download_path = "C:\\Users\\oleksandr oliinyk\\Downloads"
     domain_parts = tldextract.extract(start_url)
     domain = domain_parts.domain + '.' + domain_parts.suffix
 
-    cookieManager = CookieManager(domain)
-    raw_cookie = cookieManager.get_raw_cookies()
+    CacheManager.clear_all()
 
-    hakrawler = Hakrawler(domain, raw_cookie)
-    get_dtos = hakrawler.get_requests_dtos(start_url)
+    cookie_manager = CookieManager(domain, download_path)
+    raw_cookie = cookie_manager.get_raw_cookies()
 
-    cookies_dict = cookieManager.get_cookies_dict(raw_cookie)
-    # linksManager = LinksManager(domain, cookies_dict, headers)
-    # get_dtos = linksManager.get_all_links(start_url)
+    # hakrawler = Hakrawler(domain, raw_cookie)
+    # get_dtos = hakrawler.get_requests_dtos(start_url)
+
+    cookies_dict = cookie_manager.get_cookies_dict(raw_cookie)
+    links_manager = LinksManager(domain, cookies_dict, headers)
+    get_dtos = links_manager.get_all_links(start_url)
 
     post_manager = FormRequestFetcher(domain)
     post_dtos = post_manager.get_all_post_requests(get_dtos)
@@ -43,9 +46,9 @@ def main():
     xss_manager.check_get_requests(get_dtos)
     xss_manager.check_form_requests(post_dtos)
 
-    ssrf_manager = SsrfManager(domain, cookies_dict, headers, ngrok_url)
-    ssrf_manager.check_get_requests(get_dtos)
-    ssrf_manager.check_form_requests(post_dtos)
+    # ssrf_manager = SsrfManager(domain, cookies_dict, headers, ngrok_url)
+    # ssrf_manager.check_get_requests(get_dtos)
+    # ssrf_manager.check_form_requests(post_dtos)
 
     sqli_manager = SqliManager(domain, cookies_dict, headers)
     sqli_manager.check_get_requests(get_dtos)
