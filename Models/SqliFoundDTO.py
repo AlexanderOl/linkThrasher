@@ -12,11 +12,9 @@ class SqliFoundDTO:
         self.url = url
         self.sqli_type = sqli_type
 
-    @property
     def url(self):
         return self.url
 
-    @property
     def sqli_type(self):
         return self.sqli_type
 

@@ -19,8 +19,8 @@ class SqliManager:
     def check_get_requests(self, dtos: List[GetRequestDTO]):
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SqliManager started...')
 
-        cacheManager = CacheManager('SqliManagerGetResult', self.domain)
-        result = cacheManager.get_saved_result()
+        cache_manager = CacheManager('SqliManagerGetResult', self.domain)
+        result = cache_manager.get_saved_result()
 
         if result is None:
             result: List[SqliFoundDTO] = []
@@ -28,7 +28,7 @@ class SqliManager:
                 self.check_url(dto, result)
                 self.check_get_params(dto, result)
 
-            cacheManager.save_result(result)
+            cache_manager.save_result(result)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SqliManager GET found {len(result)} items')
 
@@ -70,7 +70,7 @@ class SqliManager:
             if response.status_code == 200 or response.status_code == 500:
                 if not response.history or response.history[0].status_code != 301:
                     web_page = response.text.lower()
-                    if 'syntax' in web_page or 'uncaught' in web_page or 'xapikeypoc' in web_page:
+                    if 'syntax' in web_page or 'xapikeypoc' in web_page:
                         print(f"SQLiManager ({response.status_code}): - " + url)
                         result.append(SqliFoundDTO(url, SqliType.ERROR))
         except Exception as inst:

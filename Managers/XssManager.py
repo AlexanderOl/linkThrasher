@@ -36,16 +36,16 @@ class XssManager:
     def check_form_requests(self, form_results: List[FormRequestDTO]):
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: XssManager FORM started...')
 
-        cacheManager = CacheManager('XssManagerFormResult', self.domain)
-        result = cacheManager.get_saved_result()
+        cache_manager = CacheManager('XssManagerFormResult', self.domain)
+        result = cache_manager.get_saved_result()
 
-        if not result:
+        if result is None:
             result: List[XssFoundDTO] = []
 
             for item in form_results:
                 self.check_form_request(item, result)
 
-            cacheManager.save_result(result)
+            cache_manager.save_result(result)
 
         print("Found FORM XSS: " + str(len(result)))
 
@@ -102,7 +102,7 @@ class XssManager:
                     if response.status_code == 200 or response.status_code == 500:
                         web_page = response.text
                         if '<poc>' in web_page:
-                            print(f'Found FORM XSS! url:{dto.link} , param:{param}, action:{form.action}')
+                            print(f'Found FORM XSS! url:{url}')
                             result.append(XssFoundDTO("GET", dto.link, param, web_page))
                     elif response.status_code == 400:
                         url -= (param + '=<poc>&')

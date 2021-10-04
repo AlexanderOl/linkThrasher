@@ -22,28 +22,26 @@ class LinksManager:
         self.domain = domain
         self.cookies = cookies
         self.headers = headers
-
-    _max_depth = 5
-    _social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "cdn-cgi", "intercom", "atlassian",
-                     "instagram", "github"]
-    _checked_urls = []
-    _checked_hrefs = []
-    _checked_parsed_pathes = []
-    _urls_in_queue = []
-    _urls_counter = 0
-    _url_ext_regex = re.compile('\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$', re.IGNORECASE)
+        self.max_depth = 2
+        self.social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "cdn-cgi", "intercom", "atlassian", "instagram", "github"]
+        self.checked_urls = []
+        self.checked_hrefs = []
+        self.checked_parsed_pathes = []
+        self.urls_in_queue = []
+        self.urls_counter = 0
+        self.url_ext_regex = re.compile('\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$', re.IGNORECASE)
 
     def get_all_links(self, start_url) -> List[GetRequestDTO]:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: LinksManager started...')
 
-        cacheManager = CacheManager('LinksManagerResult', self.domain)
-        result = cacheManager.get_saved_result()
+        cache_manager = CacheManager('LinksManagerResult', self.domain)
+        result = cache_manager.get_saved_result()
 
         if not result:
             current_depth = 0
             result: List[GetRequestDTO] = []
             self.recursive_search(result, start_url, current_depth)
-            cacheManager.save_result(result)
+            cache_manager.save_result(result)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: LinksManager found {len(result)} items')
         return result
@@ -55,7 +53,7 @@ class LinksManager:
 
     def recursive_search(self, result, target_url, current_depth):
 
-        if current_depth >= self._max_depth:
+        if current_depth >= self.max_depth:
             return
 
         target_url = self.check_target_url(target_url)
@@ -99,20 +97,20 @@ class LinksManager:
             if '#' in href:
                 href = href[1:]
             if len(href) > 2 \
-                    and href not in self._social_media \
-                    and href not in self._checked_hrefs \
+                    and href not in self.social_media \
+                    and href not in self.checked_hrefs \
                     and target_url[len(target_url) - len(href):] != href \
                     and (href[0] == '/' or str(href[0:4]) == "http") \
                     and href not in target_url:
                 result = True
 
         if result:
-            for current_href in self._checked_hrefs:
+            for current_href in self.checked_hrefs:
                 words = zip(href, current_href)
                 incorrect = len([c for c, d in words if c != d])
                 if incorrect <= 3 and abs(len(href)-len(current_href)) <= 3:
                     return False
-            self._checked_hrefs.append(href)
+            self.checked_hrefs.append(href)
 
         return result
 
@@ -122,15 +120,15 @@ class LinksManager:
             url = url[:-1]
 
         parsed = urlparse(url)
-        if url in self._checked_urls \
-                or parsed.path in self._checked_parsed_pathes \
-                or any(word in url for word in self._social_media) \
+        if url in self.checked_urls \
+                or parsed.path in self.checked_parsed_pathes \
+                or any(word in url for word in self.social_media) \
                 or self.domain not in parsed.netloc \
-                or self._url_ext_regex.search(parsed.path):
+                or self.url_ext_regex.search(parsed.path):
             return
 
-        self._checked_parsed_pathes.append(parsed.path)
-        self._checked_urls.append(url)
+        self.checked_parsed_pathes.append(parsed.path)
+        self.checked_urls.append(url)
 
         return url
 
