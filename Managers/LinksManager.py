@@ -22,7 +22,7 @@ class LinksManager:
         self.domain = domain
         self.cookies = cookies
         self.headers = headers
-        self.max_depth = 2
+        self.max_depth = 5
         self.social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "cdn-cgi", "intercom", "atlassian", "instagram", "github"]
         self.checked_urls = []
         self.checked_hrefs = []
@@ -84,6 +84,9 @@ class LinksManager:
             print("ERROR - " + target_url)
             return
 
+        parsed = urlparse(target_url)
+        self.checked_parsed_pathes.append(parsed.path)
+        self.checked_urls.append(target_url)
         current_depth = current_depth + 1
 
         href_list = self.get_href_list(web_page, target_url)
@@ -126,9 +129,6 @@ class LinksManager:
                 or self.domain not in parsed.netloc \
                 or self.url_ext_regex.search(parsed.path):
             return
-
-        self.checked_parsed_pathes.append(parsed.path)
-        self.checked_urls.append(url)
 
         return url
 
