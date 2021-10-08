@@ -26,10 +26,10 @@ class LinksManager:
         self.social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "cdn-cgi", "intercom", "atlassian", "instagram", "github"]
         self.checked_urls = []
         self.checked_hrefs = []
-        self.checked_parsed_pathes = []
+        self.checked_parsed_paths = []
         self.urls_in_queue = []
         self.urls_counter = 0
-        self.url_ext_regex = re.compile('\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$', re.IGNORECASE)
+        self.url_ext_regex = re.compile('\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg', re.IGNORECASE)
 
     def get_all_links(self, start_url) -> List[GetRequestDTO]:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: LinksManager started...')
@@ -85,7 +85,7 @@ class LinksManager:
             return
 
         parsed = urlparse(target_url)
-        self.checked_parsed_pathes.append(parsed.path)
+        self.checked_parsed_paths.append(parsed.path)
         self.checked_urls.append(target_url)
         current_depth = current_depth + 1
 
@@ -124,7 +124,7 @@ class LinksManager:
 
         parsed = urlparse(url)
         if url in self.checked_urls \
-                or parsed.path in self.checked_parsed_pathes \
+                or parsed.path in self.checked_parsed_paths \
                 or any(word in url for word in self.social_media) \
                 or self.domain not in parsed.netloc \
                 or self.url_ext_regex.search(parsed.path):

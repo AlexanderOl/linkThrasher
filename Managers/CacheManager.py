@@ -11,8 +11,7 @@ class CacheManager:
 
     @staticmethod
     def clear_all():
-        path_list = ['SqliManagerGetResult', 'XssManagerGetResult', 'XssManagerFormResult',
-                     'LinksManagerResult', 'SsrfManagerResult', 'FormRequestFetcherResult']
+        path_list = ['SqliManagerGetResult', 'XssManagerGetResult', 'XssManagerFormResult', 'SsrfManagerResult', 'FormRequestFetcherResult']
         for path in path_list:
             if os.path.exists(path):
                 shutil.rmtree(path)

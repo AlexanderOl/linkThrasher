@@ -21,13 +21,13 @@ headers = {
 def main():
     # start_url = "https://www.deere.com/en/mowers/lawn-tractors/"
     # start_url = "https://oriondemo.solarwinds.com/Orion/SummaryView.aspx?ViewID=1"
-    start_url = "https://www.letgo.com/en-tr"
-    ngrok_url = 'http://1e63-91-196-101-94.ngrok.io/'
+    start_url = "https://app.luckyorange.com/dashboard"
+    ngrok_url = 'http://bfe7-91-196-101-94.ngrok.io/'
     download_path = "C:\\Users\\oleksandr oliinyk\\Downloads"
     domain_parts = tldextract.extract(start_url)
     domain = domain_parts.domain + '.' + domain_parts.suffix
     # domain = '195.62.193'
-    CacheManager.clear_all()
+    # CacheManager.clear_all()
 
     cookie_manager = CookieManager(domain, download_path)
     raw_cookie = cookie_manager.get_raw_cookies()
