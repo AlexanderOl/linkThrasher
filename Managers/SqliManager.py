@@ -19,7 +19,7 @@ class SqliManager:
     def check_get_requests(self, dtos: List[GetRequestDTO]):
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SqliManager started...')
 
-        cache_manager = CacheManager('SqliManagerGetResult', self.domain)
+        cache_manager = CacheManager('SqliManagerResult', self.domain)
         result = cache_manager.get_saved_result()
 
         if result is None:
@@ -35,7 +35,7 @@ class SqliManager:
     def check_url(self, dto: GetRequestDTO, result: List[SqliFoundDTO]):
 
         parsed = urlparse.urlparse(dto.link)
-        base_url = f'{parsed.scheme}://{parsed.hostname}/{parsed.path}/'
+        base_url = f'{parsed.scheme}://{parsed.hostname}{parsed.path}/'
 
         for payload in self.error_based_payloads:
             url = base_url + payload
@@ -80,7 +80,7 @@ class SqliManager:
     def send_time_based_request(self, url, result: List[SqliFoundDTO], attempt: int = 0):
 
         if attempt >= 3:
-            return result.appendSqliFoundDTO(url, SqliType.TIME, result)
+            return result.append(SqliFoundDTO(url, SqliType.TIME, result))
 
         try:
             response = requests.get(url, headers=self.headers, cookies=self.cookies)

@@ -60,14 +60,14 @@ class SsrfManager:
         main_url_split = url.split(query)
         uiid_str = str(uuid.uuid4())
         payload = main_url_split[0] + param_split[0] + f'={self.ngrok_url}{uiid_str}' + main_url_split[1]
-        with open(f'SsrfManagerResult/GET_{self.domain}_log.json', 'a') as f:
+        with open(f'Results/SsrfManagerResult/GET_{self.domain}_log.json', 'a') as f:
             f.write(f'{uiid_str}:{payload}\n')
         return payload
 
     def get_param_ngrok_payload(self, url: str, param: str, method_type: str):
         uiid_str = str(uuid.uuid4())
         payload = f'{self.ngrok_url}{uiid_str}'
-        with open(f'SsrfManagerResult/FROM_{self.domain}_log.json', 'a') as f:
+        with open(f'Results/SsrfManagerResult/FROM_{self.domain}_log.json', 'a') as f:
             f.write(f'{uiid_str}:{url}:{param}:{method_type}\n')
         return payload
 

@@ -1,3 +1,6 @@
+import os
+
+import sublist3r
 from tldextract import tldextract
 
 from Managers.CacheManager import CacheManager
@@ -7,6 +10,7 @@ from Managers.LinksManager import LinksManager
 from Managers.FormRequestFetcher import FormRequestFetcher
 from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
+from Managers.SstiManager import SstiManager
 from Managers.XssManager import XssManager
 
 headers = {
@@ -19,13 +23,16 @@ headers = {
 
 
 def main():
+
     # start_url = "https://www.deere.com/en/mowers/lawn-tractors/"
     # start_url = "https://oriondemo.solarwinds.com/Orion/SummaryView.aspx?ViewID=1"
-    start_url = "https://app.luckyorange.com/dashboard"
-    ngrok_url = 'http://bfe7-91-196-101-94.ngrok.io/'
+    start_url = "https://hacker-pentest.cloud.jedox.com/"
+    ngrok_url = 'http://9077-212-90-183-35.ngrok.io/'
     download_path = "C:\\Users\\oleksandr oliinyk\\Downloads"
     domain_parts = tldextract.extract(start_url)
-    domain = domain_parts.domain + '.' + domain_parts.suffix
+    domain = f'{domain_parts.domain}.{domain_parts.suffix}'
+    # subdomains = sublist3r.main(domain, 40, f'SublisterResult/{domain}_subdomains.txt', ports=None, silent=False, verbose=False,
+    #                             enable_bruteforce=False, engines=None)
     # domain = '195.62.193'
     # CacheManager.clear_all()
 
@@ -52,6 +59,10 @@ def main():
 
     sqli_manager = SqliManager(domain, cookies_dict, headers)
     sqli_manager.check_get_requests(get_dtos)
+
+    ssti_manager = SstiManager(domain, cookies_dict, headers)
+    ssti_manager.check_get_requests(get_dtos)
+    ssti_manager.check_form_requests(post_dtos)
 
 
 if __name__ == '__main__':

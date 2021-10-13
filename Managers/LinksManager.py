@@ -23,13 +23,15 @@ class LinksManager:
         self.cookies = cookies
         self.headers = headers
         self.max_depth = 5
-        self.social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "cdn-cgi", "intercom", "atlassian", "instagram", "github"]
+        self.social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "cdn-cgi", "intercom", "atlassian",
+                             "instagram", "github"]
         self.checked_urls = []
         self.checked_hrefs = []
         self.checked_parsed_paths = []
         self.urls_in_queue = []
         self.urls_counter = 0
-        self.url_ext_regex = re.compile('\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg', re.IGNORECASE)
+        self.url_ext_regex = re.compile('\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.m4v',
+                                        re.IGNORECASE)
 
     def get_all_links(self, start_url) -> List[GetRequestDTO]:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: LinksManager started...')

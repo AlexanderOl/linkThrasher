@@ -16,27 +16,28 @@ class XssManager:
         self.domain = domain
         self.cookies = cookies
         self.headers = headers
+        self.payload = '<poc>'
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: XssManager GET started...')
 
-        cacheManager = CacheManager('XssManagerGetResult', self.domain)
-        result = cacheManager.get_saved_result()
+        cache_manager = CacheManager('XssManagerResult/Get', self.domain)
+        result = cache_manager.get_saved_result()
 
         if result is None:
             result: List[XssFoundDTO] = []
             for dto in dtos:
-                self.send_xss_request(dto.link + "/<poc>", result)
+                self.send_xss_request(f'{dto.link}/{self.payload}', result)
                 self.check_params(dto.link, result)
-            cacheManager.save_result(result)
+            cache_manager.save_result(result)
 
-        print("Found GET XSS: " + str(len(result)))
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Found GET XSS: {len(result)}')
 
     def check_form_requests(self, form_results: List[FormRequestDTO]):
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: XssManager FORM started...')
 
-        cache_manager = CacheManager('XssManagerFormResult', self.domain)
+        cache_manager = CacheManager('XssManagerResult/Form', self.domain)
         result = cache_manager.get_saved_result()
 
         if result is None:
@@ -47,7 +48,7 @@ class XssManager:
 
             cache_manager.save_result(result)
 
-        print("Found FORM XSS: " + str(len(result)))
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Found FORM XSS: {len(result)}')
 
     def check_params(self, url, result: List[XssFoundDTO]):
         payloads_urls = []
@@ -57,7 +58,7 @@ class XssManager:
         for query in queries:
             param_split = query.split('=')
             main_url_split = url.split(query)
-            payloads_urls.append(main_url_split[0] + param_split[0] + '=<poc>' + main_url_split[1])
+            payloads_urls.append(f'{main_url_split[0]}{param_split[0]}={self.payload}{main_url_split[1]}')
 
         for payload in payloads_urls:
             self.send_xss_request(payload, result)
@@ -69,43 +70,43 @@ class XssManager:
             response = requests.get(url, headers=self.headers, cookies=self.cookies)
             if response.status_code == 200 or response.status_code == 500:
                 web_page = response.text
-                if '<poc>' in web_page:
+                if self.payload in web_page:
                     print("XssFinder GET XSS: - " + url)
-                    return result.append(XssFoundDTO(XssType.Get, url, '<poc>', web_page))
+                    return result.append(XssFoundDTO(XssType.Get, url, self.payload, web_page))
             if response.status_code == 500:
                 print("XssFinder: 500 status - " + url)
         except Exception as inst:
             print(inst)
             print("ERROR - " + url)
 
-    def check_form_request(self, dto: FormRequestDTO,  result: List[XssFoundDTO]):
+    def check_form_request(self, dto: FormRequestDTO, result: List[XssFoundDTO]):
 
         for form in dto.form_params:
             if form.method_type == "POST":
                 for param in form.params:
                     payload = form.params
                     old_param = payload[param]
-                    payload[param] = '<poc>'
+                    payload[param] = self.payload
                     response = requests.post(dto.link, data=payload, headers=self.headers, cookies=self.cookies)
                     if response.status_code == 200 or response.status_code == 500:
                         web_page = response.text
-                        if '<poc>' in web_page:
+                        if self.payload in web_page:
                             print(f'Found FORM XSS! url:{dto.link} , param:{param}, action:{form.action}')
-                            result.append(XssFoundDTO("POST", dto.link, payload, web_page))
+                            result.append(XssFoundDTO(XssType.PostForm, dto.link, payload, web_page))
                     elif response.status_code == 400:
                         payload[param] = old_param
             elif form.method_type == "GET":
                 url = form.action + '?'
                 for param in form.params:
-                    url += (param + '=<poc>&')
+                    url += f'{param}={self.payload}&'
                     response = requests.get(url, headers=self.headers, cookies=self.cookies)
                     if response.status_code == 200 or response.status_code == 500:
                         web_page = response.text
-                        if '<poc>' in web_page:
+                        if self.payload in web_page:
                             print(f'Found FORM XSS! url:{url}')
-                            result.append(XssFoundDTO("GET", dto.link, param, web_page))
+                            result.append(XssFoundDTO(XssType.GetForm, dto.link, param, web_page))
                     elif response.status_code == 400:
-                        url -= (param + '=<poc>&')
+                        url -= f'{param}={self.payload}&'
             else:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return

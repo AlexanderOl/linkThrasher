@@ -5,17 +5,20 @@ import shutil
 
 class CacheManager:
     def __init__(self, file_name, domain):
-        self.file_name = file_name
-        self.domain = domain
-        self.links_file = f"{self.file_name}/{self.domain}.json"
+        self.links_file = f"Results/{file_name}/{domain}.json"
 
     @staticmethod
     def clear_all():
-        path_list = ['SqliManagerGetResult', 'XssManagerGetResult', 'XssManagerFormResult', 'SsrfManagerResult', 'FormRequestFetcherResult']
+        path_list = ['SqliManagerResult',
+                     'XssManagerResult/Get', 'XssManagerResult/Form',
+                     'SstiManagerResult/Get', 'SstiManagerResult/Form',
+                     'SsrfManagerResult',
+                     'FormRequestFetcherResult']
         for path in path_list:
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            os.mkdir(path)
+            result_path = f'Results/{path}'
+            files = [f for f in os.listdir(result_path)]
+            for f in files:
+                os.remove(os.path.join(result_path, f))
 
     def get_saved_result(self):
         if os.path.exists(self.links_file):
