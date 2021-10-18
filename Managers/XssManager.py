@@ -51,14 +51,14 @@ class XssManager:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Found FORM XSS: {len(result)}')
 
     def check_params(self, url, result: List[XssFoundDTO]):
-        payloads_urls = []
+        payloads_urls = set()
         parsed = urlparse.urlparse(url)
         queries = filter(None, parsed.query.split("&"))
 
         for query in queries:
             param_split = query.split('=')
             main_url_split = url.split(query)
-            payloads_urls.append(f'{main_url_split[0]}{param_split[0]}={self.payload}{main_url_split[1]}')
+            payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={self.payload}{main_url_split[1]}')
 
         for payload in payloads_urls:
             self.send_xss_request(payload, result)

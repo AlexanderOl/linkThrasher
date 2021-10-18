@@ -44,8 +44,9 @@ class SstiManager:
         for payload in self.payloads:
             self.send_ssti_request(f'{base_url}/{payload}', result)
 
-    def check_get_params(self, url, result: List[SstiFoundDTO]):
-        payloads_urls = []
+    def check_get_params(self, dto: GetRequestDTO, result: List[SstiFoundDTO]):
+        url = dto.link
+        payloads_urls = set()
         parsed = urlparse.urlparse(url)
         queries = filter(None, parsed.query.split("&"))
 
@@ -53,7 +54,7 @@ class SstiManager:
             param_split = query.split('=')
             main_url_split = url.split(query)
             for payload in self.payloads:
-                payloads_urls.append(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
+                payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
 
         for payload in payloads_urls:
             self.send_ssti_request(payload, result)

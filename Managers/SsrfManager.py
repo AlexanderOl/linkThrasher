@@ -44,13 +44,13 @@ class SsrfManager:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SsrfManager FORM finished')
 
     def check_params(self, url):
-        payloads_urls = []
+        payloads_urls = set()
         parsed = urlparse.urlparse(url)
         queries = filter(None, parsed.query.split("&"))
 
         for query in queries:
             csrf_payload = self.get_url_ngrok_payload(url, query)
-            payloads_urls.append(csrf_payload)
+            payloads_urls.add(csrf_payload)
 
         for payload in payloads_urls:
             self.send_ssrf_get_request(payload)

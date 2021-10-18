@@ -1,6 +1,5 @@
 import os
 import pickle
-import shutil
 
 
 class CacheManager:
@@ -9,7 +8,8 @@ class CacheManager:
 
     @staticmethod
     def clear_all():
-        path_list = ['SqliManagerResult',
+        path_list = ['LinksManagerResult',
+                     'SqliManagerResult',
                      'XssManagerResult/Get', 'XssManagerResult/Form',
                      'SstiManagerResult/Get', 'SstiManagerResult/Form',
                      'SsrfManagerResult',

@@ -18,17 +18,17 @@ headers_without_delay = {
 
 
 class LinksManager:
-    def __init__(self, domain, cookies, headers):
+    def __init__(self, domain, cookies, headers, max_depth):
         self.domain = domain
         self.cookies = cookies
         self.headers = headers
-        self.max_depth = 5
+        self.max_depth = max_depth
         self.social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "cdn-cgi", "intercom", "atlassian",
                              "instagram", "github"]
-        self.checked_urls = []
-        self.checked_hrefs = []
-        self.checked_parsed_paths = []
-        self.urls_in_queue = []
+        self.checked_urls = set()
+        self.checked_hrefs = set()
+        self.checked_parsed_paths = set()
+        self.urls_in_queue = set()
         self.urls_counter = 0
         self.url_ext_regex = re.compile('\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.m4v',
                                         re.IGNORECASE)
@@ -87,8 +87,8 @@ class LinksManager:
             return
 
         parsed = urlparse(target_url)
-        self.checked_parsed_paths.append(parsed.path)
-        self.checked_urls.append(target_url)
+        self.checked_parsed_paths.add(parsed.path)
+        self.checked_urls.add(target_url)
         current_depth = current_depth + 1
 
         href_list = self.get_href_list(web_page, target_url)
@@ -115,7 +115,7 @@ class LinksManager:
                 incorrect = len([c for c, d in words if c != d])
                 if incorrect <= 3 and abs(len(href)-len(current_href)) <= 3:
                     return False
-            self.checked_hrefs.append(href)
+            self.checked_hrefs.add(href)
 
         return result
 
@@ -135,7 +135,7 @@ class LinksManager:
         return url
 
     def get_href_list(self, web_page, target_url):
-        href_list = []
+        href_list = set()
         links = BeautifulSoup(web_page, "html.parser").findAll('a')
         url_parts = urlparse(target_url)
         main_url = f"{url_parts.scheme}://{url_parts.hostname}"
@@ -145,9 +145,9 @@ class LinksManager:
                 is_valid_href = self.check_href(href, target_url)
                 if is_valid_href:
                     if href[0] == '/':
-                        href_list.append(main_url + href)
+                        href_list.add(main_url + href)
                     elif str(href[0:4]) == "http":
-                        href_list.append(href)
+                        href_list.add(href)
             except Exception as inst:
                 print(inst)
         return href_list
