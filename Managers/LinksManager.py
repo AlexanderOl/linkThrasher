@@ -24,7 +24,7 @@ class LinksManager:
         self.headers = headers
         self.max_depth = max_depth
         self.social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "cdn-cgi", "intercom", "atlassian",
-                             "instagram", "github"]
+                             "instagram", "github", "letgo"]
         self.checked_urls = set()
         self.checked_hrefs = set()
         self.checked_parsed_paths = set()

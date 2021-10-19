@@ -1,5 +1,6 @@
 import os
 import pickle
+from datetime import datetime
 
 
 class CacheManager:
@@ -10,8 +11,10 @@ class CacheManager:
     def clear_all():
         path_list = ['LinksManagerResult',
                      'SqliManagerResult',
-                     'XssManagerResult/Get', 'XssManagerResult/Form',
-                     'SstiManagerResult/Get', 'SstiManagerResult/Form',
+                     'XssManagerResult/Get',
+                     'XssManagerResult/Form',
+                     'SstiManagerResult/Get',
+                     'SstiManagerResult/Form',
                      'SsrfManagerResult',
                      'FormRequestFetcherResult']
         for path in path_list:
@@ -27,7 +30,12 @@ class CacheManager:
             file.close()
             return data
 
-    def save_result(self, result):
+    def save_result(self, result, has_final_result=False):
         file = open(self.links_file, 'ab')
         pickle.dump(result, file)
         file.close()
+
+        if has_final_result and len(result) > 0:
+            file = open('Results/Final.txt', 'a')
+            res = f'[{datetime.now().strftime("%H:%M:%S")}]: {self.links_file} found {len(result)} \n'
+            file.write(res)

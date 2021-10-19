@@ -30,7 +30,8 @@ class XssManager:
             for dto in dtos:
                 self.send_xss_request(f'{dto.link}/{self.payload}', result)
                 self.check_params(dto.link, result)
-            cache_manager.save_result(result)
+            cache_manager.save_result(result, has_final_result=True)
+
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Found GET XSS: {len(result)}')
 
@@ -46,7 +47,7 @@ class XssManager:
             for item in form_results:
                 self.check_form_request(item, result)
 
-            cache_manager.save_result(result)
+            cache_manager.save_result(result, has_final_result=True)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Found FORM XSS: {len(result)}')
 
@@ -68,12 +69,12 @@ class XssManager:
     def send_xss_request(self, url, result: List[XssFoundDTO]):
         try:
             response = requests.get(url, headers=self.headers, cookies=self.cookies)
-            if response.status_code == 200 or response.status_code == 500:
+            if response.status_code == 200 or str(response.status_code)[0] == '5':
                 web_page = response.text
                 if self.payload in web_page:
                     print("XssFinder GET XSS: - " + url)
                     return result.append(XssFoundDTO(XssType.Get, url, self.payload, web_page))
-            if response.status_code == 500:
+            if str(response.status_code)[0] == '5':
                 print("XssFinder: 500 status - " + url)
         except Exception as inst:
             print(inst)
@@ -88,7 +89,7 @@ class XssManager:
                     old_param = payload[param]
                     payload[param] = self.payload
                     response = requests.post(dto.link, data=payload, headers=self.headers, cookies=self.cookies)
-                    if response.status_code == 200 or response.status_code == 500:
+                    if response.status_code == 200 or str(response.status_code)[0] == '5':
                         web_page = response.text
                         if self.payload in web_page:
                             print(f'Found FORM XSS! url:{dto.link} , param:{param}, action:{form.action}')
@@ -100,7 +101,7 @@ class XssManager:
                 for param in form.params:
                     url += f'{param}={self.payload}&'
                     response = requests.get(url, headers=self.headers, cookies=self.cookies)
-                    if response.status_code == 200 or response.status_code == 500:
+                    if response.status_code == 200 or str(response.status_code)[0] == '5':
                         web_page = response.text
                         if self.payload in web_page:
                             print(f'Found FORM XSS! url:{url}')

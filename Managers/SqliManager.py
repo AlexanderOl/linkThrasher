@@ -28,7 +28,7 @@ class SqliManager:
                 self.check_url(dto, result)
                 self.check_get_params(dto, result)
 
-            cache_manager.save_result(result)
+            cache_manager.save_result(result, has_final_result=True)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SqliManager GET found {len(result)} items')
 
@@ -67,7 +67,7 @@ class SqliManager:
     def send_error_based_request(self, url, result: List[SqliFoundDTO]):
         try:
             response = requests.get(url, headers=self.headers, cookies=self.cookies)
-            if response.status_code == 200 or response.status_code == 500:
+            if response.status_code == 200 or str(response.status_code)[0] == '5':
                 if not response.history or response.history[0].status_code != 301:
                     web_page = response.text.lower()
                     if 'syntax' in web_page or 'xapikeypoc' in web_page:
@@ -84,7 +84,7 @@ class SqliManager:
 
         try:
             response = requests.get(url, headers=self.headers, cookies=self.cookies)
-            if (response.status_code == 200 or response.status_code == 500) \
+            if (response.status_code == 200 or str(response.status_code)[0] == '5') \
                     and (response.elapsed.total_seconds() >= self.delay_in_seconds and attempt == 1):
                 print(f"SQLiManager delay FOUND (status-{response.status_code}, attempt-{attempt}): - " + url)
                 attempt += 1

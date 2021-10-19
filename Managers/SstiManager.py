@@ -80,12 +80,12 @@ class SstiManager:
     def send_ssti_request(self, url, result: List[SstiFoundDTO]):
         try:
             response = requests.get(url, headers=self.headers, cookies=self.cookies)
-            if response.status_code == 200 or response.status_code == 500:
+            if response.status_code == 200 or str(response.status_code)[0] == '5':
                 web_page = response.text
                 if self.expected in web_page:
                     print("SstiFinder GET XSS: - " + url)
                     return result.append(SstiFoundDTO(SstiType.Get, url))
-            if response.status_code == 500:
+            if str(response.status_code)[0] == '5':
                 print("SstiFinder: 500 status - " + url)
         except Exception as inst:
             print(inst)
@@ -101,7 +101,7 @@ class SstiManager:
                         old_param = form_params[param]
                         form_params[param] = payload
                         response = requests.post(dto.link, data=form_params, headers=self.headers, cookies=self.cookies)
-                        if response.status_code == 200 or response.status_code == 500:
+                        if response.status_code == 200 or str(response.status_code)[0] == '5':
                             web_page = response.text
                             if self.expected in web_page:
                                 print(f'Found FORM XSS! url:{dto.link} , param:{param}, action:{form.action}')
@@ -114,7 +114,7 @@ class SstiManager:
                     for payload in self.payloads:
                         url += f'{param}={payload}&'
                         response = requests.get(url, headers=self.headers, cookies=self.cookies)
-                        if response.status_code == 200 or response.status_code == 500:
+                        if response.status_code == 200 or str(response.status_code)[0] == '5':
                             web_page = response.text
                             if self.expected in web_page:
                                 print(f'Found FORM XSS! url:{url}')
