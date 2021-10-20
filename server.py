@@ -1,5 +1,3 @@
-import sublist3r
-from Managers.CacheManager import CacheManager
 from Managers.ThreadManager import ThreadManager
 
 headers = {

@@ -1,16 +1,12 @@
 import os
 import uuid
-from datetime import datetime
-from time import sleep
-
 import requests
 import urllib.parse as urlparse
-
 from typing import List
-from Managers.CacheManager import CacheManager
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO
-from Models.SsrfFoundDTO import SsrfFoundDTO
+from time import sleep
+from datetime import datetime
 
 
 class SsrfManager:
@@ -51,13 +47,13 @@ class SsrfManager:
         queries = filter(lambda q: self.url_param in str(q).lower(), parsed.query.split("&"))
 
         for query in queries:
-            csrf_payload = self.get_url_ngrok_payload(url, query)
+            csrf_payload = self.__get_url_ngrok_payload(url, query)
             payloads_urls.add(csrf_payload)
 
         for payload in payloads_urls:
-            self.send_ssrf_get_request(payload)
+            self.__send_ssrf_get_request(payload)
 
-    def get_url_ngrok_payload(self, url: str, query: str):
+    def __get_url_ngrok_payload(self, url: str, query: str):
         param_split = query.split('=')
         main_url_split = url.split(query)
         uiid_str = str(uuid.uuid4())
@@ -66,14 +62,14 @@ class SsrfManager:
             f.write(f'{uiid_str}:{payload}\n')
         return payload
 
-    def get_param_ngrok_payload(self, url: str, param: str, method_type: str):
+    def __get_param_ngrok_payload(self, url: str, param: str, method_type: str):
         uiid_str = str(uuid.uuid4())
         payload = f'{self.ngrok_url}{uiid_str}'
         with open(f'Results/SsrfManagerResult/FROM_{self.domain}_log.json', 'a') as f:
             f.write(f'{uiid_str}:{url}:{param}:{method_type}\n')
         return payload
 
-    def send_ssrf_form_request(self, dto: FormRequestDTO):
+    def __send_ssrf_get_request(self, dto: FormRequestDTO):
 
         for form in dto.form_params:
             if form.method_type == "POST":
@@ -81,7 +77,7 @@ class SsrfManager:
                     if self.url_param in param.lower():
                         payload = form.params
                         old_param = payload[param]
-                        payload[param] = self.get_param_ngrok_payload(dto.link, param, "POST")
+                        payload[param] = self.__get_param_ngrok_payload(dto.link, param, "POST")
                         response = requests.post(dto.link, data=payload, headers=self.headers, cookies=self.cookies)
                         if response.status_code == 400:
                             payload[param] = old_param
@@ -89,7 +85,7 @@ class SsrfManager:
                 url = form.action + '?'
                 for param in form.params:
                     if self.url_param in param.lower():
-                        payload = self.get_param_ngrok_payload(dto.link, param, "POST")
+                        payload = self.__get_param_ngrok_payload(dto.link, param, "POST")
                         url += (param + f'={payload}&')
                         response = requests.get(url, headers=self.headers, cookies=self.cookies)
                         if response.status_code == 400:
