@@ -16,7 +16,7 @@ class ThreadManager:
     def run_all(self):
         file_path = 'Targets\\urls.txt'
         if os.path.exists(file_path):
-            return list(set(line.strip() for line in open(file_path)))
+            urls = list(set(line.strip() for line in open(file_path)))
             url_batches = self.__chunks(urls)
             for batch in url_batches:
                 threads = []
