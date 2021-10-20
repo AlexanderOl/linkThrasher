@@ -16,7 +16,7 @@ class SsrfManager:
         self.cookies = cookies
         self.headers = headers
         self.ngrok_url = ngrok_url
-        self.url_param = 'url'
+        self.url_params = ['url', 'redirect']
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SsrfManager GET started...')
@@ -44,7 +44,7 @@ class SsrfManager:
     def __check_params(self, url):
         payloads_urls = set()
         parsed = urlparse.urlparse(url)
-        queries = filter(lambda q: self.url_param in str(q).lower(), parsed.query.split("&"))
+        queries = [s for s in parsed.query.split("&") if any(xs in str(s).lower() for xs in self.url_params)]
 
         for query in queries:
             csrf_payload = self.__get_url_ngrok_payload(url, query)
@@ -74,7 +74,7 @@ class SsrfManager:
         for form in dto.form_params:
             if form.method_type == "POST":
                 for param in form.params:
-                    if self.url_param in param.lower():
+                    if any(s in str(param).lower() for s in self.url_params):
                         payload = form.params
                         old_param = payload[param]
                         payload[param] = self.__get_param_ngrok_payload(dto.link, param, "POST")
@@ -84,7 +84,7 @@ class SsrfManager:
             elif form.method_type == "GET":
                 url = form.action + '?'
                 for param in form.params:
-                    if self.url_param in param.lower():
+                    if any(s in str(param).lower() for s in self.url_params):
                         payload = self.__get_param_ngrok_payload(dto.link, param, "POST")
                         url += (param + f'={payload}&')
                         response = requests.get(url, headers=self.headers, cookies=self.cookies)
