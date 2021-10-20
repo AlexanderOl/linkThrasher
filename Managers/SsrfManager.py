@@ -14,11 +14,13 @@ from Models.SsrfFoundDTO import SsrfFoundDTO
 
 
 class SsrfManager:
+
     def __init__(self, domain, cookies, headers, ngrok_url):
         self.domain = domain
         self.cookies = cookies
         self.headers = headers
         self.ngrok_url = ngrok_url
+        self.url_param = 'url'
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SsrfManager GET started...')
@@ -27,7 +29,7 @@ class SsrfManager:
             os.remove(f'SsrfManagerResult/GET_{self.domain}_log.json')
 
         for dto in dtos:
-            self.check_params(dto.link)
+            self.__check_params(dto.link)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SsrfManager GET finished')
 
@@ -43,10 +45,10 @@ class SsrfManager:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SsrfManager FORM finished')
 
-    def check_params(self, url):
+    def __check_params(self, url):
         payloads_urls = set()
         parsed = urlparse.urlparse(url)
-        queries = filter(None, parsed.query.split("&"))
+        queries = filter(lambda q: self.url_param in str(q).lower(), parsed.query.split("&"))
 
         for query in queries:
             csrf_payload = self.get_url_ngrok_payload(url, query)
@@ -76,20 +78,22 @@ class SsrfManager:
         for form in dto.form_params:
             if form.method_type == "POST":
                 for param in form.params:
-                    payload = form.params
-                    old_param = payload[param]
-                    payload[param] = self.get_param_ngrok_payload(dto.link, param, "POST")
-                    response = requests.post(dto.link, data=payload, headers=self.headers, cookies=self.cookies)
-                    if response.status_code == 400:
-                        payload[param] = old_param
+                    if self.url_param in param.lower():
+                        payload = form.params
+                        old_param = payload[param]
+                        payload[param] = self.get_param_ngrok_payload(dto.link, param, "POST")
+                        response = requests.post(dto.link, data=payload, headers=self.headers, cookies=self.cookies)
+                        if response.status_code == 400:
+                            payload[param] = old_param
             elif form.method_type == "GET":
                 url = form.action + '?'
                 for param in form.params:
-                    payload = self.get_param_ngrok_payload(dto.link, param, "POST")
-                    url += (param + f'={payload}&')
-                    response = requests.get(url, headers=self.headers, cookies=self.cookies)
-                    if response.status_code == 400:
-                        url -= (param + f'={payload}&')
+                    if self.url_param in param.lower():
+                        payload = self.get_param_ngrok_payload(dto.link, param, "POST")
+                        url += (param + f'={payload}&')
+                        response = requests.get(url, headers=self.headers, cookies=self.cookies)
+                        if response.status_code == 400:
+                            url -= (param + f'={payload}&')
             else:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
@@ -100,4 +104,3 @@ class SsrfManager:
         except Exception as inst:
             print(inst)
             sleep(5)
-

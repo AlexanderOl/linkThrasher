@@ -12,7 +12,7 @@ headers = {
 max_depth = 3
 batch_size = 20
 download_path = "C:\\Users\\oleksandr oliinyk\\Downloads"
-ngrok_url = 'http://79da-91-196-101-94.ngrok.io/'
+ngrok_url = 'http://ee6d-91-196-101-94.ngrok.io/'
 
 
 def main():

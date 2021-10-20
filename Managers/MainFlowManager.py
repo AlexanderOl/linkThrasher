@@ -16,17 +16,19 @@ class MainFlowManager:
         self.download_path = download_path
         self.headers = headers
 
-    def run_main_flow(self, start_url):
+    def run_main_flow(self, start_url: str, enable_cookies=False):
         domain_parts = tldextract.extract(start_url)
         domain = f'{domain_parts.domain}.{domain_parts.suffix}'
 
-        cookie_manager = CookieManager(domain, self.download_path)
-        raw_cookie = cookie_manager.get_raw_cookies()
+        cookies_dict = {}
+        if enable_cookies:
+            cookie_manager = CookieManager(domain, self.download_path)
+            raw_cookie = cookie_manager.get_raw_cookies()
+            cookies_dict = cookie_manager.get_cookies_dict(raw_cookie)
 
         # hakrawler = Hakrawler(domain, raw_cookie)
         # get_dtos = hakrawler.get_requests_dtos(start_url)
 
-        cookies_dict = cookie_manager.get_cookies_dict(raw_cookie)
         links_manager = LinksManager(domain, cookies_dict, self.headers, self.max_depth)
         get_dtos = links_manager.get_all_links(start_url)
 
