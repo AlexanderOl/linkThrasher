@@ -1,3 +1,6 @@
+import os
+
+from Managers.CookieManager import CookieManager
 from Managers.ThreadManager import ThreadManager
 
 headers = {
@@ -14,17 +17,23 @@ ngrok_url = 'http://c86f-91-196-101-94.ngrok.io/'
 
 
 def main():
-    start_url = "https://www.dell.com/en-us/shop/monitors-monitor-accessories/ac/4009"
-    # start_url = "https://oriondemo.solarwinds.com/Orion/SummaryView.aspx?ViewID=1"
-    # subdomains = sublist3r.main(domain, 40, f'SublisterResult/{domain}_subdomains.txt', ports=None, silent=False,
-    # verbose=False, enable_bruteforce=False, engines=None)
+    is_single_check = os.environ.get('is_single_check')
 
-    # CacheManager.clear_all()
 
+    cm = CookieManager()
+    rc = cm.get_raw_cookies()
     thread_man = ThreadManager(batch_size, download_path, max_depth, headers, ngrok_url)
 
-    # thread_man.run_all()
-    thread_man.run_single(start_url)
+    if bool(is_single_check):
+        start_url = os.environ.get('start_url')
+        raw_cookies = os.environ.get('raw_cookies')
+        print(f'start_url - {start_url}')
+        print(f'raw_cookies - {raw_cookies}')
+        thread_man.run_single(start_url, raw_cookies)
+    else:
+        print(f'is_single_check - {is_single_check}')
+        thread_man.run_all()
+    # CacheManager.clear_all()
 
 
 if __name__ == '__main__':

@@ -10,8 +10,8 @@ class ThreadManager:
         self.download_path = download_path
         self.main_man = MainFlowManager(ngrok_url, max_depth, download_path, headers)
 
-    def run_single(self, start_url: str):
-        self.main_man.run_main_flow(start_url, True)
+    def run_single(self, start_url: str, raw_cookies: str):
+        self.main_man.run_main_flow(start_url, raw_cookies)
 
     def run_all(self):
         file_path = 'Targets\\urls.txt'
@@ -21,7 +21,7 @@ class ThreadManager:
             for batch in url_batches:
                 threads = []
                 for start_url in batch:
-                    t = threading.Thread(target=self.main_man.run_main_flow, args=(start_url,False))
+                    t = threading.Thread(target=self.main_man.run_main_flow, args=(start_url,))
                     t.daemon = True
                     threads.append(t)
 
