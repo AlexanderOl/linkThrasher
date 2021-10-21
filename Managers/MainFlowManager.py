@@ -22,8 +22,8 @@ class MainFlowManager:
 
         cookie_manager = CookieManager(domain, self.download_path)
         if not raw_cookies:
-            raw_cookie = cookie_manager.get_raw_cookies()
-        cookies_dict = cookie_manager.get_cookies_dict(raw_cookie)
+            raw_cookies = cookie_manager.get_raw_cookies()
+        cookies_dict = cookie_manager.get_cookies_dict(raw_cookies)
 
         # hakrawler = Hakrawler(domain, raw_cookie)
         # get_dtos = hakrawler.get_requests_dtos(start_url)
