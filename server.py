@@ -18,10 +18,6 @@ ngrok_url = 'http://c86f-91-196-101-94.ngrok.io/'
 
 def main():
     is_single_check = os.environ.get('is_single_check')
-
-
-    cm = CookieManager()
-    rc = cm.get_raw_cookies()
     thread_man = ThreadManager(batch_size, download_path, max_depth, headers, ngrok_url)
 
     if bool(is_single_check):
