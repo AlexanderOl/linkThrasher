@@ -20,11 +20,12 @@ class MainFlowManager:
         domain_parts = tldextract.extract(start_url)
         domain = f'{domain_parts.domain}.{domain_parts.suffix}'
 
+        cookies_dict = {}
         if not raw_cookies:
             cookie_manager = CookieManager(domain, self.download_path)
             raw_cookie = cookie_manager.get_raw_cookies()
+            cookies_dict = cookie_manager.get_cookies_dict(raw_cookie)
 
-        cookies_dict = cookie_manager.get_cookies_dict()
         # hakrawler = Hakrawler(domain, raw_cookie)
         # get_dtos = hakrawler.get_requests_dtos(start_url)
 

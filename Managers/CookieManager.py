@@ -2,7 +2,6 @@ import os
 import re
 from http.cookies import SimpleCookie
 
-
 class CookieManager:
     def __init__(self, domain, download_path):
         self.domain = domain
@@ -26,8 +25,7 @@ class CookieManager:
                         cookies[line_fields[5]] = line_fields[6]
         return cookies
 
-    def get_cookies_dict(self):
-        raw_cookie = self.get_raw_cookies()
+    def get_cookies_dict(self, raw_cookie):
         cookie = SimpleCookie()
         cookie.load(raw_cookie)
         cookies = {}
@@ -35,14 +33,11 @@ class CookieManager:
             cookies[key] = morsel.value
         return cookies
 
-
 test_domain = 'dell.com'
 test_download_path = "C:\\Users\\oleksandr oliinyk\\Downloads"
-
 
 def test():
     cm = CookieManager(test_domain, test_download_path)
     print(cm.get_raw_cookies())
-
 
 test()
