@@ -37,7 +37,7 @@ class SsrfManager:
             os.remove(f'SsrfManagerResult/FROM_{self.domain}_log.json')
 
         for item in form_results:
-            self.send_ssrf_form_request(item)
+            self.__send_ssrf_form_request(item)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SsrfManager FORM finished')
 
@@ -69,32 +69,35 @@ class SsrfManager:
             f.write(f'{uiid_str}:{url}:{param}:{method_type}\n')
         return payload
 
-    def __send_ssrf_get_request(self, dto: FormRequestDTO):
+    def __send_ssrf_form_request(self, dto: FormRequestDTO):
+        try:
+            for form in dto.form_params:
+                if form.method_type == "POST":
+                    for param in form.params:
+                        if any(s in str(param).lower() for s in self.url_params):
+                            payload = form.params
+                            old_param = payload[param]
+                            payload[param] = self.__get_param_ngrok_payload(dto.link, param, "POST")
+                            response = requests.post(dto.link, data=payload, headers=self.headers, cookies=self.cookies)
+                            if response.status_code == 400:
+                                payload[param] = old_param
+                elif form.method_type == "GET":
+                    url = form.action + '?'
+                    for param in form.params:
+                        if any(s in str(param).lower() for s in self.url_params):
+                            payload = self.__get_param_ngrok_payload(dto.link, param, "POST")
+                            url += (param + f'={payload}&')
+                            response = requests.get(url, headers=self.headers, cookies=self.cookies)
+                            if response.status_code == 400:
+                                url -= (param + f'={payload}&')
+                else:
+                    print("METHOD TYPE NOT FOUND: " + form.method_type)
+                    return
+        except Exception as inst:
+            print(inst)
+            print("ERROR - " + dto.link)
 
-        for form in dto.form_params:
-            if form.method_type == "POST":
-                for param in form.params:
-                    if any(s in str(param).lower() for s in self.url_params):
-                        payload = form.params
-                        old_param = payload[param]
-                        payload[param] = self.__get_param_ngrok_payload(dto.link, param, "POST")
-                        response = requests.post(dto.link, data=payload, headers=self.headers, cookies=self.cookies)
-                        if response.status_code == 400:
-                            payload[param] = old_param
-            elif form.method_type == "GET":
-                url = form.action + '?'
-                for param in form.params:
-                    if any(s in str(param).lower() for s in self.url_params):
-                        payload = self.__get_param_ngrok_payload(dto.link, param, "POST")
-                        url += (param + f'={payload}&')
-                        response = requests.get(url, headers=self.headers, cookies=self.cookies)
-                        if response.status_code == 400:
-                            url -= (param + f'={payload}&')
-            else:
-                print("METHOD TYPE NOT FOUND: " + form.method_type)
-                return
-
-    def send_ssrf_get_request(self, payload):
+    def __send_ssrf_get_request(self, payload):
         try:
             requests.get(payload, headers=self.headers, cookies=self.cookies)
         except Exception as inst:

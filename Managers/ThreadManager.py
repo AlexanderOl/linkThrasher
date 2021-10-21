@@ -31,6 +31,7 @@ class ThreadManager:
                 for i in threads:
                     i.join()
         else:
+            print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{file_path} is missing')
 
     def __download_start_urls(self):

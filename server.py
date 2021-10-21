@@ -10,11 +10,11 @@ headers = {
 max_depth = 3
 batch_size = 20
 download_path = "C:\\Users\\oleksandr oliinyk\\Downloads"
-ngrok_url = 'http://ee6d-91-196-101-94.ngrok.io/'
+ngrok_url = 'http://c86f-91-196-101-94.ngrok.io/'
 
 
 def main():
-    # start_url = "https://www.deere.com/en/mowers/lawn-tractors/"
+    start_url = "https://www.dell.com/en-us/shop/monitors-monitor-accessories/ac/4009"
     # start_url = "https://oriondemo.solarwinds.com/Orion/SummaryView.aspx?ViewID=1"
     # subdomains = sublist3r.main(domain, 40, f'SublisterResult/{domain}_subdomains.txt', ports=None, silent=False,
     # verbose=False, enable_bruteforce=False, engines=None)
@@ -23,8 +23,8 @@ def main():
 
     thread_man = ThreadManager(batch_size, download_path, max_depth, headers, ngrok_url)
 
-    thread_man.run_all()
-    # thread_man.run_single(start_url)
+    # thread_man.run_all()
+    thread_man.run_single(start_url)
 
 
 if __name__ == '__main__':

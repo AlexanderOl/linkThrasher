@@ -61,17 +61,13 @@ class LinksManager:
             return
 
         try:
-            print(f'Current url - {target_url}')
             response = requests.get(target_url, headers=self.headers, cookies=self.cookies)
             if response.elapsed.total_seconds() >= 5:
                 self.check_delay(target_url)
-
-            if response.status_code == 200:
+            if response.status_code == 200 and len(response.history) <= 1:
+                print(f'Current url - {target_url}')
                 web_page = response.text
                 result.append(GetRequestDTO(target_url, web_page))
-            elif response.status_code == 302:
-                print(f"Not OK - {target_url}, Code - {response.status_code}")
-                return
             else:
                 print(f"Not OK - {target_url}, Code - {response.status_code}")
                 return

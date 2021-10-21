@@ -81,33 +81,36 @@ class XssManager:
             print("ERROR - " + url)
 
     def check_form_request(self, dto: FormRequestDTO, result: List[XssFoundDTO]):
-
-        for form in dto.form_params:
-            if form.method_type == "POST":
-                for param in form.params:
-                    payload = form.params
-                    old_param = payload[param]
-                    payload[param] = self.payload
-                    response = requests.post(dto.link, data=payload, headers=self.headers, cookies=self.cookies)
-                    if response.status_code == 200 or str(response.status_code)[0] == '5':
-                        web_page = response.text
-                        if self.payload in web_page:
-                            print(f'Found FORM XSS! url:{dto.link} , param:{param}, action:{form.action}')
-                            result.append(XssFoundDTO(XssType.PostForm, dto.link, payload, web_page))
-                    elif response.status_code == 400:
-                        payload[param] = old_param
-            elif form.method_type == "GET":
-                url = form.action + '?'
-                for param in form.params:
-                    url += f'{param}={self.payload}&'
-                    response = requests.get(url, headers=self.headers, cookies=self.cookies)
-                    if response.status_code == 200 or str(response.status_code)[0] == '5':
-                        web_page = response.text
-                        if self.payload in web_page:
-                            print(f'Found FORM XSS! url:{url}')
-                            result.append(XssFoundDTO(XssType.GetForm, dto.link, param, web_page))
-                    elif response.status_code == 400:
-                        url -= f'{param}={self.payload}&'
-            else:
-                print("METHOD TYPE NOT FOUND: " + form.method_type)
-                return
+        try:
+            for form in dto.form_params:
+                if form.method_type == "POST":
+                    for param in form.params:
+                        payload = form.params
+                        old_param = payload[param]
+                        payload[param] = self.payload
+                        response = requests.post(dto.link, data=payload, headers=self.headers, cookies=self.cookies)
+                        if response.status_code == 200 or str(response.status_code)[0] == '5':
+                            web_page = response.text
+                            if self.payload in web_page:
+                                print(f'Found FORM XSS! url:{dto.link} , param:{param}, action:{form.action}')
+                                result.append(XssFoundDTO(XssType.PostForm, dto.link, payload, web_page))
+                        elif response.status_code == 400:
+                            payload[param] = old_param
+                elif form.method_type == "GET":
+                    url = form.action + '?'
+                    for param in form.params:
+                        url += f'{param}={self.payload}&'
+                        response = requests.get(url, headers=self.headers, cookies=self.cookies)
+                        if response.status_code == 200 or str(response.status_code)[0] == '5':
+                            web_page = response.text
+                            if self.payload in web_page:
+                                print(f'Found FORM XSS! url:{url}')
+                                result.append(XssFoundDTO(XssType.GetForm, dto.link, param, web_page))
+                        elif response.status_code == 400:
+                            url -= f'{param}={self.payload}'
+                else:
+                    print("METHOD TYPE NOT FOUND: " + form.method_type)
+                    return
+        except Exception as inst:
+            print(inst)
+            print("ERROR - " + dto.link)
