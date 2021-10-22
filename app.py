@@ -1,4 +1,5 @@
 import os
+from flask import Flask
 
 from Managers.CookieManager import CookieManager
 from Managers.ThreadManager import ThreadManager
@@ -15,7 +16,15 @@ batch_size = 20
 download_path = "C:\\Users\\oleksandr oliinyk\\Downloads"
 ngrok_url = 'http://c86f-91-196-101-94.ngrok.io/'
 
+app = Flask(__name__)
 
+
+@app.route("/")
+def index():
+    return "Hello World!"
+
+
+@app.route("/run")
 def main():
     is_single_check = os.environ.get('is_single_check')
 
@@ -34,4 +43,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    app.run(host='0.0.0.0', port='8888', debug=True)
