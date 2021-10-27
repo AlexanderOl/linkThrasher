@@ -1,6 +1,6 @@
 import os
 from flask import Flask
-
+from dotenv import load_dotenv
 from Managers.CookieManager import CookieManager
 from Managers.ThreadManager import ThreadManager
 
@@ -11,12 +11,9 @@ headers = {
     'X-Forwarded-For': 'XOR(if(1=1,sleep(5),0))OR',
     'X-API-KEY': 'xapikeypoc\'',
 }
-max_depth = 3
-batch_size = 20
-download_path = "C:\\Users\\oleksandr oliinyk\\Downloads"
-ngrok_url = 'http://c86f-91-196-101-94.ngrok.io/'
 
 app = Flask(__name__)
+load_dotenv('config.env')
 
 
 @app.route("/")
@@ -27,7 +24,10 @@ def index():
 @app.route("/run")
 def main():
     is_single_check = os.environ.get('is_single_check')
-
+    max_depth = os.environ.get('max_depth')
+    batch_size = os.environ.get('batch_size')
+    ngrok_url = os.environ.get('ngrok_url')
+    download_path = os.environ.get('download_path')
     thread_man = ThreadManager(batch_size, download_path, max_depth, headers, ngrok_url)
 
     if bool(is_single_check):
