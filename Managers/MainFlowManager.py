@@ -1,3 +1,5 @@
+from typing import List
+
 from tldextract import tldextract
 
 from Managers.CookieManager import CookieManager
@@ -7,6 +9,8 @@ from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
 from Managers.SstiManager import SstiManager
 from Managers.XssManager import XssManager
+from Models.GetRequestDTO import GetRequestDTO
+from Models.SqliFoundDTO import SqliFoundDTO
 
 
 class MainFlowManager:
@@ -24,6 +28,11 @@ class MainFlowManager:
         if not raw_cookies:
             raw_cookies = cookie_manager.get_raw_cookies()
         cookies_dict = cookie_manager.get_cookies_dict(raw_cookies)
+
+        subdomain_part = ''
+        if domain_parts.subdomain:
+            subdomain_part = f'{domain_parts.subdomain}.'
+        domain = f'{subdomain_part}{domain}'
 
         # hakrawler = Hakrawler(domain, raw_cookie)
         # get_dtos = hakrawler.get_requests_dtos(start_url)

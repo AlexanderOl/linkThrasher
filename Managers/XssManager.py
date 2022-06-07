@@ -32,7 +32,6 @@ class XssManager:
                 self.check_params(dto.link, result)
             cache_manager.save_result(result, has_final_result=True)
 
-
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Found GET XSS: {len(result)}')
 
     def check_form_requests(self, form_results: List[FormRequestDTO]):
@@ -97,7 +96,12 @@ class XssManager:
                         elif response.status_code == 400:
                             payload[param] = old_param
                 elif form.method_type == "GET":
-                    url = form.action + '?'
+                    parsed = urlparse.urlparse(dto.link)
+                    url_ending = len(form.action) * -1
+                    if len(parsed[2]) >= len(form.action) and str(parsed[2])[url_ending:] == form.action:
+                        url = f'{parsed[0]}://{parsed[1]}{parsed[2]}?'
+                    else:
+                        url = form.action + '?'
                     for param in form.params:
                         url += f'{param}={self.payload}&'
                         response = requests.get(url, headers=self.headers, cookies=self.cookies)

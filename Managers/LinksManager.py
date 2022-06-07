@@ -20,15 +20,13 @@ class LinksManager:
         self.domain = domain
         self.cookies = cookies
         self.headers = headers
-        self.max_depth = max_depth
+        self.max_depth = int(max_depth)
         self.social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "cdn-cgi", "intercom", "atlassian",
                              "instagram", "github", "letgo", "yahoo"]
         self.checked_urls = set()
         self.checked_hrefs = set()
-        self.checked_parsed_paths = set()
-        self.urls_in_queue = set()
         self.urls_counter = 0
-        self.url_ext_regex = re.compile('\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.m4v',
+        self.url_ext_regex = re.compile('\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.m4v$',
                                         re.IGNORECASE)
 
     def get_all_links(self, start_url) -> List[GetRequestDTO]:
@@ -80,8 +78,8 @@ class LinksManager:
             print("ERROR - " + target_url)
             return
 
-        parsed = urlparse(target_url)
-        self.checked_parsed_paths.add(parsed.path)
+        # parsed = urlparse(target_url)
+        # self.checked_parsed_paths.add(parsed.path)
         self.checked_urls.add(target_url)
         current_depth = current_depth + 1
 
@@ -101,14 +99,15 @@ class LinksManager:
                     and target_url[len(target_url) - len(href):] != href \
                     and (href[0] == '/' or str(href[0:4]) == "http") \
                     and href not in target_url:
+                self.checked_hrefs.add(href)
                 result = True
 
-        if result:
-            for current_href in self.checked_hrefs:
-                words = zip(href, current_href)
-                incorrect = len([c for c, d in words if c != d])
-                if incorrect <= 3 and abs(len(href)-len(current_href)) <= 3:
-                    return False
+        # if result:
+        #     for current_href in self.checked_hrefs:
+        #         words = zip(href, current_href)
+        #         incorrect = len([c for c, d in words if c != d])
+        #         if incorrect <= 3 and abs(len(href)-len(current_href)) <= 3:
+        #             return False
             self.checked_hrefs.add(href)
 
         return result
@@ -120,7 +119,6 @@ class LinksManager:
 
         parsed = urlparse(url)
         if url in self.checked_urls \
-                or parsed.path in self.checked_parsed_paths \
                 or any(word in url for word in self.social_media) \
                 or self.domain not in parsed.netloc \
                 or self.url_ext_regex.search(parsed.path):
@@ -144,4 +142,10 @@ class LinksManager:
                         href_list.add(href)
             except Exception as inst:
                 print(inst)
-        return href_list
+
+        dict_href = {}
+        for found_href in href_list:
+            parsed = urlparse(found_href)
+            dict_href[f'{parsed[0]}{parsed[1]}{parsed[2]}'] = found_href
+
+        return set(dict_href.values())

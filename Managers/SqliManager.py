@@ -39,10 +39,10 @@ class SqliManager:
 
         for payload in self.error_based_payloads:
             url = base_url + payload
-            self.send_error_based_request(url, result)
+            self.__send_error_based_request(url, result)
 
         time_based_payload = f'{base_url}{self.time_based_payload}'
-        self.send_time_based_request(time_based_payload, result)
+        self.__send_time_based_request(time_based_payload, result)
 
     def check_get_params(self, dto: GetRequestDTO,  result: List[SqliFoundDTO]):
         error_based_payloads_urls = set()
@@ -59,12 +59,12 @@ class SqliManager:
                 error_based_payloads_urls.add(main_url_split[0] + param_split[0] + '=' + payload + main_url_split[1])
 
         for payload in error_based_payloads_urls:
-            self.send_error_based_request(payload, result)
+            self.__send_error_based_request(payload, result)
 
         for payload in time_based_payloads_urls:
-            self.send_time_based_request(payload, result)
+            self.__send_time_based_request(payload, result)
 
-    def send_error_based_request(self, url, result: List[SqliFoundDTO]):
+    def __send_error_based_request(self, url, result: List[SqliFoundDTO]):
         try:
             response = requests.get(url, headers=self.headers, cookies=self.cookies)
             if response.status_code == 200 or str(response.status_code)[0] == '5':
@@ -77,7 +77,7 @@ class SqliManager:
             print(inst)
             print("ERROR - " + url)
 
-    def send_time_based_request(self, url, result: List[SqliFoundDTO], attempt: int = 0):
+    def __send_time_based_request(self, url, result: List[SqliFoundDTO], attempt: int = 0):
 
         if attempt >= 3:
             return result.append(SqliFoundDTO(url, SqliType.TIME, result))
@@ -88,7 +88,7 @@ class SqliManager:
                     and (response.elapsed.total_seconds() >= self.delay_in_seconds and attempt == 1):
                 print(f"SQLiManager delay FOUND (status-{response.status_code}, attempt-{attempt}): - " + url)
                 attempt += 1
-                self.send_time_based_request(url, result, attempt)
+                self.__send_time_based_request(url, result, attempt)
         except Exception as inst:
             print(inst)
             print("ERROR - " + url)

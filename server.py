@@ -1,6 +1,8 @@
 import os
 from flask import Flask
 from dotenv import load_dotenv
+
+from Managers.CacheManager import CacheManager
 from Managers.CookieManager import CookieManager
 from Managers.ThreadManager import ThreadManager
 
@@ -21,8 +23,14 @@ def index():
     return "Hello World!"
 
 
-@app.route("/run")
-def main():
+@app.route("/clear")
+def clear():
+    return CacheManager.clear_all()
+
+
+# @app.route("/run")
+# def main():
+if __name__ == '__main__':
     is_single_check = os.environ.get('is_single_check')
     max_depth = os.environ.get('max_depth')
     batch_size = os.environ.get('batch_size')
@@ -39,8 +47,7 @@ def main():
     else:
         print(f'is_single_check - {is_single_check}')
         thread_man.run_all()
-    # CacheManager.clear_all()
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port='8888', debug=True)
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port='8888', debug=True)
