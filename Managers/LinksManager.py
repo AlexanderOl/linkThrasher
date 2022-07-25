@@ -26,7 +26,7 @@ class LinksManager:
         self.checked_urls = set()
         self.checked_hrefs = set()
         self.urls_counter = 0
-        self.url_ext_regex = re.compile('\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.m4v$',
+        self.url_ext_regex = re.compile('\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.m4v$|\.doc$|\.docx$|\.xls$|\.xlsx$',
                                         re.IGNORECASE)
 
     def get_all_links(self, start_url) -> List[GetRequestDTO]:

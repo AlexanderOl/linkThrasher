@@ -9,8 +9,6 @@ from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
 from Managers.SstiManager import SstiManager
 from Managers.XssManager import XssManager
-from Models.GetRequestDTO import GetRequestDTO
-from Models.SqliFoundDTO import SqliFoundDTO
 
 
 class MainFlowManager:
@@ -47,13 +45,13 @@ class MainFlowManager:
         post_manager = FormRequestFetcher(domain)
         post_dtos = post_manager.get_all_post_requests(get_dtos)
 
-        xss_manager = XssManager(domain, cookies_dict, self.headers)
-        xss_manager.check_get_requests(get_dtos)
-        xss_manager.check_form_requests(post_dtos)
-
-        ssrf_manager = SsrfManager(domain, cookies_dict, self.headers, self.ngrok_url)
-        ssrf_manager.check_get_requests(get_dtos)
-        ssrf_manager.check_form_requests(post_dtos)
+        # xss_manager = XssManager(domain, cookies_dict, self.headers)
+        # xss_manager.check_get_requests(get_dtos)
+        # xss_manager.check_form_requests(post_dtos)
+        #
+        # ssrf_manager = SsrfManager(domain, cookies_dict, self.headers, self.ngrok_url)
+        # ssrf_manager.check_get_requests(get_dtos)
+        # ssrf_manager.check_form_requests(post_dtos)
 
         sqli_manager = SqliManager(domain, cookies_dict, self.headers)
         sqli_manager.check_get_requests(get_dtos)

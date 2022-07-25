@@ -17,7 +17,8 @@ class CacheManager:
                      'SstiManagerResult/Get',
                      'SstiManagerResult/Form',
                      'SsrfManagerResult',
-                     'FormRequestFetcherResult']
+                     'FormRequestFetcherResult',
+                     'SubdomainManagerResult']
         for path in path_list:
             result_path = f'Results/{path}'
             files = [f for f in os.listdir(result_path)]

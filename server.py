@@ -1,9 +1,12 @@
 import os
+
+import requests
 from flask import Flask
 from dotenv import load_dotenv
 
 from Managers.CacheManager import CacheManager
 from Managers.CookieManager import CookieManager
+from Managers.SubdomainManager import SubdomainManager
 from Managers.ThreadManager import ThreadManager
 
 headers = {
@@ -31,6 +34,9 @@ def clear():
 # @app.route("/run")
 # def main():
 if __name__ == '__main__':
+    # man = SubdomainManager()
+    # man.get_subdomains()
+
     is_single_check = os.environ.get('is_single_check')
     max_depth = os.environ.get('max_depth')
     batch_size = os.environ.get('batch_size')

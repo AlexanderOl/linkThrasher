@@ -34,10 +34,6 @@ class ThreadManager:
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{file_path} is missing')
 
-    def __download_start_urls(self):
-        file_path = f'{self.download_path}\\urls.txt'
-
-
     def __chunks(self, lst):
         n = max(1, self.batch_size)
         return (lst[i:i + n] for i in range(0, len(lst), n))

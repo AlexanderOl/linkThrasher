@@ -7,7 +7,7 @@ class CookieManager:
     def __init__(self, domain, download_path):
         self.domain = domain
         self.download_path = download_path
-        self.cookie_file = f'{download_path}\\{domain}_cookies.txt'
+        self.cookie_file = f'{download_path}{domain}_cookies.txt'
 
     def get_raw_cookies(self):
         result = ''
