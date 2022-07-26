@@ -6,7 +6,7 @@ from Managers.MainFlowManager import MainFlowManager
 
 class ThreadManager:
     def __init__(self, batch_size, download_path, max_depth, headers, ngrok_url):
-        self.batch_size = batch_size
+        self.batch_size = int(batch_size)
         self.download_path = download_path
         self.main_man = MainFlowManager(ngrok_url, max_depth, download_path, headers)
 

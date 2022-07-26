@@ -1,6 +1,8 @@
+import base64
 import os
-
+import subprocess
 import requests
+
 from flask import Flask
 from dotenv import load_dotenv
 
@@ -11,19 +13,23 @@ from Managers.ThreadManager import ThreadManager
 
 headers = {
     'Cache-Control': 'max-age=0',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-    'X-Forwarded-For': 'XOR(if(1=1,sleep(5),0))OR',
-    'X-API-KEY': 'xapikeypoc\'',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
 }
-
+# 'X-Forwarded-For': "1'OR(if(1=1,sleep(5),0))OR'2",
+# 'X-API-KEY': 'xapikeypoc\'',
 app = Flask(__name__)
 load_dotenv('config.env')
 
 
 @app.route("/")
 def index():
-    return "Hello World!"
+    return '/run'
+
+
+@app.route("/clear")
+def clear():
+    CacheManager.clear_all()
 
 
 @app.route("/clear")
@@ -44,7 +50,7 @@ if __name__ == '__main__':
     download_path = os.environ.get('download_path')
     thread_man = ThreadManager(batch_size, download_path, max_depth, headers, ngrok_url)
 
-    if bool(is_single_check):
+    if is_single_check == 'True':
         start_url = os.environ.get('start_url')
         raw_cookies = os.environ.get('raw_cookies')
         print(f'start_url - {start_url}')
@@ -54,6 +60,12 @@ if __name__ == '__main__':
         print(f'is_single_check - {is_single_check}')
         thread_man.run_all()
 
-
-# if __name__ == '__main__':
-#     app.run(host='0.0.0.0', port='8888', debug=True)
+#if __name__ == '__main__':
+    # my_env = os.environ.copy()
+    # my_env["PATH"] = "/usr/sbin:/sbin:" + my_env["PATH"]
+    # a = subprocess.Popen(['bash', '1.sh'])
+    # print(a)
+    #from subprocess import check_output
+    #a = check_output(['bash', '/mnt/c/F/1.sh'], shell=True)
+    #print(a)
+    #app.run(host="0.0.0.0")

@@ -26,8 +26,10 @@ class LinksManager:
         self.checked_urls = set()
         self.checked_hrefs = set()
         self.urls_counter = 0
-        self.url_ext_regex = re.compile('\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.m4v$|\.doc$|\.docx$|\.xls$|\.xlsx$',
-                                        re.IGNORECASE)
+
+        self.url_ext_regex = re.compile(
+            '\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.xlsx$|\.xls$|\.doc$|\.docx$|\.m4v$',
+            re.IGNORECASE)
 
     def get_all_links(self, start_url) -> List[GetRequestDTO]:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: LinksManager started...')
@@ -97,9 +99,8 @@ class LinksManager:
                     and href not in self.social_media \
                     and href not in self.checked_hrefs \
                     and target_url[len(target_url) - len(href):] != href \
-                    and (href[0] == '/' or str(href[0:4]) == "http") \
                     and href not in target_url:
-                self.checked_hrefs.add(href)
+                        self.checked_hrefs.add(href)
                 result = True
 
         # if result:
@@ -140,6 +141,8 @@ class LinksManager:
                         href_list.add(main_url + href)
                     elif str(href[0:4]) == "http":
                         href_list.add(href)
+                    else:
+                        href_list.add(f'{main_url}/{href}')
             except Exception as inst:
                 print(inst)
 
