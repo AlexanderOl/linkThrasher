@@ -7,18 +7,19 @@ class CacheManager:
     def __init__(self, file_name, domain):
         self.result_dir = f"Results/{file_name}"
         self.result_filepath = f"{self.result_dir}/{domain}.json"
+        self.read_result_filepath = f"{self.result_dir}/{domain}.txt"
 
     @staticmethod
     def clear_all():
-        path_list = ['LinksManagerResult',
-                     'SqliManagerResult',
-                     'XssManagerResult/Get',
-                     'XssManagerResult/Form',
-                     'SstiManagerResult/Get',
-                     'SstiManagerResult/Form',
-                     'SsrfManagerResult',
-                     'FormRequestFetcherResult',
-                     'SubdomainManagerResult']
+        path_list = ['LinksManager',
+                     'SqliManager',
+                     'XssManager/Get',
+                     'XssManager/Form',
+                     'SstiManagerR/Get',
+                     'SstiManager/Form',
+                     'SsrfManager',
+                     'FormRequestFetcher',
+                     'SubdomainManager']
         for path in path_list:
             result_path = f'Results/{path}'
             files = [f for f in os.listdir(result_path)]
@@ -33,14 +34,22 @@ class CacheManager:
             return data
 
     def save_result(self, result, has_final_result=False):
-        if not os.path.exists(self.result_dir):
-            os.makedirs(self.result_dir)
+        if len(result) > 0:
 
-        file = open(self.result_filepath, 'ab')
-        pickle.dump(result, file)
-        file.close()
+            if not os.path.exists(self.result_dir):
+                os.makedirs(self.result_dir)
 
-        if has_final_result and len(result) > 0:
-            file = open('Results/Final.txt', 'a')
-            res = f'[{datetime.now().strftime("%H:%M:%S")}]: {self.result_filepath} found {len(result)} \n'
-            file.write(res)
+            json_file = open(self.result_filepath, 'ab')
+            pickle.dump(result, json_file)
+            json_file.close()
+
+            txt_file = open(self.read_result_filepath, 'a')
+            txt_file.write('\n'.join(result) + '\n')
+            txt_file.close()
+
+            if has_final_result:
+                file = open('Results/Final.txt', 'a')
+                res = f'[{datetime.now().strftime("%H:%M:%S")}]: {self.result_filepath} found {len(result)} \n'
+                file.write(res)
+
+

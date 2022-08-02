@@ -22,7 +22,7 @@ class XssManager:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: XssManager GET started...')
 
-        cache_manager = CacheManager('XssManagerResult/Get', self.domain)
+        cache_manager = CacheManager('XssManager/Get', self.domain)
         result = cache_manager.get_saved_result()
 
         if result is None:
@@ -37,7 +37,7 @@ class XssManager:
     def check_form_requests(self, form_results: List[FormRequestDTO]):
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: XssManager FORM started...')
 
-        cache_manager = CacheManager('XssManagerResult/Form', self.domain)
+        cache_manager = CacheManager('XssManager/Form', self.domain)
         result = cache_manager.get_saved_result()
 
         if result is None:

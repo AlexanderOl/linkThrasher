@@ -34,7 +34,7 @@ class LinksManager:
     def get_all_links(self, start_url) -> List[GetRequestDTO]:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: LinksManager started...')
 
-        cache_manager = CacheManager('LinksManagerResult', self.domain)
+        cache_manager = CacheManager('LinksManager', self.domain)
         result = cache_manager.get_saved_result()
 
         if not result:
@@ -100,16 +100,8 @@ class LinksManager:
                     and href not in self.checked_hrefs \
                     and target_url[len(target_url) - len(href):] != href \
                     and href not in target_url:
-                        self.checked_hrefs.add(href)
+                self.checked_hrefs.add(href)
                 result = True
-
-        # if result:
-        #     for current_href in self.checked_hrefs:
-        #         words = zip(href, current_href)
-        #         incorrect = len([c for c, d in words if c != d])
-        #         if incorrect <= 3 and abs(len(href)-len(current_href)) <= 3:
-        #             return False
-            self.checked_hrefs.add(href)
 
         return result
 

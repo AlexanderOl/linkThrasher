@@ -19,6 +19,9 @@ class FormDetailsDTO:
     def method_type(self):
         return self._method_type
 
+    def __str__(self):
+        return f'[Action:{self._action},Method:{self._method_type},Params:[{",".join(self._form_params.items())}]]'
+
 
 class FormRequestDTO:
     def __init__(self, link: str, form_params: List[FormDetailsDTO]):
@@ -33,3 +36,5 @@ class FormRequestDTO:
     def form_params(self):
         return self._form_params
 
+    def __str__(self):
+        return f'Link:{self._link},FormDetails:{",".join(self._form_params)}'

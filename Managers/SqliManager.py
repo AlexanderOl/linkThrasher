@@ -21,7 +21,7 @@ class SqliManager:
     def check_get_requests(self, dtos: List[GetRequestDTO]):
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SqliManager started...')
 
-        cache_manager = CacheManager('SqliManagerResult', self.domain)
+        cache_manager = CacheManager('SqliManager', self.domain)
         result = cache_manager.get_saved_result()
 
         if result is None:

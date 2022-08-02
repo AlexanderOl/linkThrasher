@@ -10,21 +10,24 @@ class XssType(Enum):
 
 class XssFoundDTO:
     def __init__(self, xss_type: XssType, url: str, payload, web_page):
-        self.url = url
-        self.xss_type = xss_type
-        self.payload = payload
-        self.web_page = web_page
+        self._url = url
+        self._xss_type = xss_type
+        self._payload = payload
+        self._web_page = web_page
 
     def url(self):
-        return self.url
+        return self._url
 
     def xss_type(self):
-        return self.xss_type
+        return self._xss_type
 
     def payload(self):
-        return self.payload
+        return self._payload
 
     def web_page(self):
-        return self.web_page
+        return self._web_page
+
+    def __str__(self):
+        return f'url: {self._url}, payload: {self._payload}, xss_type: {self._xss_type}'
 
 

@@ -9,12 +9,14 @@ class SqliType(Enum):
 
 class SqliFoundDTO:
     def __init__(self, url: str, sqli_type: SqliType):
-        self.url = url
-        self.sqli_type = sqli_type
+        self._url = url
+        self._sqli_type = sqli_type
 
     def url(self):
-        return self.url
+        return self._url
 
     def sqli_type(self):
-        return self.sqli_type
+        return self._sqli_type
 
+    def __str__(self):
+        return f'url: {self.url()}, sqliType: {self._sqli_type}'

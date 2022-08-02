@@ -23,7 +23,7 @@ class SstiManager:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SstiManager GET started...')
 
-        cache_manager = CacheManager('SstiManagerResult/Get', self.domain)
+        cache_manager = CacheManager('SstiManager/Get', self.domain)
         result = cache_manager.get_saved_result()
 
         if result is None:
@@ -64,7 +64,7 @@ class SstiManager:
     def check_form_requests(self, form_results: List[FormRequestDTO]):
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SstiManager FORM started...')
 
-        cache_manager = CacheManager('SstiManagerResult/Form', self.domain)
+        cache_manager = CacheManager('SstiManager/Form', self.domain)
         result = cache_manager.get_saved_result()
 
         if result is None:

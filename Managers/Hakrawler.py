@@ -17,19 +17,19 @@ class Hakrawler:
         self.domain = domain
         self.raw_cookies = raw_cookies
 
-    def get_requests_dtos(self, start_url):
+    def get_requests_dtos(self, start_url) -> List[GetRequestDTO]:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Hakrawler started...')
 
-        cache_manager = CacheManager('HakrawlerResult', self.domain)
+        cache_manager = CacheManager('Hakrawler', self.domain)
         result = cache_manager.get_saved_result()
         if result is None:
-            result = self.get_urls(start_url)
+            result = self.__get_urls(start_url)
             cache_manager.save_result(result)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Hakrawler found {len(result)} items')
         return result
 
-    def get_urls(self, start_url):
+    def __get_urls(self, start_url) -> List[GetRequestDTO]:
         cookie_param = ''
         if self.raw_cookies:
             cookie_param = f"-cookie '{self.raw_cookies}'"

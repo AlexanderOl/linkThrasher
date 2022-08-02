@@ -9,16 +9,19 @@ class SstiType(Enum):
 
 class SstiFoundDTO:
     def __init__(self, url: str, ssti_type: SstiType, payload, web_page):
-        self.url = url
-        self.ssti_type = ssti_type
-        self.payload = payload
-        self.web_page = web_page
+        self._url = url
+        self._ssti_type = ssti_type
+        self._payload = payload
+        self._web_page = web_page
 
     def url(self):
-        return self.url
+        return self._url
 
     def ssti_type(self):
-        return self.ssti_type
+        return self._ssti_type
 
     def web_page(self):
-        return self.web_page
+        return self._web_page
+
+    def __str__(self):
+        return f'url: {self._url}, payload: {self._payload}'
