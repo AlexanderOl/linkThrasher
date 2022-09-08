@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 from tldextract import tldextract
@@ -12,18 +13,19 @@ from Managers.XssManager import XssManager
 
 
 class SingleUrlFlowManager:
-    def __init__(self, ngrok_url, max_depth, download_path, headers):
-        self.ngrok_url = ngrok_url
-        self.max_depth = max_depth
-        self.download_path = download_path
+    def __init__(self, headers):
+        self.ngrok_url = os.environ.get('ngrok_url')
+        self.max_depth = os.environ.get('max_depth')
+        self.download_path = os.environ.get('__download_path')
         self.headers = headers
+        self.raw_cookies = os.environ.get('raw_cookies')
 
-    def run_main_flow(self, start_url: str, raw_cookies):
+    def run(self, start_url: str):
         domain_parts = tldextract.extract(start_url)
-        domain = f'{domain_parts.domain}.{domain_parts.suffix}'
+        domain = f'{domain_parts.__domain}.{domain_parts.suffix}'
 
         cookie_manager = CookieManager(domain, self.download_path)
-        if not raw_cookies:
+        if not self.raw_cookies:
             raw_cookies = cookie_manager.get_raw_cookies()
         cookies_dict = cookie_manager.get_cookies_dict(raw_cookies)
 
@@ -32,7 +34,7 @@ class SingleUrlFlowManager:
             subdomain_part = f'{domain_parts.subdomain}.'
         domain = f'{subdomain_part}{domain}'
 
-        # hakrawler = Hakrawler(domain, raw_cookie)
+        # hakrawler = Hakrawler(__domain, raw_cookie)
         # get_dtos = hakrawler.get_requests_dtos(start_url)
 
         links_manager = LinksManager(domain, cookies_dict, self.headers, self.max_depth)
@@ -45,13 +47,13 @@ class SingleUrlFlowManager:
         post_manager = FormRequestFetcher(domain)
         post_dtos = post_manager.get_all_post_requests(get_dtos)
 
-        # xss_manager = XssManager(domain, cookies_dict, self.headers)
-        # xss_manager.check_get_requests(get_dtos)
-        # xss_manager.check_form_requests(post_dtos)
-        #
-        # ssrf_manager = SsrfManager(domain, cookies_dict, self.headers, self.ngrok_url)
-        # ssrf_manager.check_get_requests(get_dtos)
-        # ssrf_manager.check_form_requests(post_dtos)
+        xss_manager = XssManager(domain, cookies_dict, self.headers)
+        xss_manager.check_get_requests(get_dtos)
+        xss_manager.check_form_requests(post_dtos)
+
+        ssrf_manager = SsrfManager(domain, cookies_dict, self.headers, self.ngrok_url)
+        ssrf_manager.check_get_requests(get_dtos)
+        ssrf_manager.check_form_requests(post_dtos)
 
         sqli_manager = SqliManager(domain, cookies_dict, self.headers)
         sqli_manager.check_get_requests(get_dtos)

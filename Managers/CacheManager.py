@@ -19,7 +19,8 @@ class CacheManager:
                      'SstiManager/Form',
                      'SsrfManager',
                      'FormRequestFetcher',
-                     'SubdomainManager']
+                     'Amass',
+                     'Sublister']
         for path in path_list:
             result_path = f'Results/{path}'
             files = [f for f in os.listdir(result_path)]
@@ -44,7 +45,7 @@ class CacheManager:
             json_file.close()
 
             txt_file = open(self.read_result_filepath, 'a')
-            txt_file.write('\n'.join(result) + '\n')
+            txt_file.write('\n'.join(str(result)))
             txt_file.close()
 
             if has_final_result:

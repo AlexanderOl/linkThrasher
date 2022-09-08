@@ -1,15 +1,10 @@
-import base64
 import os
-import subprocess
-import requests
 
 from flask import Flask
 from dotenv import load_dotenv
 
-from Managers.CacheManager import CacheManager
-from Managers.CookieManager import CookieManager
-from Managers.Dirb import Dirb
-from Managers.Sublister import Sublister
+from Managers.DomainFlowManager import DomainFlowManager
+from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Managers.ThreadManager import ThreadManager
 
 headers = {
@@ -39,31 +34,31 @@ load_dotenv('config.env')
 
 # @app.route("/run")
 # def main():
+
 if __name__ == '__main__':
 
     check_mode = os.environ.get('check_mode')
-    max_depth = os.environ.get('max_depth')
-    batch_size = os.environ.get('batch_size')
-    ngrok_url = os.environ.get('ngrok_url')
-    download_path = os.environ.get('download_path')
-    thread_man = ThreadManager(batch_size, download_path, max_depth, headers, ngrok_url)
-
+    single_url_man = SingleUrlFlowManager(headers)
     if check_mode == 'D':
-        domain = os.environ.get('domain')
-        man = Sublister(domain, headers, download_path)
-        subdomain_urls = man.get_subdomains()
-        dirb = Dirb(thread_man)
-        dirb.check_subdomain_urls(subdomain_urls)
-    elif check_mode == 'U':
-        start_url = os.environ.get('start_url')
-        raw_cookies = os.environ.get('raw_cookies')
-        print(f'start_url - {start_url}')
-        print(f'raw_cookies - {raw_cookies}')
-        thread_man.run_single(start_url, raw_cookies)
+        domain = os.environ.get('__domain')
+        domain_man = DomainFlowManager(headers, single_url_man)
+        domain_man.check_domain(domain)
 
-    elif check_mode == 'T':
-        print(f'is_single_check - {check_mode}')
-        thread_man.run_target_urls()
+    elif check_mode == 'S':
+        single_url = os.environ.get('single_url')
+        print(f'start_url - {single_url}')
+        single_url_man.run(single_url)
+
+    elif check_mode == 'M':
+        file_path = 'Targets\\urls.txt'
+        if os.path.exists(file_path):
+            urls = list(set(line.strip() for line in open(file_path)))
+            thread_man = ThreadManager()
+            thread_man.run_all(single_url_man.run, urls)
+        else:
+            print(os.path.dirname(os.path.realpath(__file__)))
+            print(f'{file_path} is missing')
+
 
 # if __name__ == '__main__':
 # my_env = os.environ.copy()

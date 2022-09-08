@@ -61,7 +61,10 @@ class LinksManager:
             return
 
         try:
-            response = requests.get(target_url, headers=self.headers, cookies=self.cookies)
+            if 'https' in target_url:
+                response = requests.get(target_url, headers=self.headers, cookies=self.cookies, verify=False)
+            else:
+                response = requests.get(target_url, headers=self.headers, cookies=self.cookies)
             if response.elapsed.total_seconds() >= 5:
                 self.check_delay(target_url)
             if response.status_code == 200 and len(response.history) <= 1:
