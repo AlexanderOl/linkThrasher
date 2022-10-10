@@ -40,7 +40,7 @@ if __name__ == '__main__':
     check_mode = os.environ.get('check_mode')
     single_url_man = SingleUrlFlowManager(headers)
     if check_mode == 'D':
-        domain = os.environ.get('__domain')
+        domain = os.environ.get('domain')
         domain_man = DomainFlowManager(headers, single_url_man)
         domain_man.check_domain(domain)
 

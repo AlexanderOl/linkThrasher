@@ -7,15 +7,14 @@ from Managers.CacheManager import CacheManager
 class Sublister(BaseSubdomainManager):
     def __init__(self, domain, headers, download_path):
         super().__init__(domain, headers, download_path)
-        self.__domain = domain
         self.__tool_name = 'Sublister'
 
     def get_subdomains(self) -> set:
-        cache_manager = CacheManager(self.__tool_name, self.__domain)
+        cache_manager = CacheManager(self.__tool_name, self.domain)
         subdomains = cache_manager.get_saved_result()
         if not subdomains:
             subdomains = set()
-            command = f'cd /root/Desktop/TOOLs/Sublist3r/; python sublist3r.py -d {self.__domain} | grep "Total Unique Subdomains Found" -A 999'
+            command = f'cd /root/Desktop/TOOLs/Sublist3r/; python sublist3r.py -d {self.domain} | grep "Total Unique Subdomains Found" -A 999'
             stream = os.popen(command)
             bash_outputs = stream.readlines()
             skip_first_line = True

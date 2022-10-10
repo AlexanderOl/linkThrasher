@@ -11,7 +11,7 @@ from Managers.ThreadManager import ThreadManager
 
 class DomainFlowManager:
     def __init__(self, headers, single_url_man: SingleUrlFlowManager):
-        self.download_path = os.environ.get('__download_path')
+        self.download_path = os.environ.get('download_path')
         self.headers = headers
         self.single_url_man = single_url_man
 

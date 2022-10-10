@@ -16,13 +16,13 @@ class SingleUrlFlowManager:
     def __init__(self, headers):
         self.ngrok_url = os.environ.get('ngrok_url')
         self.max_depth = os.environ.get('max_depth')
-        self.download_path = os.environ.get('__download_path')
+        self.download_path = os.environ.get('download_path')
         self.headers = headers
         self.raw_cookies = os.environ.get('raw_cookies')
 
     def run(self, start_url: str):
         domain_parts = tldextract.extract(start_url)
-        domain = f'{domain_parts.__domain}.{domain_parts.suffix}'
+        domain = f'{domain_parts.domain}.{domain_parts.suffix}'
 
         cookie_manager = CookieManager(domain, self.download_path)
         if not self.raw_cookies:
@@ -51,9 +51,9 @@ class SingleUrlFlowManager:
         xss_manager.check_get_requests(get_dtos)
         xss_manager.check_form_requests(post_dtos)
 
-        ssrf_manager = SsrfManager(domain, cookies_dict, self.headers, self.ngrok_url)
-        ssrf_manager.check_get_requests(get_dtos)
-        ssrf_manager.check_form_requests(post_dtos)
+        #ssrf_manager = SsrfManager(domain, cookies_dict, self.headers, self.ngrok_url)
+        #ssrf_manager.check_get_requests(get_dtos)
+        #ssrf_manager.check_form_requests(post_dtos)
 
         sqli_manager = SqliManager(domain, cookies_dict, self.headers)
         sqli_manager.check_get_requests(get_dtos)

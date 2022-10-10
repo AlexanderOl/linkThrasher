@@ -25,7 +25,6 @@ class SqliManager:
         result = cache_manager.get_saved_result()
 
         if result is None:
-            dtos = list(filter(lambda x: 'route' in x.link, dtos))
             result: List[SqliFoundDTO] = []
             for dto in dtos:
                 self.check_url(dto, result)

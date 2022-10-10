@@ -45,7 +45,9 @@ class CacheManager:
             json_file.close()
 
             txt_file = open(self.read_result_filepath, 'a')
-            txt_file.write('\n'.join(str(result)))
+            for item in result:
+                # write each item on a new line
+                txt_file.write("%s\n" % str(item))
             txt_file.close()
 
             if has_final_result:

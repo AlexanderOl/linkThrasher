@@ -5,7 +5,7 @@ from Managers.CookieManager import CookieManager
 
 class BaseSubdomainManager:
     def __init__(self, domain, headers, download_path):
-        self.__domain = domain
+        self.domain = domain
         self.__headers = headers
         self.__download_path = download_path
         self.__checked_redirect_url_parts = set()
@@ -13,7 +13,7 @@ class BaseSubdomainManager:
 
     def check_subdomains(self, all_subdomains: set()) -> set():
 
-        cookie_manager = CookieManager(self.__domain, self.__download_path)
+        cookie_manager = CookieManager(self.domain, self.__download_path)
         raw_cookies = cookie_manager.get_raw_cookies()
         cookies = cookie_manager.get_cookies_dict(raw_cookies)
 
