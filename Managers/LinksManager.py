@@ -61,26 +61,28 @@ class LinksManager:
             return
 
         try:
+            print(f'Url ({target_url}) - start')
             if 'https' in target_url:
                 response = requests.get(target_url, headers=self.headers, cookies=self.cookies, verify=False)
             else:
                 response = requests.get(target_url, headers=self.headers, cookies=self.cookies)
+
+            print(f'Url ({target_url}) - status code:{response.status_code}')
+
             if response.elapsed.total_seconds() >= 5:
                 self.check_delay(target_url)
             if response.status_code == 200 and len(response.history) <= 1:
-                print(f'Current url - {target_url}')
                 web_page = response.text
                 result.append(GetRequestDTO(target_url, web_page))
             else:
-                print(f"Not OK - {target_url}, Code - {response.status_code}")
                 return
         except requests.exceptions.SSLError:
+            print(f'Url ({target_url}) - SSLError')
             target_url = target_url.replace('https', 'http')
             self.recursive_search(result, target_url, current_depth)
             return
         except Exception as inst:
-            print(inst)
-            print("ERROR - " + target_url)
+            print(f'Url ({target_url}) - Exception: {inst}')
             return
 
         # parsed = urlparse(target_url)

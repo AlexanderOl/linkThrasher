@@ -9,6 +9,7 @@ from Managers.LinksManager import LinksManager
 from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
 from Managers.SstiManager import SstiManager
+from Managers.Tools.Dirb import Dirb
 from Managers.XssManager import XssManager
 
 
@@ -23,6 +24,9 @@ class SingleUrlFlowManager:
     def run(self, start_url: str):
         domain_parts = tldextract.extract(start_url)
         domain = f'{domain_parts.domain}.{domain_parts.suffix}'
+
+        dirb = Dirb(domain)
+        dirb.check_single_url(start_url)
 
         cookie_manager = CookieManager(domain, self.download_path)
         if not self.raw_cookies:
@@ -47,9 +51,9 @@ class SingleUrlFlowManager:
         post_manager = FormRequestFetcher(domain)
         post_dtos = post_manager.get_all_post_requests(get_dtos)
 
-        xss_manager = XssManager(domain, cookies_dict, self.headers)
-        xss_manager.check_get_requests(get_dtos)
-        xss_manager.check_form_requests(post_dtos)
+        # xss_manager = XssManager(domain, cookies_dict, self.headers)
+        # xss_manager.check_get_requests(get_dtos)
+        # xss_manager.check_form_requests(post_dtos)
 
         #ssrf_manager = SsrfManager(domain, cookies_dict, self.headers, self.ngrok_url)
         #ssrf_manager.check_get_requests(get_dtos)

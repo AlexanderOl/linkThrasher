@@ -1,9 +1,11 @@
 import os
 from datetime import datetime
 
+from Managers.SubdomainChecker import SubdomainChecker
 from Managers.Tools.Amass import Amass
 from Managers.Tools.Dirb import Dirb
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
+from Managers.Tools.Nmap import Nmap
 from Managers.Tools.SubBrute import SubBrute
 from Managers.Tools.Sublister import Sublister
 from Managers.ThreadManager import ThreadManager
@@ -16,30 +18,30 @@ class DomainFlowManager:
         self.single_url_man = single_url_man
 
     def check_domain(self, domain):
-
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Sublister started...')
 
-        sublister = Sublister(domain, self.headers, self.download_path)
-        sublister_subdomain_urls = sublister.get_subdomains()
+        sublister = Sublister(domain)
+        sublister_subdomains = sublister.get_subdomains()
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Sublister found {len(sublister_subdomain_urls)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Sublister found {len(sublister_subdomains)} items')
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Amass started...')
-        amass = Amass(domain, self.headers, self.download_path)
-        amass_subdomain_urls = amass.get_subdomains()
+        # amass = Amass(domain)
+        # amass_subdomains = amass.get_subdomains()
+        amass_subdomains = set()
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Amass found {len(amass_subdomain_urls)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Amass found {len(amass_subdomains)} items')
 
-        subdomain_urls = amass_subdomain_urls.union(sublister_subdomain_urls)
+        all_subdomains = amass_subdomains.union(sublister_subdomains)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Dirb: started...')
+        nmap = Nmap(domain)
+        nmap.check_ports(all_subdomains)
 
-        dirb = Dirb(domain)
-        thread_man = ThreadManager()
-        thread_man.run_all(dirb.check_single_url, subdomain_urls)
+        subdomain_checker = SubdomainChecker(domain, self.headers, self.download_path)
+        subdomain_urls = subdomain_checker.check_subdomains(all_subdomains)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Dirb: FINISHED {len(subdomain_urls)} urls')
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SingleUrlFlowManager started...')
 
+        thread_man = ThreadManager()
         thread_man.run_all(self.single_url_man.run, subdomain_urls)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SingleUrlFlowManager: FINISHED {len(subdomain_urls)} urls')

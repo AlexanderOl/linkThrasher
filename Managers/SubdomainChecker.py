@@ -3,7 +3,7 @@ import requests
 from Managers.CookieManager import CookieManager
 
 
-class BaseSubdomainManager:
+class SubdomainChecker:
     def __init__(self, domain, headers, download_path):
         self.domain = domain
         self.__headers = headers

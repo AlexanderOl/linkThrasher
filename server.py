@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from Managers.DomainFlowManager import DomainFlowManager
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Managers.ThreadManager import ThreadManager
+from Managers.Tools.Dirb import Dirb
 
 headers = {
     'Cache-Control': 'max-age=0',
@@ -46,7 +47,6 @@ if __name__ == '__main__':
 
     elif check_mode == 'S':
         single_url = os.environ.get('single_url')
-        print(f'start_url - {single_url}')
         single_url_man.run(single_url)
 
     elif check_mode == 'M':

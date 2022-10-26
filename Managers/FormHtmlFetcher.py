@@ -51,7 +51,6 @@ class FormRequestFetcher:
 
         cache_manager = CacheManager('FormRequestFetcher', self.domain)
         result = cache_manager.get_saved_result()
-
         if not result:
             result: List[FormRequestDTO] = []
             for dto in get_DTOs:
