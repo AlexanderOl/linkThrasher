@@ -11,22 +11,24 @@ class CacheManager:
 
     @staticmethod
     def clear_all():
-        path_list = ['LinksManager',
+        path_list = ['Amass',
+                     'Dirb',
+                     'FormRequestFetcher',
+                     'LinksManager',
+                     'Nmap',
                      'SqliManager',
-                     'XssManager/Get',
-                     'XssManager/Form',
-                     'SstiManagerR/Get',
+                     'SstiManager/Get',
                      'SstiManager/Form',
                      'SsrfManager',
-                     'FormRequestFetcher',
-                     'Amass',
-                     'Nmap',
-                     'Sublister']
+                     'Sublister',
+                     'XssManager/Get',
+                     'XssManager/Form']
         for path in path_list:
             result_path = f'Results/{path}'
-            files = [f for f in os.listdir(result_path)]
-            for f in files:
-                os.remove(os.path.join(result_path, f))
+            if os.path.exists(result_path):
+                files = [f for f in os.listdir(result_path)]
+                for f in files:
+                    os.remove(os.path.join(result_path, f))
 
     def get_saved_result(self):
         if os.path.exists(self.result_filepath):

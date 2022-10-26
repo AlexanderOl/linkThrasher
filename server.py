@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from dotenv import load_dotenv
 
+from Managers.CacheManager import CacheManager
 from Managers.DomainFlowManager import DomainFlowManager
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Managers.ThreadManager import ThreadManager
@@ -37,7 +38,6 @@ load_dotenv('config.env')
 # def main():
 
 if __name__ == '__main__':
-
     check_mode = os.environ.get('check_mode')
     single_url_man = SingleUrlFlowManager(headers)
     if check_mode == 'D':
