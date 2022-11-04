@@ -25,9 +25,9 @@ class DomainFlowManager:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Sublister found {len(sublister_subdomains)} items')
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Amass started...')
-        # amass = Amass(domain)
-        # amass_subdomains = amass.get_subdomains()
-        amass_subdomains = set()
+        amass = Amass(domain)
+        amass_subdomains = amass.get_subdomains()
+        # amass_subdomains = set()
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Amass found {len(amass_subdomains)} items')
 

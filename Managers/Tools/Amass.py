@@ -13,7 +13,7 @@ class Amass:
         subdomains = cache_manager.get_saved_result()
         if not subdomains:
             subdomains = set()
-            command = f'amass enum -d {self.__domain}'
+            command = f'amass enum -d {self.__domain} -brute'
             stream = os.popen(command)
             bash_outputs = stream.readlines()
             for line in bash_outputs:

@@ -23,7 +23,7 @@ class Nmap:
             txt_file.close()
 
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
-            command = f'nmap -sT -T4 -iL {subdomains_filepath} --top-ports 10000'
+            command = f'nmap -sT -T4 -iL {subdomains_filepath} --top-ports 10000 --script vuln'
             stream = os.popen(command)
             bash_outputs = stream.readlines()
             report_lines = []
@@ -37,4 +37,3 @@ class Nmap:
             cache_manager.save_result(report_lines)
 
             print(f'Nmap finished in {(end - start)/60} minutes')
-        return report_lines

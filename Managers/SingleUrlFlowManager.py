@@ -33,10 +33,10 @@ class SingleUrlFlowManager:
             raw_cookies = cookie_manager.get_raw_cookies()
         cookies_dict = cookie_manager.get_cookies_dict(raw_cookies)
 
-        subdomain_part = ''
-        if domain_parts.subdomain:
-            subdomain_part = f'{domain_parts.subdomain}.'
-        domain = f'{subdomain_part}{domain}'
+        # subdomain_part = ''
+        # if domain_parts.subdomain:
+        #     subdomain_part = f'{domain_parts.subdomain}.'
+        # domain = f'{subdomain_part}{domain}'
 
         # hakrawler = Hakrawler(__domain, raw_cookie)
         # get_dtos = hakrawler.get_requests_dtos(start_url)
@@ -51,9 +51,9 @@ class SingleUrlFlowManager:
         post_manager = FormRequestFetcher(domain)
         post_dtos = post_manager.get_all_post_requests(get_dtos)
 
-        # xss_manager = XssManager(domain, cookies_dict, self.headers)
-        # xss_manager.check_get_requests(get_dtos)
-        # xss_manager.check_form_requests(post_dtos)
+        xss_manager = XssManager(domain, cookies_dict, self.headers)
+        xss_manager.check_get_requests(get_dtos)
+        xss_manager.check_form_requests(post_dtos)
 
         #ssrf_manager = SsrfManager(domain, cookies_dict, self.headers, self.ngrok_url)
         #ssrf_manager.check_get_requests(get_dtos)
