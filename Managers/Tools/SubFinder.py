@@ -3,7 +3,7 @@ import os
 from Managers.CacheManager import CacheManager
 
 
-class Amass:
+class SubFinder:
     def __init__(self, domain):
         self.__tool_name = self.__class__.__name__
         self.__domain = domain
@@ -13,7 +13,7 @@ class Amass:
         subdomains = cache_manager.get_saved_result()
         if not subdomains:
             subdomains = set()
-            command = f'amass enum -d {self.__domain}'
+            command = f'cd ~/Desktop/TOOLs/subfinder/v2 | ~/go/bin/subfinder -d {self.__domain}'
             stream = os.popen(command)
             bash_outputs = stream.readlines()
             for line in bash_outputs:

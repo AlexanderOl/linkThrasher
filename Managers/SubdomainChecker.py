@@ -18,11 +18,13 @@ class SubdomainChecker:
         cookies = cookie_manager.get_cookies_dict(raw_cookies)
 
         for subdomain in all_subdomains:
-            url = f'http://{subdomain}/'
+            url = f'https://{subdomain}/'
             try:
                 self.__send_request(url, cookies)
             except requests.exceptions.SSLError:
-                url = url.replace('http', 'https')
+                if url.startswith('http:'):
+                    return
+                url = url.replace('https:', 'http:')
                 try:
                     self.__send_request(url, cookies)
                 except Exception as ex:

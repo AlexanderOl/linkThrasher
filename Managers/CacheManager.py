@@ -21,6 +21,7 @@ class CacheManager:
                      'SstiManager/Form',
                      'SsrfManager',
                      'Sublister',
+                     'SubFinder',
                      'XssManager/Get',
                      'XssManager/Form']
         for path in path_list:
@@ -39,7 +40,6 @@ class CacheManager:
             return data
         else:
             print(f"{self.result_filepath} not found")
-
 
     def save_result(self, result, has_final_result=False):
         if len(result) > 0:
@@ -60,5 +60,3 @@ class CacheManager:
                 file = open('Results/Final.txt', 'a')
                 res = f'[{datetime.now().strftime("%H:%M:%S")}]: {self.result_filepath} found {len(result)} \n'
                 file.write(res)
-
-

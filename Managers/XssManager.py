@@ -1,10 +1,7 @@
-from datetime import datetime
-
 import requests
 import urllib.parse as urlparse
-
+from datetime import datetime
 from typing import List
-
 from Managers.CacheManager import CacheManager
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO

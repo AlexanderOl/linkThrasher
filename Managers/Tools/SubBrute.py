@@ -1,10 +1,6 @@
 import os
-import urllib
-
 import requests
-
 from datetime import datetime
-
 from Managers.CacheManager import CacheManager
 from Managers.CookieManager import CookieManager
 
@@ -43,7 +39,7 @@ class SubBrute:
         cookies = cookie_manager.get_cookies_dict(raw_cookies)
 
         for subdomain in all_subdomains:
-            url = f'http://{subdomain}/'
+            url = f'https://{subdomain}/'
             try:
                 response = requests.get(url, headers=self.headers, cookies=cookies, timeout=5)
                 if response.status_code < 300:
@@ -58,7 +54,7 @@ class SubBrute:
                 else:
                     print(f'{url} - MIGHT BE INTERESTING:{response.status_code}')
             except requests.exceptions.SSLError:
-                url = url.replace('http', 'https')
+                url = url.replace('https:', 'http:')
                 response = requests.get(url, headers=self.headers, cookies=cookies, timeout=5, verify=False)
                 if response.status_code == 200:
                     without_url = response.url.replace(url, '')

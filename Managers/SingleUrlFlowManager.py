@@ -1,8 +1,5 @@
 import os
-from typing import List
-
 from tldextract import tldextract
-
 from Managers.CookieManager import CookieManager
 from Managers.FormHtmlFetcher import FormRequestFetcher
 from Managers.LinksManager import LinksManager
@@ -20,23 +17,21 @@ class SingleUrlFlowManager:
         self.download_path = os.environ.get('download_path')
         self.headers = headers
         self.raw_cookies = os.environ.get('raw_cookies')
+        self.main_domain = os.environ.get('domain')
 
     def run(self, start_url: str):
         domain_parts = tldextract.extract(start_url)
-        domain = f'{domain_parts.domain}.{domain_parts.suffix}'
+        domain = f'{domain_parts.subdomain}.{domain_parts.domain}.{domain_parts.suffix}'
+        if domain[0] == '.':
+            domain = domain[1:]
 
         dirb = Dirb(domain)
         dirb.check_single_url(start_url)
 
-        cookie_manager = CookieManager(domain, self.download_path)
+        cookie_manager = CookieManager(self.main_domain, self.download_path)
         if not self.raw_cookies:
             raw_cookies = cookie_manager.get_raw_cookies()
         cookies_dict = cookie_manager.get_cookies_dict(raw_cookies)
-
-        # subdomain_part = ''
-        # if domain_parts.subdomain:
-        #     subdomain_part = f'{domain_parts.subdomain}.'
-        # domain = f'{subdomain_part}{domain}'
 
         # hakrawler = Hakrawler(__domain, raw_cookie)
         # get_dtos = hakrawler.get_requests_dtos(start_url)
@@ -55,9 +50,9 @@ class SingleUrlFlowManager:
         xss_manager.check_get_requests(get_dtos)
         xss_manager.check_form_requests(post_dtos)
 
-        #ssrf_manager = SsrfManager(domain, cookies_dict, self.headers, self.ngrok_url)
-        #ssrf_manager.check_get_requests(get_dtos)
-        #ssrf_manager.check_form_requests(post_dtos)
+        ssrf_manager = SsrfManager(domain, cookies_dict, self.headers, self.ngrok_url)
+        ssrf_manager.check_get_requests(get_dtos)
+        ssrf_manager.check_form_requests(post_dtos)
 
         sqli_manager = SqliManager(domain, cookies_dict, self.headers)
         sqli_manager.check_get_requests(get_dtos)

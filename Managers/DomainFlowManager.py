@@ -7,6 +7,7 @@ from Managers.Tools.Dirb import Dirb
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Managers.Tools.Nmap import Nmap
 from Managers.Tools.SubBrute import SubBrute
+from Managers.Tools.SubFinder import SubFinder
 from Managers.Tools.Sublister import Sublister
 from Managers.ThreadManager import ThreadManager
 
@@ -25,13 +26,20 @@ class DomainFlowManager:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Sublister found {len(sublister_subdomains)} items')
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Amass started...')
+
         amass = Amass(domain)
         amass_subdomains = amass.get_subdomains()
         # amass_subdomains = set()
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: Amass found {len(amass_subdomains)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: SubFinder started...')
 
-        all_subdomains = amass_subdomains.union(sublister_subdomains)
+        subfinder = SubFinder(domain)
+        subfinder_subdomains = subfinder.get_subdomains()
+
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: SubFinder found {len(subfinder_subdomains)} items')
+
+        all_subdomains = amass_subdomains.union(sublister_subdomains).union(subfinder_subdomains)
 
         nmap = Nmap(domain)
         nmap.check_ports(all_subdomains)

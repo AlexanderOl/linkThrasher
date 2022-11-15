@@ -16,14 +16,17 @@ class Nmap:
         report_lines = cache_manager.get_saved_result()
         if not report_lines:
             start = time.time()
-            txt_filepath = f"Results/{self.__tool_name}/{self.__domain}.txt"
+            nmap_directory = f"Results/{self.__tool_name}"
+            if not os.path.exists(nmap_directory):
+                os.makedirs(nmap_directory)
+            txt_filepath = f"{nmap_directory}/{self.__domain}.txt"
             txt_file = open(txt_filepath, 'a')
             for subdomain in subdomains:
                 txt_file.write("%s\n" % str(subdomain))
             txt_file.close()
 
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
-            command = f'nmap -sT -T4 -iL {subdomains_filepath} --top-ports 10000 --script vuln'
+            command = f'nmap -sT -T4 -iL {subdomains_filepath} --top-ports 10000'
             stream = os.popen(command)
             bash_outputs = stream.readlines()
             report_lines = []

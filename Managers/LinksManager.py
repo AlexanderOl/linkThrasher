@@ -71,14 +71,16 @@ class LinksManager:
 
             if response.elapsed.total_seconds() >= 5:
                 self.check_delay(target_url)
-            if response.status_code == 200 and len(response.history) <= 1:
+            if response.status_code == 200 and len(response.history) <= 2:
                 web_page = response.text
                 result.append(GetRequestDTO(target_url, web_page))
             else:
                 return
         except requests.exceptions.SSLError:
+            if target_url.startswith('http:'):
+                return
             print(f'Url ({target_url}) - SSLError')
-            target_url = target_url.replace('https', 'http')
+            target_url = target_url.replace('https:', 'http:')
             self.recursive_search(result, target_url, current_depth)
             return
         except Exception as inst:
@@ -104,7 +106,8 @@ class LinksManager:
                     and href not in self.social_media \
                     and href not in self.checked_hrefs \
                     and target_url[len(target_url) - len(href):] != href \
-                    and href not in target_url:
+                    and href not in target_url\
+                    and 'mailto:' not in href:
                 self.checked_hrefs.add(href)
                 result = True
 

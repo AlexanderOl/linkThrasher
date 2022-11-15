@@ -1,4 +1,3 @@
-import json
 from enum import Enum
 
 
@@ -29,5 +28,3 @@ class XssFoundDTO:
 
     def __str__(self):
         return f'url: {self._url}, payload: {self._payload}, xss_type: {self._xss_type}'
-
-

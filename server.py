@@ -1,8 +1,6 @@
 import os
-
 from flask import Flask
 from dotenv import load_dotenv
-
 from Managers.CacheManager import CacheManager
 from Managers.DomainFlowManager import DomainFlowManager
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
@@ -14,8 +12,6 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
 }
-# 'X-Forwarded-For': "1'OR(if(1=1,sleep(5),0))OR'2",
-# 'X-API-KEY': 'xapikeypoc\'',
 app = Flask(__name__)
 load_dotenv('config.env')
 
