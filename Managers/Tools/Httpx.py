@@ -1,41 +1,41 @@
 import os
+import pathlib
 from datetime import datetime
 
 from Managers.CacheManager import CacheManager
 
 
-class MassDns:
+class Httpx:
     def __init__(self, domain):
         self.__tool_name = self.__class__.__name__
         self.__domain = domain
-        self.__tool_result_dir = f'{os.environ.get("app_result_path")}{self.__tool_name}'
 
-    def get_subdomains(self) -> set:
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: {self.__tool_name} started...')
-
+    def check_subdomains(self, all_subdomains) -> set:
         cache_manager = CacheManager(self.__tool_name, self.__domain)
-        subdomains = cache_manager.get_saved_result()
-        if not subdomains:
+        live_urls = cache_manager.get_saved_result()
+        if not live_urls:
+            live_urls = set()
+            httpx_directory = f"Results/{self.__tool_name}"
+            if not os.path.exists(httpx_directory):
+                os.makedirs(httpx_directory)
+            txt_filepath = f"{httpx_directory}/{self.__domain}_raw.txt"
+            txt_file = open(txt_filepath, 'a')
+            for subdomain in all_subdomains:
+                txt_file.write("%s\n" % str(subdomain))
+            txt_file.close()
 
-            if not os.path.exists(self.__tool_result_dir):
-                os.makedirs(self.__tool_result_dir)
+            subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
+            command = f'cd /root/Desktop/TOOLs/httpx/cmd/httpx/; ' \
+                      f'cat {subdomains_filepath} | ' \
+                      f'go run httpx.go -silent'
+            stream = os.popen(command)
+            bash_outputs = stream.readlines()
+            for line in bash_outputs:
+                if self.__domain in line:
+                    live_urls.add(line.replace('\n', ''))
 
-            massdns_result_file = f"{self.__tool_result_dir}/raw_{self.__domain}.txt"
-            # command = f'cd /root/Desktop/TOOLs/massdns/; ' \
-            #           f'./scripts/subbrute.py lists/all.txt {self.__domain} | ' \
-            #           f'./bin/massdns -r lists/resolvers.txt -t A -o S -w {massdns_result_file}'
-            # stream = os.popen(command)
-            # stream.read()
+            os.remove(txt_filepath)
+            cache_manager.save_result(live_urls)
 
-            subdomains = set()
-            with open(massdns_result_file) as file:
-                for line in file:
-                    subdomain = str(line.split(' ')[0]).strip('.')
-                    subdomains.add(subdomain)
-
-            os.remove(massdns_result_file)
-            cache_manager.save_result(subdomains)
-
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: {self.__tool_name} found {len(subdomains)} items')
-        return subdomains
-
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.__domain}) {self.__tool_name} found {len(live_urls)} items')
+        return live_urls

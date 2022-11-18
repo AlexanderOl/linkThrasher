@@ -1,39 +1,36 @@
 import os
-import pickle
 import re
 import requests
-import tldextract
-from typing import List
 from datetime import datetime
-
+from typing import List
 from Managers.CacheManager import CacheManager
 from Models.GetRequestDTO import GetRequestDTO
-
-_social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "cdn-cgi", "intercom", "atlassian"]
 
 
 class Hakrawler:
     def __init__(self, domain, raw_cookies):
-        self.domain = domain
-        self.raw_cookies = raw_cookies
+        self.__domain = domain
+        self.__raw_cookies = raw_cookies
+        self.__social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "cdn-cgi", "intercom", "atlassian"]
+        self.__tool_name = self.__class__.__name__
 
     def get_requests_dtos(self, start_url) -> List[GetRequestDTO]:
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Hakrawler started...')
-
-        cache_manager = CacheManager('Hakrawler', self.domain)
+        cache_manager = CacheManager('Hakrawler', self.__domain)
         result = cache_manager.get_saved_result()
         if result is None:
             result = self.__get_urls(start_url)
             cache_manager.save_result(result)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Hakrawler found {len(result)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.__domain}) {self.__tool_name} found {len(result)} items')
         return result
 
     def __get_urls(self, start_url) -> List[GetRequestDTO]:
         cookie_param = ''
-        if self.raw_cookies:
-            cookie_param = f"-cookie '{self.raw_cookies}'"
-        command = f"cd /root/Desktop/TOOLs/hakrawler/ | ~/go/bin/hakrawler -url {start_url} -depth 5 {cookie_param} |  grep -Eo '(http|https)://[^\"]+'"
+        if self.__raw_cookies:
+            cookie_param = f"-cookie '{self.__raw_cookies}'"
+        command = f"cd /root/Desktop/TOOLs/hakrawler/ | " \
+                  f"~/go/bin/hakrawler -url {start_url} -depth 5 {cookie_param} |  " \
+                  f"grep -Eo '(http|https)://[^\"]+'"
 
         stream = os.popen(command)
         bash_outputs = stream.readlines()
@@ -41,7 +38,7 @@ class Hakrawler:
         for output in bash_outputs:
             if output.endswith('\n'):
                 output = output[:-1]
-            if not any(word in output for word in _social_media):
+            if not any(word in output for word in self.__social_media):
                 found_urls.append(output)
 
         regex = re.compile('\.jpg$|\.gif$|\.png$|\.js$|\.js\?', re.IGNORECASE)

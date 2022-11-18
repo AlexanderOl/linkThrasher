@@ -15,6 +15,7 @@ class CacheManager:
                      'Dirb',
                      'FormRequestFetcher',
                      'LinksManager',
+                     'MassDns',
                      'Nmap',
                      'SqliManager',
                      'SstiManager/Get',
@@ -33,13 +34,10 @@ class CacheManager:
 
     def get_saved_result(self):
         if os.path.exists(self.result_filepath):
-            print(f"{self.result_filepath} already exists")
             file = open(self.result_filepath, 'rb')
             data = pickle.load(file)
             file.close()
             return data
-        else:
-            print(f"{self.result_filepath} not found")
 
     def save_result(self, result, has_final_result=False):
         if len(result) > 0:

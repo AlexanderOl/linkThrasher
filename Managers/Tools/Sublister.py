@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from Managers.CacheManager import CacheManager
 
@@ -13,7 +14,8 @@ class Sublister:
         subdomains = cache_manager.get_saved_result()
         if not subdomains:
             subdomains = set()
-            command = f'cd /root/Desktop/TOOLs/Sublist3r/; python sublist3r.py -d {self.__domain} | grep "Total Unique Subdomains Found" -A 999'
+            command = f'cd /root/Desktop/TOOLs/Sublist3r/; python sublist3r.py -d {self.__domain} | ' \
+                      f'grep "Total Unique Subdomains Found" -A 999'
             stream = os.popen(command)
             bash_outputs = stream.readlines()
             skip_first_line = True
@@ -23,4 +25,6 @@ class Sublister:
                     continue
                 subdomains.add(line.replace('\x1b[92m', '').replace('\x1b[0m\n', ''))
             cache_manager.save_result(subdomains)
+
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.__domain}) {self.__tool_name} found {len(subdomains)} items')
         return subdomains

@@ -5,39 +5,46 @@ from datetime import datetime
 from Managers.CacheManager import CacheManager
 
 
-class Httpx:
+class EyeWitness:
     def __init__(self, domain):
         self.__tool_name = self.__class__.__name__
         self.__domain = domain
+        self.__tool_result_dir = f'{os.environ.get("app_result_path")}{self.__tool_name}'
 
-    def check_subdomains(self, all_subdomains) -> set:
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: {self.__tool_name} started...')
-
+    def visit_urls(self, urls: set):
         cache_manager = CacheManager(self.__tool_name, self.__domain)
-        checked_subdomains = cache_manager.get_saved_result()
-        if not checked_subdomains:
-            checked_subdomains = set()
-            httpx_directory = f"Results/{self.__tool_name}"
-            if not os.path.exists(httpx_directory):
-                os.makedirs(httpx_directory)
-            txt_filepath = f"{httpx_directory}/{self.__domain}_raw.txt"
+        checked_domain = cache_manager.get_saved_result()
+        if not checked_domain:
+
+            tool_dir = f"Results/{self.__tool_name}"
+            if not os.path.exists(tool_dir):
+                os.makedirs(tool_dir)
+
+            domain_dir = f'{tool_dir}/{self.__domain}'
+            if not os.path.exists(domain_dir):
+                os.makedirs(domain_dir)
+
+            txt_filepath = f"{tool_dir}/{self.__domain}_raw.txt"
             txt_file = open(txt_filepath, 'a')
-            for subdomain in all_subdomains:
+            for subdomain in urls:
                 txt_file.write("%s\n" % str(subdomain))
             txt_file.close()
 
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
-            command = f'cd /root/Desktop/TOOLs/httpx/cmd/httpx/; ' \
-                      f'cat {subdomains_filepath} | ' \
-                      f'go run httpx.go -silent'
+            command = f'cd /root/Desktop/TOOLs/EyeWitness/Python/; ' \
+                      f'./EyeWitness.py -f {subdomains_filepath} --web -d {self.__tool_result_dir}/{self.__domain} --no-prompt'
             stream = os.popen(command)
             bash_outputs = stream.readlines()
+
             for line in bash_outputs:
-                if self.__domain in line:
-                    checked_subdomains.add(line.replace('\n', ''))
+                if 'Finished in' in line:
+                    checked_domain = line.replace('\n', '')
+                    break
 
             os.remove(txt_filepath)
-            cache_manager.save_result(checked_subdomains)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: {self.__tool_name} found {len(checked_subdomains)} items')
-        return checked_subdomains
+            if checked_domain:
+                cache_manager.save_result([checked_domain])
+            else:
+                print('EyeWitness was not finished properly')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.__domain}) {self.__tool_name} found {checked_domain} items')

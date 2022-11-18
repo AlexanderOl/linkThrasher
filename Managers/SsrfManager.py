@@ -19,7 +19,6 @@ class SsrfManager:
         self.url_params = ['url', 'redirect']
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: SsrfManager GET started...')
 
         if os.path.exists(f'SsrfManagerResult/GET_{self.domain}_log.json'):
             os.remove(f'SsrfManagerResult/GET_{self.domain}_log.json')
@@ -27,11 +26,9 @@ class SsrfManager:
         for dto in dtos:
             self.__check_params(dto.link)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: SsrfManager GET finished')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.domain}) SsrfManager GET finished')
 
     def check_form_requests(self, form_results: List[FormRequestDTO]):
-
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: SsrfManager FORM started...')
 
         if os.path.exists(f'SsrfManagerResult/FROM_{self.domain}_log.json'):
             os.remove(f'SsrfManagerResult/FROM_{self.domain}_log.json')
@@ -39,7 +36,7 @@ class SsrfManager:
         for item in form_results:
             self.__send_ssrf_form_request(item)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: SsrfManager FORM finished')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.domain}) SsrfManager FORM finished')
 
     def __check_params(self, url):
         payloads_urls = set()
@@ -94,8 +91,7 @@ class SsrfManager:
                     print("METHOD TYPE NOT FOUND: " + form.method_type)
                     return
         except Exception as inst:
-            print(inst)
-            print("ERROR - " + dto.link)
+            print(f"Exception - ({dto.link}) - {inst}")
 
     def __send_ssrf_get_request(self, payload):
         try:

@@ -17,8 +17,6 @@ class XssManager:
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: XssManager GET started...')
-
         cache_manager = CacheManager('XssManager/Get', self.domain)
         result = cache_manager.get_saved_result()
 
@@ -29,10 +27,9 @@ class XssManager:
                 self.check_params(dto.link, result)
             cache_manager.save_result(result, has_final_result=True)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Found GET XSS: {len(result)}')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.domain}) Found GET XSS: {len(result)}')
 
     def check_form_requests(self, form_results: List[FormRequestDTO]):
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: XssManager FORM started...')
 
         cache_manager = CacheManager('XssManager/Form', self.domain)
         result = cache_manager.get_saved_result()
@@ -45,7 +42,7 @@ class XssManager:
 
             cache_manager.save_result(result, has_final_result=True)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Found FORM XSS: {len(result)}')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.domain}) Found FORM XSS: {len(result)}')
 
     def check_params(self, url, result: List[XssFoundDTO]):
         payloads_urls = set()
@@ -73,8 +70,7 @@ class XssManager:
             if str(response.status_code)[0] == '5':
                 print("XssFinder: 500 status - " + url)
         except Exception as inst:
-            print(inst)
-            print("ERROR - " + url)
+            print(f"Exception - ({url}) - {inst}")
 
     def check_form_request(self, dto: FormRequestDTO, result: List[XssFoundDTO]):
         try:
@@ -113,5 +109,5 @@ class XssManager:
                     print("METHOD TYPE NOT FOUND: " + form.method_type)
                     return
         except Exception as inst:
-            print(inst)
-            print("ERROR - " + dto.link)
+            print(f"Exception - ({dto.link}) - {inst}")
+

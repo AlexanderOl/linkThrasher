@@ -19,7 +19,6 @@ class SqliManager:
         self.delay_in_seconds = 5
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: SqliManager started...')
 
         cache_manager = CacheManager('SqliManager', self.domain)
         result = cache_manager.get_saved_result()
@@ -32,7 +31,7 @@ class SqliManager:
 
             cache_manager.save_result(result, has_final_result=True)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: SqliManager GET found {len(result)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.domain}) SqliManager GET found {len(result)} items')
 
     def check_url(self, dto: GetRequestDTO, result: List[SqliFoundDTO]):
 
@@ -77,18 +76,15 @@ class SqliManager:
                         print(f"SQLiManager ({response.status_code}): - " + url)
                         result.append(SqliFoundDTO(url, SqliType.ERROR))
         except Exception as inst:
-            print(inst)
-            print("ERROR - " + url)
+            print(f"Exception - ({url}) - {inst}")
 
-    def __send_time_based_request(self, truePayload, falsePayload, result: List[SqliFoundDTO]):
-
+    def __send_time_based_request(self, true_payload, false_payload, result: List[SqliFoundDTO]):
         try:
-            response1 = requests.get(truePayload, headers=self.headers, cookies=self.cookies)
+            response1 = requests.get(true_payload, headers=self.headers, cookies=self.cookies)
             if response1.elapsed.total_seconds() >= self.delay_in_seconds:
-                response2 = requests.get(falsePayload, headers=self.headers, cookies=self.cookies)
+                response2 = requests.get(false_payload, headers=self.headers, cookies=self.cookies)
                 if response2.elapsed.total_seconds() < self.delay_in_seconds:
-                    print(f"SQLiManager delay FOUND: - {truePayload} - {falsePayload}")
-                    return result.append(SqliFoundDTO(truePayload, SqliType.TIME))
+                    print(f"SQLiManager delay FOUND: - {true_payload} - {false_payload}")
+                    return result.append(SqliFoundDTO(true_payload, SqliType.TIME))
         except Exception as inst:
-            print(inst)
-            print("ERROR - " + truePayload)
+            print(f"Exception - ({true_payload}) - {inst}")

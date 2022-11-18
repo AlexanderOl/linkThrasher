@@ -21,8 +21,6 @@ class SstiManager:
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: SstiManager GET started...')
-
         cache_manager = CacheManager('SstiManager/Get', self.domain)
         result = cache_manager.get_saved_result()
 
@@ -34,7 +32,7 @@ class SstiManager:
 
             cache_manager.save_result(result, has_final_result=True)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: SqliManager GET found {len(result)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.domain}) SqliManager GET found {len(result)} items')
 
     def __check_url(self, dto: GetRequestDTO, result: List[SstiFoundDTO]):
 
@@ -62,8 +60,6 @@ class SstiManager:
         return result
 
     def check_form_requests(self, form_results: List[FormRequestDTO]):
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: SstiManager FORM started...')
-
         cache_manager = CacheManager('SstiManager/Form', self.domain)
         result = cache_manager.get_saved_result()
 
@@ -88,8 +84,7 @@ class SstiManager:
             if str(response.status_code)[0] == '5':
                 print("SstiFinder: 500 status - " + url)
         except Exception as inst:
-            print(inst)
-            print("ERROR - " + url)
+            print(f"Exception - ({url}) - {inst}")
 
     def __check_form_request(self, dto: FormRequestDTO,  result: List[SstiFoundDTO]):
         try:
@@ -125,5 +120,4 @@ class SstiManager:
                     print("METHOD TYPE NOT FOUND: " + form.method_type)
                     return
         except Exception as inst:
-            print(inst)
-            print("ERROR - " + dto.link)
+            print(f"Exception - ({dto.link}) - {inst}")

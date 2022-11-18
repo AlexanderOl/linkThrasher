@@ -12,7 +12,6 @@ class Dirb:
 
         report_lines = self.cache_manager.get_saved_result()
         if not report_lines:
-            print(f'[{datetime.now().strftime("%H:%M:%S")}]: Dirb start {url}')
             command = f"dirb {url} -r -f"
             stream = os.popen(command)
             bash_outputs = stream.readlines()

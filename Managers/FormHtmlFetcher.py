@@ -43,13 +43,10 @@ def get_post_data(dto: GetRequestDTO) -> FormRequestDTO:
 
 class FormRequestFetcher:
     def __init__(self, domain):
-        self.domain = domain
+        self.__domain = domain
 
     def get_all_post_requests(self, get_DTOs: List[GetRequestDTO]) -> List[FormRequestDTO]:
-
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: FormRequestFetcher started...')
-
-        cache_manager = CacheManager('FormRequestFetcher', self.domain)
+        cache_manager = CacheManager('FormRequestFetcher', self.__domain)
         result = cache_manager.get_saved_result()
         if not result:
             result: List[FormRequestDTO] = []
@@ -59,5 +56,5 @@ class FormRequestFetcher:
                     result.append(found)
             cache_manager.save_result(result)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: FormRequestFetcher found {len(result)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.__domain}) FormRequestFetcher found {len(result)} items')
         return result

@@ -30,8 +30,3 @@ class CookieManager:
             cookies[key] = morsel.value
         return cookies
 
-# def test():
-#     cm = CookieManager('dell.com', 'C:\\Users\\oleksandr oliinyk\\Downloads')
-#     print(cm.get_raw_cookies())
-#
-# test()

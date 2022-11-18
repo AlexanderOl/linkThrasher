@@ -32,7 +32,6 @@ class LinksManager:
             re.IGNORECASE)
 
     def get_all_links(self, start_url) -> List[GetRequestDTO]:
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: LinksManager started...')
 
         cache_manager = CacheManager('LinksManager', self.domain)
         result = cache_manager.get_saved_result()
@@ -43,7 +42,7 @@ class LinksManager:
             self.recursive_search(result, start_url, current_depth)
             cache_manager.save_result(result)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: LinksManager found {len(result)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.domain}) LinksManager found {len(result)} items')
         return result
 
     def check_delay(self, target_url):

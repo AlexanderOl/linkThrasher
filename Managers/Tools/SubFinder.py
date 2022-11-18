@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from Managers.CacheManager import CacheManager
 
@@ -13,11 +14,13 @@ class SubFinder:
         subdomains = cache_manager.get_saved_result()
         if not subdomains:
             subdomains = set()
-            command = f'cd ~/Desktop/TOOLs/subfinder/v2 | ~/go/bin/subfinder -d {self.__domain}'
+            command = f'subfinder -d {self.__domain}'
             stream = os.popen(command)
             bash_outputs = stream.readlines()
             for line in bash_outputs:
                 if self.__domain in line:
                     subdomains.add(line.replace('\n', ''))
             cache_manager.save_result(subdomains)
+
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.__domain}) {self.__tool_name} found {len(subdomains)} items')
         return subdomains
