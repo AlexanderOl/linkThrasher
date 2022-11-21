@@ -18,10 +18,10 @@ class MassDns:
             if not os.path.exists(self.__tool_result_dir):
                 os.makedirs(self.__tool_result_dir)
 
-            massdns_result_file = f"{self.__tool_result_dir}/raw_{self.__domain}_raw.txt"
+            massdns_result_file = f"{self.__tool_result_dir}/{self.__domain}_raw.txt"
             command = f'cd /root/Desktop/TOOLs/massdns/; ' \
                       f'./scripts/subbrute.py lists/all.txt {self.__domain} | ' \
-                      f'./bin/massdns -r lists/resolvers.txt -t A -o S -w {massdns_result_file}'
+                      f'./bin/massdns -r lists/resolvers.txt -q -t A -o S -w {massdns_result_file}'
             stream = os.popen(command)
             stream.read()
 

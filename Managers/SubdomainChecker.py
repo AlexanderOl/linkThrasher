@@ -18,13 +18,13 @@ class SubdomainChecker:
         cookies = cookie_manager.get_cookies_dict(raw_cookies)
 
         for subdomain in all_subdomains:
-            url = f'https://{subdomain}/'
+            url = f'http://{subdomain}/'
             try:
                 self.__send_request(url, cookies)
             except requests.exceptions.SSLError:
-                if url.startswith('http:'):
+                if url.startswith('https:'):
                     return
-                url = url.replace('https:', 'http:')
+                url = url.replace('http:', 'https:')
                 try:
                     self.__send_request(url, cookies)
                 except Exception as ex:
@@ -35,13 +35,11 @@ class SubdomainChecker:
 
     def __send_request(self, url, cookies):
         response = requests.get(url, headers=self.__headers, cookies=cookies, timeout=5)
-        if response.status_code < 300:
+        if response.status_code < 400:
             without_url = response.url.replace(url, '')
             if without_url not in self.__checked_redirect_url_parts:
                 self.__checked_redirect_url_parts.add(without_url)
                 self.__checked_subdomains.add(url)
-        elif 300 <= response.status_code < 400:
-            print(f'redirect response {url} - status_code:{response.status_code}')
         elif 400 <= response.status_code < 500:
             print(f'{url} - status_code:{response.status_code}')
         else:

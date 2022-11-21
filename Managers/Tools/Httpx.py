@@ -26,14 +26,14 @@ class Httpx:
 
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
             command = f'cd /root/Desktop/TOOLs/httpx/cmd/httpx/; ' \
-                      f'cat {subdomains_filepath} | ' \
-                      f'go run httpx.go -silent'
+                      f'go run httpx.go -silent -l {subdomains_filepath}'
+
             stream = os.popen(command)
             bash_outputs = stream.readlines()
             for line in bash_outputs:
                 if self.__domain in line:
                     live_urls.add(line.replace('\n', ''))
-
+            live_urls = sorted(live_urls)
             os.remove(txt_filepath)
             cache_manager.save_result(live_urls)
 

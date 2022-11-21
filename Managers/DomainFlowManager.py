@@ -32,6 +32,7 @@ class DomainFlowManager:
 
         subfinder = SubFinder(domain)
         subfinder_subdomains = subfinder.get_subdomains()
+        # subfinder_subdomains = set()
 
         massdns = MassDns(domain)
         massdns_subdomains = massdns.get_subdomains()
@@ -40,6 +41,9 @@ class DomainFlowManager:
             .union(sublister_subdomains)\
             .union(subfinder_subdomains)\
             .union(massdns_subdomains)
+
+        # subdomain_checker = SubdomainChecker(domain, self.headers, self.download_path)
+        # live_urls = subdomain_checker.check_subdomains(all_subdomains)
 
         httpx = Httpx(domain)
         live_urls = httpx.check_subdomains(all_subdomains)

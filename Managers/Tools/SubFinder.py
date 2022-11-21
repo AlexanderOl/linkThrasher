@@ -14,7 +14,7 @@ class SubFinder:
         subdomains = cache_manager.get_saved_result()
         if not subdomains:
             subdomains = set()
-            command = f'subfinder -d {self.__domain}'
+            command = f'subfinder -d {self.__domain} -silent'
             stream = os.popen(command)
             bash_outputs = stream.readlines()
             for line in bash_outputs:
