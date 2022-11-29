@@ -25,8 +25,8 @@ class SingleUrlFlowManager:
         if domain[0] == '.':
             domain = domain[1:]
 
-        dirb = Dirb(domain)
-        dirb.check_single_url(start_url)
+        # dirb = Dirb(domain)
+        # dirb.check_single_url(start_url)
 
         cookie_manager = CookieManager(self.main_domain, self.download_path)
         if not self.raw_cookies:
@@ -50,9 +50,9 @@ class SingleUrlFlowManager:
         xss_manager.check_get_requests(get_dtos)
         xss_manager.check_form_requests(post_dtos)
 
-        # ssrf_manager = SsrfManager(domain, cookies_dict, self.headers, self.ngrok_url)
-        # ssrf_manager.check_get_requests(get_dtos)
-        # ssrf_manager.check_form_requests(post_dtos)
+        ssrf_manager = SsrfManager(domain, cookies_dict, self.headers, self.ngrok_url)
+        ssrf_manager.check_get_requests(get_dtos)
+        ssrf_manager.check_form_requests(post_dtos)
 
         sqli_manager = SqliManager(domain, cookies_dict, self.headers)
         sqli_manager.check_get_requests(get_dtos)

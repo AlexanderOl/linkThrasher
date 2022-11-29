@@ -12,6 +12,8 @@ class EyeWitness:
         self.__tool_result_dir = f'{os.environ.get("app_result_path")}{self.__tool_name}'
 
     def visit_urls(self, urls: set):
+        if len(urls) == 0:
+            return
         cache_manager = CacheManager(self.__tool_name, self.__domain)
         checked_domain = cache_manager.get_saved_result()
         if not checked_domain:

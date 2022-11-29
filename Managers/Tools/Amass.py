@@ -12,7 +12,7 @@ class Amass:
     def get_subdomains(self) -> set:
         cache_manager = CacheManager(self.__tool_name, self.__domain)
         subdomains = cache_manager.get_saved_result()
-        if not subdomains:
+        if not subdomains and not isinstance(subdomains, set):
             subdomains = set()
             command = f'amass enum -d {self.__domain}'
             stream = os.popen(command)

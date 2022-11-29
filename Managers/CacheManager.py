@@ -21,6 +21,7 @@ class CacheManager:
                      'SstiManager/Get',
                      'SstiManager/Form',
                      'SsrfManager',
+                     'SubdomainChecker',
                      'Sublister',
                      'SubFinder',
                      'XssManager/Get',
@@ -40,15 +41,14 @@ class CacheManager:
             return data
 
     def save_result(self, result, has_final_result=False):
+        if not os.path.exists(self.result_dir):
+            os.makedirs(self.result_dir)
+
+        json_file = open(self.result_filepath, 'ab')
+        pickle.dump(result, json_file)
+        json_file.close()
+
         if len(result) > 0:
-
-            if not os.path.exists(self.result_dir):
-                os.makedirs(self.result_dir)
-
-            json_file = open(self.result_filepath, 'ab')
-            pickle.dump(result, json_file)
-            json_file.close()
-
             txt_file = open(self.txt_result_filepath, 'a')
             for item in result:
                 txt_file.write("%s\n" % str(item))

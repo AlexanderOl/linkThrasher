@@ -13,7 +13,7 @@ class MassDns:
     def get_subdomains(self) -> set:
         cache_manager = CacheManager(self.__tool_name, self.__domain)
         subdomains = cache_manager.get_saved_result()
-        if not subdomains:
+        if not subdomains and not isinstance(subdomains, set):
 
             if not os.path.exists(self.__tool_result_dir):
                 os.makedirs(self.__tool_result_dir)
@@ -28,7 +28,7 @@ class MassDns:
             subdomains = set()
             with open(massdns_result_file) as file:
                 for line in file:
-                    subdomain = str(line.split(' ')[0]).strip('.')
+                    subdomain = str(line.split(' ')[0]).strip('.').lower()
                     subdomains.add(subdomain)
 
             os.remove(massdns_result_file)
