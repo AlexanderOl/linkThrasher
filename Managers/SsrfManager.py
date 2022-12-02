@@ -20,23 +20,19 @@ class SsrfManager:
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
-        if os.path.exists(f'SsrfManagerResult/GET_{self.domain}_log.json'):
-            os.remove(f'SsrfManagerResult/GET_{self.domain}_log.json')
+        if os.path.exists(f'SsrfManager/GET_{self.domain}_log.json'):
+            os.remove(f'SsrfManager/GET_{self.domain}_log.json')
 
         for dto in dtos:
             self.__check_params(dto.link)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.domain}) SsrfManager GET finished')
-
     def check_form_requests(self, form_results: List[FormRequestDTO]):
 
-        if os.path.exists(f'SsrfManagerResult/FROM_{self.domain}_log.json'):
-            os.remove(f'SsrfManagerResult/FROM_{self.domain}_log.json')
+        if os.path.exists(f'SsrfManager/FROM_{self.domain}_log.json'):
+            os.remove(f'SsrfManager/FROM_{self.domain}_log.json')
 
         for item in form_results:
             self.__send_ssrf_form_request(item)
-
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.domain}) SsrfManager FORM finished')
 
     def __check_params(self, url):
         payloads_urls = set()
@@ -55,14 +51,14 @@ class SsrfManager:
         main_url_split = url.split(query)
         uiid_str = str(uuid.uuid4())
         payload = main_url_split[0] + param_split[0] + f'={self.ngrok_url}{uiid_str}' + main_url_split[1]
-        with open(f'Results/SsrfManagerResult/GET_{self.domain}_log.json', 'a') as f:
+        with open(f'Results/SsrfManager/GET_{self.domain}_log.json', 'a') as f:
             f.write(f'{uiid_str}:{payload}\n')
         return payload
 
     def __get_param_ngrok_payload(self, url: str, param: str, method_type: str):
         uiid_str = str(uuid.uuid4())
         payload = f'{self.ngrok_url}{uiid_str}'
-        with open(f'Results/SsrfManagerResult/FROM_{self.domain}_log.json', 'a') as f:
+        with open(f'Results/SsrfManager/FROM_{self.domain}_log.json', 'a') as f:
             f.write(f'{uiid_str}:{url}:{param}:{method_type}\n')
         return payload
 

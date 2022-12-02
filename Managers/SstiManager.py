@@ -79,7 +79,7 @@ class SstiManager:
             if response.status_code == 200 or str(response.status_code)[0] == '5':
                 web_page = response.text
                 if self.expected in web_page:
-                    print("SstiFinder GET XSS: - " + url)
+                    print("SstiFinder GET found: - " + url)
                     return result.append(SstiFoundDTO(SstiType.Get, url))
             if str(response.status_code)[0] == '5':
                 print("SstiFinder: 500 status - " + url)

@@ -14,15 +14,19 @@ class XssFoundDTO:
         self._payload = payload
         self._web_page = web_page
 
+    @property
     def url(self):
         return self._url
 
+    @property
     def xss_type(self):
         return self._xss_type
 
+    @property
     def payload(self):
         return self._payload
 
+    @property
     def web_page(self):
         return self._web_page
 

@@ -1,4 +1,7 @@
 import os
+from datetime import datetime
+
+import urllib3
 from tldextract import tldextract
 from Managers.CookieManager import CookieManager
 from Managers.FormHtmlFetcher import FormRequestFetcher
@@ -36,7 +39,9 @@ class SingleUrlFlowManager:
         # hakrawler = Hakrawler(__domain, raw_cookie)
         # get_dtos = hakrawler.get_requests_dtos(start_url)
 
-        links_manager = LinksManager(domain, cookies_dict, self.headers, self.max_depth)
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+        links_manager = LinksManager(domain, cookies_dict, self.headers, self.max_depth, self.main_domain)
         get_dtos = links_manager.get_all_links(start_url)
 
         if get_dtos is None:
@@ -60,3 +65,5 @@ class SingleUrlFlowManager:
         ssti_manager = SstiManager(domain, cookies_dict, self.headers)
         ssti_manager.check_get_requests(get_dtos)
         ssti_manager.check_form_requests(post_dtos)
+
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: SingleUrlFlowManager done with ({start_url})')

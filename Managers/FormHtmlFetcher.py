@@ -56,5 +56,4 @@ class FormRequestFetcher:
                     result.append(found)
             cache_manager.save_result(result)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.__domain}) FormRequestFetcher found {len(result)} items')
         return result

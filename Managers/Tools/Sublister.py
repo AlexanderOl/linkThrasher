@@ -12,7 +12,7 @@ class Sublister:
     def get_subdomains(self) -> set:
         cache_manager = CacheManager(self.__tool_name, self.__domain)
         subdomains = cache_manager.get_saved_result()
-        if not subdomains:
+        if not subdomains and not isinstance(subdomains, set):
             subdomains = set()
             command = f'cd /root/Desktop/TOOLs/Sublist3r/; python sublist3r.py -d {self.__domain} | ' \
                       f'grep "Total Unique Subdomains Found" -A 999'

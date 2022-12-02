@@ -43,10 +43,11 @@ class DomainFlowManager:
             .union(massdns_subdomains)
 
         subdomain_checker = SubdomainChecker(domain, self.headers, self.download_path)
-        live_urls = subdomain_checker.check_subdomains(all_subdomains)
+        live_urls_statuses = subdomain_checker.check_all_subdomains(all_subdomains)
+        live_urls = set(live_urls_statuses.keys())
 
         # httpx = Httpx(domain)
-        # live_urls = httpx.check_subdomains(all_subdomains)
+        # live_urls = httpx.check_subdomains(live_urls)
 
         eyewitness = EyeWitness(domain)
         eyewitness.visit_urls(live_urls)

@@ -21,15 +21,16 @@ class MassDns:
             massdns_result_file = f"{self.__tool_result_dir}/{self.__domain}_raw.txt"
             command = f'cd /root/Desktop/TOOLs/massdns/; ' \
                       f'./scripts/subbrute.py lists/all.txt {self.__domain} | ' \
-                      f'./bin/massdns -r lists/resolvers.txt -q -t A -o S -w {massdns_result_file}'
+                      f'./bin/massdns -r lists/resolvers.txt -t A -o S -w {massdns_result_file}'
             stream = os.popen(command)
             stream.read()
 
             subdomains = set()
-            with open(massdns_result_file) as file:
-                for line in file:
-                    subdomain = str(line.split(' ')[0]).strip('.').lower()
-                    subdomains.add(subdomain)
+            if os.path.exists(massdns_result_file):
+                with open(massdns_result_file) as file:
+                    for line in file:
+                        subdomain = str(line.split(' ')[0]).strip('.').lower()
+                        subdomains.add(subdomain)
 
             os.remove(massdns_result_file)
             cache_manager.save_result(subdomains)

@@ -16,8 +16,9 @@ headers_without_delay = {
 
 
 class LinksManager:
-    def __init__(self, domain, cookies, headers, max_depth):
+    def __init__(self, domain, cookies, headers, max_depth, main_domain):
         self.domain = domain
+        self.main_domain = main_domain
         self.cookies = cookies
         self.headers = headers
         self.max_depth = int(max_depth)
@@ -27,8 +28,9 @@ class LinksManager:
         self.checked_hrefs = set()
         self.urls_counter = 0
 
-        self.url_ext_regex = re.compile(
-            '\.jpg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$|\.docx$|\.m4v$',
+        self.url_ignore_ext_regex = re.compile(
+            '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$'
+            '|\.doc$|\.docx$|\.m4v$|\.pptx$|\.ppt$',
             re.IGNORECASE)
 
     def get_all_links(self, start_url) -> List[GetRequestDTO]:
@@ -50,7 +52,7 @@ class LinksManager:
         if response_without_delay.elapsed.total_seconds() < 5:
             print(f'Delay found - {target_url}')
 
-    def recursive_search(self, result, target_url, current_depth):
+    def recursive_search(self, result: List[GetRequestDTO], target_url, current_depth):
 
         if current_depth >= self.max_depth:
             return
@@ -60,19 +62,21 @@ class LinksManager:
             return
 
         try:
-            print(f'Url ({target_url}) - start')
-            if 'https' in target_url:
-                response = requests.get(target_url, headers=self.headers, cookies=self.cookies, verify=False)
-            else:
-                response = requests.get(target_url, headers=self.headers, cookies=self.cookies)
+            response = requests.get(target_url, headers=self.headers, cookies=self.cookies, verify=False)
 
-            print(f'Url ({target_url}) - status code:{response.status_code}')
+            print(f'Url ({target_url}) - status code:{response.status_code}, length: {len(response.text)}')
 
             if response.elapsed.total_seconds() >= 5:
                 self.check_delay(target_url)
-            if response.status_code == 200 and len(response.history) <= 2:
+
+            if len(result) > 0:
+                if any(dto for dto in result if
+                         dto.response_length == len(response.text) and dto.status_code == response.status_code):
+                    return
+
+            if response.status_code < 300 and len(response.history) <= 2:
                 web_page = response.text
-                result.append(GetRequestDTO(target_url, web_page))
+                result.append(GetRequestDTO(target_url, web_page, response.status_code))
             else:
                 return
         except requests.exceptions.SSLError:
@@ -105,7 +109,7 @@ class LinksManager:
                     and href not in self.social_media \
                     and href not in self.checked_hrefs \
                     and target_url[len(target_url) - len(href):] != href \
-                    and href not in target_url\
+                    and href not in target_url \
                     and 'mailto:' not in href:
                 self.checked_hrefs.add(href)
                 result = True
@@ -120,8 +124,12 @@ class LinksManager:
         parsed = urlparse(url)
         if url in self.checked_urls \
                 or any(word in url for word in self.social_media) \
-                or self.domain not in parsed.netloc \
-                or self.url_ext_regex.search(parsed.path):
+                or self.main_domain not in parsed.netloc \
+                or self.url_ignore_ext_regex.search(parsed.path):
+            return
+
+        if self.url_ignore_ext_regex.search(parsed.query):
+            print(f'Need to check manually - {url}')
             return
 
         return url
