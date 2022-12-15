@@ -16,8 +16,8 @@ headers_without_delay = {
 
 
 class LinksManager:
-    def __init__(self, domain, cookies, headers, max_depth, main_domain):
-        self.domain = domain
+    def __init__(self, current_domain, cookies, headers, max_depth, main_domain):
+        self.current_domain = current_domain
         self.main_domain = main_domain
         self.cookies = cookies
         self.headers = headers
@@ -35,7 +35,7 @@ class LinksManager:
 
     def get_all_links(self, start_url) -> List[GetRequestDTO]:
 
-        cache_manager = CacheManager('LinksManager', self.domain)
+        cache_manager = CacheManager('LinksManager', self.current_domain)
         result = cache_manager.get_saved_result()
 
         if not result:
@@ -44,7 +44,7 @@ class LinksManager:
             self.recursive_search(result, start_url, current_depth)
             cache_manager.save_result(result)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.domain}) LinksManager found {len(result)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.current_domain}) LinksManager found {len(result)} items')
         return result
 
     def check_delay(self, target_url):
@@ -124,7 +124,7 @@ class LinksManager:
         parsed = urlparse(url)
         if url in self.checked_urls \
                 or any(word in url for word in self.social_media) \
-                or self.main_domain not in parsed.netloc \
+                or self.current_domain not in parsed.netloc \
                 or self.url_ignore_ext_regex.search(parsed.path):
             return
 

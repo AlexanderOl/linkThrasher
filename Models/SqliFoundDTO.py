@@ -21,4 +21,4 @@ class SqliFoundDTO:
         return self._sqli_type
 
     def __str__(self):
-        return f'url: {self.url()}, sqliType: {self._sqli_type}'
+        return f'url: {self._url}, sqliType: {self._sqli_type}'

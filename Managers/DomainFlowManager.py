@@ -36,6 +36,7 @@ class DomainFlowManager:
 
         massdns = MassDns(domain)
         massdns_subdomains = massdns.get_subdomains()
+        # massdns_subdomains = set()
 
         all_subdomains = amass_subdomains\
             .union(sublister_subdomains)\
