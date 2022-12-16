@@ -23,5 +23,5 @@ class GetRequestDTO:
         return self._status_code
 
     def __str__(self):
-        return f'Link:{self.link}'
+        return self._link
 

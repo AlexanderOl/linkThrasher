@@ -1,5 +1,5 @@
 import requests
-
+import validators
 from Managers.CacheManager import CacheManager
 from Managers.CookieManager import CookieManager
 from Managers.ThreadManager import ThreadManager
@@ -37,9 +37,10 @@ class SubdomainChecker:
     def __check_subdomain(self, subdomain):
         url = f'http://{subdomain}/'
         try:
-            response = requests.get(url, headers=self.__headers, cookies=self.__cookies, timeout=5)
-            print(f'{url} - status_code:{response.status_code}', flush=True)
-            self.__checked_subdomains[url] = response.status_code
+            if validators.url(url):
+                response = requests.get(url, headers=self.__headers, cookies=self.__cookies, timeout=5)
+                print(f'{url} - status_code:{response.status_code}', flush=True)
+                self.__checked_subdomains[url] = response.status_code
         except requests.exceptions.SSLError:
             url = url.replace('http:', 'https:')
             try:
@@ -51,4 +52,4 @@ class SubdomainChecker:
         except requests.exceptions.ConnectionError:
             return
         except Exception as ex:
-            print(ex)
+            print(f'Exception - {ex} on url - {url}')
