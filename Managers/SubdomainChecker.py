@@ -1,13 +1,16 @@
+from typing import List
+
 import requests
 import validators
 from Managers.CacheManager import CacheManager
 from Managers.CookieManager import CookieManager
 from Managers.ThreadManager import ThreadManager
+from Models.SubdomainCheckerDTO import SubdomainCheckerDTO
 
 
 class SubdomainChecker:
     def __init__(self, domain, headers, download_path):
-        self.__checked_subdomains = {}
+        self.__checked_subdomains: List[SubdomainCheckerDTO] = []
         self.__domain = domain
         self.__tool_name = self.__class__.__name__
         self.__headers = headers
@@ -40,13 +43,13 @@ class SubdomainChecker:
             if validators.url(url):
                 response = requests.get(url, headers=self.__headers, cookies=self.__cookies, timeout=5)
                 print(f'{url} - status_code:{response.status_code}', flush=True)
-                self.__checked_subdomains[url] = response.status_code
+                self.__checked_subdomains.append(SubdomainCheckerDTO(url, response.status_code))
         except requests.exceptions.SSLError:
             url = url.replace('http:', 'https:')
             try:
                 response = requests.get(url, headers=self.__headers, cookies=self.__cookies, timeout=5)
                 print(f'{url} - status_code:{response.status_code}', flush=True)
-                self.__checked_subdomains[url] = response.status_code
+                self.__checked_subdomains.append(SubdomainCheckerDTO(url, response.status_code))
             except Exception as ex:
                 print(ex)
         except requests.exceptions.ConnectionError:
