@@ -24,12 +24,12 @@ class SsrfManager:
             os.remove(f'SsrfManager/GET_{self.domain}_log.json')
 
         for dto in dtos:
-            self.__check_params(dto.link)
+            self.__check_params(dto.url)
 
     def check_form_requests(self, form_results: List[FormRequestDTO]):
 
-        if os.path.exists(f'SsrfManager/FROM_{self.domain}_log.json'):
-            os.remove(f'SsrfManager/FROM_{self.domain}_log.json')
+        if os.path.exists(f'SsrfManager/FORM_{self.domain}_log.json'):
+            os.remove(f'SsrfManager/FORM_{self.domain}_log.json')
 
         for item in form_results:
             self.__send_ssrf_form_request(item)

@@ -1,18 +1,19 @@
-
 class GetRequestDTO:
-    def __init__(self, link, web_page, status_code):
-        self._link = link
-        self._web_page = web_page
-        self._response_length = len(web_page)
-        self._status_code = status_code
+    def __init__(self, *args):
+        if len(args) == 1:
+            self._url = args[0]
+            self._response_length = 0
+            self._status_code = 0
+            self._content_type = '0'
+        elif len(args) == 2:
+            self._url = args[0]
+            self._response_length = len(args[1].text)
+            self._status_code = args[1].status_code
+            self._content_type = args[1].headers['Content-Type']
 
     @property
-    def link(self) -> str:
-        return self._link
-
-    @property
-    def web_page(self) -> str:
-        return self._web_page
+    def url(self) -> str:
+        return self._url
 
     @property
     def response_length(self) -> int:
@@ -22,6 +23,9 @@ class GetRequestDTO:
     def status_code(self) -> int:
         return self._status_code
 
-    def __str__(self):
-        return self._link
+    @property
+    def content_type(self) -> str:
+        return self._content_type
 
+    def __str__(self):
+        return f'{self._url} - Code:{self._status_code} - Type:{self._content_type} - Length:{self._content_type}'

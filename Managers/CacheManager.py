@@ -14,7 +14,7 @@ class CacheManager:
         path_list = ['Amass',
                      'Dirb',
                      'FormRequestFetcher',
-                     'LinksManager',
+                     'Spider',
                      'MassDns',
                      'Nmap',
                      'SqliManager',

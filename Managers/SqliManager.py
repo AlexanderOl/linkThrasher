@@ -26,16 +26,16 @@ class SqliManager:
         if result is None:
             result: List[SqliFoundDTO] = []
             for dto in dtos:
-                self.check_url(dto, result)
-                self.check_get_params(dto, result)
+                self.__check_url(dto, result)
+                self.__check_get_params(dto, result)
 
             cache_manager.save_result(result, has_final_result=True)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.domain}) SqliManager GET found {len(result)} items')
 
-    def check_url(self, dto: GetRequestDTO, result: List[SqliFoundDTO]):
+    def __check_url(self, dto: GetRequestDTO, result: List[SqliFoundDTO]):
 
-        parsed = urlparse.urlparse(dto.link)
+        parsed = urlparse.urlparse(dto.url)
         base_url = f'{parsed.scheme}://{parsed.hostname}{parsed.path}/'
         for payload in self.error_based_payloads:
             self.__send_error_based_request(f'{base_url}{payload}', result)
@@ -44,15 +44,15 @@ class SqliManager:
             self.__send_time_based_request(f'{base_url}{payloads["TruePld"]}', f'{base_url}{payloads["FalsePld"]}',
                                            result)
 
-    def check_get_params(self, dto: GetRequestDTO, result: List[SqliFoundDTO]):
+    def __check_get_params(self, dto: GetRequestDTO, result: List[SqliFoundDTO]):
         error_based_payloads_urls = set()
         time_based_payloads_urls = set()
-        parsed = urlparse.urlparse(dto.link)
+        parsed = urlparse.urlparse(dto.url)
         queries = filter(None, parsed.query.split("&"))
 
         for query in queries:
             param_split = query.split('=')
-            main_url_split = dto.link.split(query)
+            main_url_split = dto.url.split(query)
             for payloads in self.time_based_payloads:
                 time_based_payloads_urls.add(
                     (f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',

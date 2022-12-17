@@ -49,6 +49,6 @@ class Hakrawler:
         for item in found_urls:
             response = requests.get(item)
             if response.status_code == 200:
-                result.append(GetRequestDTO(item, response.text, response.status_code))
+                result.append(GetRequestDTO(item, response))
 
         return result

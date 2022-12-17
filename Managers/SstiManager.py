@@ -36,14 +36,14 @@ class SstiManager:
 
     def __check_url(self, dto: GetRequestDTO, result: List[SstiFoundDTO]):
 
-        parsed = urlparse.urlparse(dto.link)
+        parsed = urlparse.urlparse(dto.url)
         base_url = f'{parsed.scheme}://{parsed.hostname}{parsed.path}'
 
         for payload in self.payloads:
             self.__send_ssti_request(f'{base_url}/{payload}', result)
 
     def __check_get_params(self, dto: GetRequestDTO, result: List[SstiFoundDTO]):
-        url = dto.link
+        url = dto.url
         payloads_urls = set()
         parsed = urlparse.urlparse(url)
         queries = filter(None, parsed.query.split("&"))

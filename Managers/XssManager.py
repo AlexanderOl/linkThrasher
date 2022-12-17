@@ -23,8 +23,8 @@ class XssManager:
         if result is None:
             result: List[XssFoundDTO] = []
             for dto in dtos:
-                self.send_xss_request(f'{dto.link}/{self.payload}', result)
-                self.check_params(dto.link, result)
+                self.send_xss_request(f'{dto.url}/{self.payload}', result)
+                self.check_params(dto.url, result)
             cache_manager.save_result(result, has_final_result=True)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.domain}) Found GET XSS: {len(result)}')
