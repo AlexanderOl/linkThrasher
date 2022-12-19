@@ -55,7 +55,7 @@ class DomainFlowManager:
 
         # nmap = Nmap(domain)
         # nmap.check_ports(all_subdomains)
-
+        single_url_man = SingleUrlFlowManager(self.headers)
         thread_man = ThreadManager()
-        thread_man.run_all(self.single_url_man.run, live_urls)
+        thread_man.run_all(single_url_man.run, live_urls)
 

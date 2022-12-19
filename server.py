@@ -35,22 +35,34 @@ load_dotenv('config.env')
 
 if __name__ == '__main__':
     check_mode = os.environ.get('check_mode')
-    single_url_man = SingleUrlFlowManager(headers)
     if check_mode == 'D':
         domain = os.environ.get('domain')
-        domain_man = DomainFlowManager(headers, single_url_man)
+        domain_man = DomainFlowManager(headers)
         domain_man.check_domain(domain)
 
-    elif check_mode == 'S':
+    elif check_mode == 'U':
+        single_url_man = SingleUrlFlowManager(headers)
         single_url = os.environ.get('single_url')
         single_url_man.run(single_url)
 
-    elif check_mode == 'M':
+    elif check_mode == 'UL':
         file_path = 'Targets\\urls.txt'
         if os.path.exists(file_path):
             urls = list(set(line.strip() for line in open(file_path)))
+            single_url_man = SingleUrlFlowManager(headers)
             thread_man = ThreadManager()
             thread_man.run_all(single_url_man.run, urls)
+        else:
+            print(os.path.dirname(os.path.realpath(__file__)))
+            print(f'{file_path} is missing')
+
+    elif check_mode == 'DL':
+        file_path = 'Targets\\domains.txt'
+        if os.path.exists(file_path):
+            domains = list(set(line.strip() for line in open(file_path)))
+            domain_man = DomainFlowManager(headers)
+            thread_man = ThreadManager()
+            thread_man.run_all(domain_man.check_domain, domains)
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{file_path} is missing')
