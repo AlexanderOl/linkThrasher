@@ -6,8 +6,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from Managers.CacheManager import CacheManager
 from Models.GetRequestDTO import GetRequestDTO
-from Models.FileRequestDTO import FileRequestDTO
-from Models.FormRequestDTO import FormRequestDTO
+from Models.FormRequestDTO import FormRequestDTO, FormDetailsDTO
 
 
 class Spider:
@@ -24,7 +23,7 @@ class Spider:
         self._checked_hrefs = set()
         self._urls_counter = 0
 
-        self._form_DTOs: List[FormDetailsDTO] = []
+        self._form_DTOs: List[FormRequestDTO] = []
         self._get_DTOs: List[GetRequestDTO] = []
         self._file_get_DTOs: List[GetRequestDTO] = []
         self._url_ignore_ext_regex = re.compile(
@@ -59,7 +58,7 @@ class Spider:
         get_found = get_cache_manager.get_saved_result()
         form_found = form_cache_manager.get_saved_result()
 
-        if not get_found and form_found:
+        if not get_found and not form_found:
             current_depth = 0
             self.__recursive_search(start_url, current_depth)
             get_cache_manager.save_result(self._get_DTOs)
@@ -71,7 +70,8 @@ class Spider:
             self._form_DTOs = form_found
 
         print(
-            f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._current_domain}) Spider found {len(result)} items')
+            f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._current_domain}) '
+            f'Spider found {len(self._get_DTOs)} get_dtos and {len(self._form_DTOs)} forms')
         return self._get_DTOs, self._form_DTOs
 
     def __recursive_search(self, target_url, current_depth):
@@ -90,15 +90,15 @@ class Spider:
 
             print(f'Url ({target_url}) - status code:{response.status_code}, length: {len(response.text)}')
 
-            if response.header.header['Content-Type'] in self._ignore_content_types:
-                _file_get_DTOs.append(GetRequestDTO(target_url, response))
+            if response.headers['Content-Type'] in self._ignore_content_types:
+                self._file_get_DTOs.append(GetRequestDTO(target_url, response))
                 return
 
             if len(self._get_DTOs) > 0:
                 if any(dto for dto in self._get_DTOs if
                        dto.response_length == len(response.text) and
                        dto.status_code == response.status_code and
-                       dto.content_type == response.header['Content-Type']):
+                       dto.content_type == response.headers['Content-Type']):
                     return
 
             if response.status_code < 300 and len(response.history) <= 2:
@@ -127,6 +127,7 @@ class Spider:
     def __get_forms(self, target_url, web_page):
         forms = BeautifulSoup(web_page, "html.parser").findAll('form')
         if forms:
+            form_details: List[FormDetailsDTO] = []
             for form in forms:
                 action_tag = BeautifulSoup(str(form), "html.parser").find('form').get('action')
                 if not action_tag:
@@ -145,7 +146,8 @@ class Spider:
                     if param_name:
                         default_value = BeautifulSoup(str(input_tag), "html.parser").find('input').get('value')
                         params[param_name] = default_value
-                self._form_DTOs.append(FormDetailsDTO(action_tag, params, method))
+                form_details.append(FormDetailsDTO(action_tag, params, method))
+            self._form_DTOs.append(FormRequestDTO(target_url, form_details))
 
     def __check_href(self, href, target_url):
         result = False
@@ -157,7 +159,7 @@ class Spider:
                     and href not in self._checked_hrefs \
                     and target_url[len(target_url) - len(href):] != href \
                     and href not in target_url \
-                    and 'mailto:' not in href:
+                    and ':' not in href:
                 self._checked_hrefs.add(href)
                 result = True
 
