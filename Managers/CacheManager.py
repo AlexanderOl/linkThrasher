@@ -34,7 +34,7 @@ class CacheManager:
                     os.remove(os.path.join(result_path, f))
 
     def get_saved_result(self):
-        if os.path.exists(self.result_filepath):
+        if os.path.exists(self.result_filepath) and os.path.getsize(self.result_filepath) > 0:
             file = open(self.result_filepath, 'rb')
             data = pickle.load(file)
             file.close()

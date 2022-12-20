@@ -1,4 +1,6 @@
 import os
+from typing import List
+
 import urllib3
 from datetime import datetime
 from tldextract import tldextract
@@ -9,7 +11,9 @@ from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
 from Managers.SstiManager import SstiManager
 from Managers.Tools.Dirb import Dirb
+from Managers.Tools.Hakrawler import Hakrawler
 from Managers.XssManager import XssManager
+from Models.GetRequestDTO import GetRequestDTO
 
 
 class SingleUrlFlowManager:
@@ -27,24 +31,32 @@ class SingleUrlFlowManager:
         if domain[0] == '.':
             domain = domain[1:]
 
-        dirb = Dirb(domain)
-        dirb.check_single_url(start_url)
+        # dirb = Dirb(domain)
+        # dirb.check_single_url(start_url)
 
         cookie_manager = CookieManager(self.main_domain, self.download_path)
 
         if self.raw_cookies:
             cookies_dict = self.raw_cookies
+            raw_cookies = self.raw_cookies
         else:
             raw_cookies = cookie_manager.get_raw_cookies()
             cookies_dict = cookie_manager.get_cookies_dict(raw_cookies)
 
-        # hakrawler = Hakrawler(__domain, raw_cookie)
-        # get_dtos = hakrawler.get_requests_dtos(start_url)
+        hakrawler = Hakrawler(domain, raw_cookies)
+        get_hakrawler_dtos = hakrawler.get_requests_dtos(start_url)
 
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
         spider = Spider(domain, cookies_dict, self.headers, self.max_depth, self.main_domain)
-        get_dtos, form_dtos = spider.get_all_links(start_url)
+        get_spider_dtos, form_dtos = spider.get_all_links(start_url)
+
+        get_hakrawler_dtos.extend(get_spider_dtos)
+        get_dtos: List[GetRequestDTO] = []
+        for dto in get_hakrawler_dtos:
+            if not any(item.url == dto.url for item in get_dtos):
+                get_dtos.append(dto)
+
         if get_dtos is None:
             print(f'{domain} get DTOs not found')
             return
