@@ -15,10 +15,9 @@ from Managers.ThreadManager import ThreadManager
 
 
 class DomainFlowManager:
-    def __init__(self, headers, single_url_man: SingleUrlFlowManager):
+    def __init__(self, headers):
         self.download_path = os.environ.get('download_path')
         self.headers = headers
-        self.single_url_man = single_url_man
 
     def check_domain(self, domain):
 
@@ -35,8 +34,8 @@ class DomainFlowManager:
         # subfinder_subdomains = set()
 
         massdns = MassDns(domain)
-        massdns_subdomains = massdns.get_subdomains()
-        # massdns_subdomains = set()
+        # massdns_subdomains = massdns.get_subdomains()
+        massdns_subdomains = set()
 
         all_subdomains = amass_subdomains\
             .union(sublister_subdomains)\
@@ -45,10 +44,10 @@ class DomainFlowManager:
 
         subdomain_checker = SubdomainChecker(domain, self.headers, self.download_path)
         live_urls_statuses = subdomain_checker.check_all_subdomains(all_subdomains)
-        live_urls = set(live_urls_statuses.keys())
-
-        # httpx = Httpx(domain)
-        # live_urls = httpx.check_subdomains(live_urls)
+        if len(live_urls_statuses) == 0:
+            print('No live subdomains found')
+            return
+        live_urls = set(line.url for line in live_urls_statuses)
 
         eyewitness = EyeWitness(domain)
         eyewitness.visit_urls(live_urls)

@@ -16,7 +16,7 @@ class SubdomainChecker:
         self.__headers = headers
         self.__download_path = download_path
 
-    def check_all_subdomains(self, all_subdomains: set()) -> set():
+    def check_all_subdomains(self, all_subdomains: set()) -> List[SubdomainCheckerDTO]:
         cache_manager = CacheManager(self.__tool_name, self.__domain)
         checked_subdomains = cache_manager.get_saved_result()
 

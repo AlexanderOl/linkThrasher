@@ -46,7 +46,7 @@ if __name__ == '__main__':
         single_url_man.run(single_url)
 
     elif check_mode == 'UL':
-        file_path = 'Targets\\urls.txt'
+        file_path = 'Targets/urls.txt'
         if os.path.exists(file_path):
             urls = list(set(line.strip() for line in open(file_path)))
             single_url_man = SingleUrlFlowManager(headers)
@@ -57,12 +57,12 @@ if __name__ == '__main__':
             print(f'{file_path} is missing')
 
     elif check_mode == 'DL':
-        file_path = 'Targets\\domains.txt'
+        file_path = 'Targets/domains.txt'
         if os.path.exists(file_path):
             domains = list(set(line.strip() for line in open(file_path)))
             domain_man = DomainFlowManager(headers)
-            thread_man = ThreadManager()
-            thread_man.run_all(domain_man.check_domain, domains)
+            for domain in domains:
+                domain_man.check_domain(domain)
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{file_path} is missing')

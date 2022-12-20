@@ -27,8 +27,8 @@ class SingleUrlFlowManager:
         if domain[0] == '.':
             domain = domain[1:]
 
-        # dirb = Dirb(domain)
-        # dirb.check_single_url(start_url)
+        dirb = Dirb(domain)
+        dirb.check_single_url(start_url)
 
         cookie_manager = CookieManager(self.main_domain, self.download_path)
 
