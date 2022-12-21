@@ -13,6 +13,7 @@ class XssFoundDTO:
         self._xss_type = xss_type
         self._payload = payload
         self._web_page = web_page
+        self._response_length = len(web_page)
 
     @property
     def url(self):
@@ -28,6 +29,9 @@ class XssFoundDTO:
 
     @property
     def web_page(self):
+        return self._web_page
+    @property
+    def response_length(self):
         return self._web_page
 
     def __str__(self):

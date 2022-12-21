@@ -8,7 +8,9 @@ class ThreadManager:
 
     def run_all(self, action, items):
         url_batches = self.__chunks(items)
+        count_left = len(url_batches)
         for batch in url_batches:
+            print(f'ThreadManager counter: {count_left} left')
             threads = []
             for start_url in batch:
                 t = threading.Thread(target=action, args=(start_url,))
@@ -20,6 +22,7 @@ class ThreadManager:
 
             for i in threads:
                 i.join()
+            count_left -= 1
 
     def __chunks(self, items):
         lst = list(items)

@@ -24,6 +24,7 @@ class SingleUrlFlowManager:
         self.download_path = os.environ.get('download_path')
         self.raw_cookies = os.environ.get('raw_cookies')
         self.main_domain = os.environ.get('domain')
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def run(self, start_url: str):
         domain_parts = tldextract.extract(start_url)
@@ -46,8 +47,6 @@ class SingleUrlFlowManager:
         hakrawler = Hakrawler(domain, raw_cookies)
         get_hakrawler_dtos = hakrawler.get_requests_dtos(start_url)
 
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
         spider = Spider(domain, cookies_dict, self.headers, self.max_depth, self.main_domain)
         get_spider_dtos, form_dtos = spider.get_all_links(start_url)
 
@@ -60,9 +59,6 @@ class SingleUrlFlowManager:
         if get_dtos is None:
             print(f'{domain} get DTOs not found')
             return
-
-        # post_manager = FormRequestFetcher(domain)
-        # post_dtos = post_manager.get_all_post_requests(get_dtos)
 
         xss_manager = XssManager(domain, cookies_dict, self.headers)
         xss_manager.check_get_requests(get_dtos)

@@ -65,8 +65,12 @@ class XssManager:
             if response.status_code == 200 or str(response.status_code)[0] == '5':
                 web_page = response.text
                 if self.payload in web_page:
-                    print("XssFinder GET XSS: - " + url)
-                    return result.append(XssFoundDTO(XssType.Get, url, self.payload, web_page))
+                    curr_resp_length = len(web_page)
+                    if len(filter(lambda dto: dto.response_length == curr_resp_length, result)) <= 10:
+                        print("XssFinder GET XSS: - " + url)
+                        result.append(XssFoundDTO(XssType.Get, url, self.payload, web_page))
+                    else:
+                        print("Duplicate GET XSS: - " + url)
             if str(response.status_code)[0] == '5':
                 print("XssFinder: 500 status - " + url)
         except Exception as inst:
@@ -84,8 +88,13 @@ class XssManager:
                         if response.status_code == 200 or str(response.status_code)[0] == '5':
                             web_page = response.text
                             if self.payload in web_page:
-                                print(f'Found FORM XSS! url:{dto.link} , param:{param}, action:{form.action}')
-                                result.append(XssFoundDTO(XssType.PostForm, dto.link, payload, web_page))
+                                curr_resp_length = len(web_page)
+                                if len(filter(lambda dto: dto.response_length == curr_resp_length, result)) <= 10:
+                                    print(f'Found FORM XSS! url:{dto.link} , param:{param}, action:{form.action}')
+                                    result.append(XssFoundDTO(XssType.PostForm, dto.link, payload, web_page))
+                                else:
+                                    print("Duplicate FORM XSS: - " + url)
+
                         elif response.status_code == 400:
                             payload[param] = old_param
                 elif form.method_type == "GET":
@@ -101,8 +110,12 @@ class XssManager:
                         if response.status_code == 200 or str(response.status_code)[0] == '5':
                             web_page = response.text
                             if self.payload in web_page:
-                                print(f'Found FORM XSS! url:{url}')
-                                result.append(XssFoundDTO(XssType.GetForm, dto.link, param, web_page))
+                                curr_resp_length = len(web_page)
+                                if len(filter(lambda dto: dto.response_length == curr_resp_length, result)) <= 10:
+                                    print(f'Found FORM XSS! url:{url}')
+                                    result.append(XssFoundDTO(XssType.GetForm, dto.link, param, web_page))
+                                else:
+                                    print("Duplicate FORM XSS: - " + url)
                         elif response.status_code == 400:
                             url -= f'{param}={self.payload}'
                 else:

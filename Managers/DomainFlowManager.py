@@ -20,10 +20,11 @@ class DomainFlowManager:
         self.headers = headers
 
     def check_domain(self, domain):
+        print(f'Checking {domain} domain')
 
-        sublister = Sublister(domain)
-        sublister_subdomains = sublister.get_subdomains()
-        # sublister_subdomains = set()
+        # sublister = Sublister(domain)
+        # sublister_subdomains = sublister.get_subdomains()
+        sublister_subdomains = set()
 
         amass = Amass(domain)
         amass_subdomains = amass.get_subdomains()
@@ -34,8 +35,8 @@ class DomainFlowManager:
         # subfinder_subdomains = set()
 
         massdns = MassDns(domain)
-        # massdns_subdomains = massdns.get_subdomains()
-        massdns_subdomains = set()
+        massdns_subdomains = massdns.get_subdomains()
+        # massdns_subdomains = set()
 
         all_subdomains = amass_subdomains\
             .union(sublister_subdomains)\
