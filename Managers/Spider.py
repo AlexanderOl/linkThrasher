@@ -159,7 +159,8 @@ class Spider:
                     and href not in self._checked_hrefs \
                     and target_url[len(target_url) - len(href):] != href \
                     and href not in target_url \
-                    and ':' not in href:
+                    and ':' not in href\
+                    and not self._url_ignore_ext_regex.search(href):
                 self._checked_hrefs.add(href)
                 result = True
 
@@ -174,11 +175,6 @@ class Spider:
         if url in self._checked_urls \
                 or any(word in url for word in self._social_media) \
                 or self._current_domain not in parsed.netloc:
-            return
-
-        if self._url_ignore_ext_regex.search(parsed.query) or \
-                self._url_ignore_ext_regex.search(parsed.netloc):
-            self._file_get_DTOs.append(GetRequestDTO(url))
             return
 
         return url
