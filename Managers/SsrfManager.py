@@ -17,19 +17,25 @@ class SsrfManager:
         self.headers = headers
         self.ngrok_url = ngrok_url
         self.url_params = ['url', 'redirect']
+        self.__tool_dir = f'Results/SsrfManager'
+        self.__get_domain_log = f'{self.__tool_dir}/GET_{self.domain}_log.json'
+        self.__form_domain_log = f'{self.__tool_dir}/FORM_{self.domain}_log.json'
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
-        if os.path.exists(f'SsrfManager/GET_{self.domain}_log.json'):
-            os.remove(f'SsrfManager/GET_{self.domain}_log.json')
+        if not os.path.exists(self.__tool_dir):
+            os.makedirs(self.__tool_dir)
+
+        if os.path.exists(self.__get_domain_log):
+            os.remove(self.__get_domain_log)
 
         for dto in dtos:
             self.__check_params(dto.url)
 
     def check_form_requests(self, form_results: List[FormRequestDTO]):
 
-        if os.path.exists(f'SsrfManager/FORM_{self.domain}_log.json'):
-            os.remove(f'SsrfManager/FORM_{self.domain}_log.json')
+        if os.path.exists(self.__form_domain_log):
+            os.remove(self.__form_domain_log)
 
         for item in form_results:
             self.__send_ssrf_form_request(item)
@@ -51,14 +57,14 @@ class SsrfManager:
         main_url_split = url.split(query)
         uiid_str = str(uuid.uuid4())
         payload = main_url_split[0] + param_split[0] + f'={self.ngrok_url}{uiid_str}' + main_url_split[1]
-        with open(f'Results/SsrfManager/GET_{self.domain}_log.json', 'a') as f:
+        with open(self.__get_domain_log, 'a') as f:
             f.write(f'{uiid_str}:{payload}\n')
         return payload
 
     def __get_param_ngrok_payload(self, url: str, param: str, method_type: str):
         uiid_str = str(uuid.uuid4())
         payload = f'{self.ngrok_url}{uiid_str}'
-        with open(f'Results/SsrfManager/FROM_{self.domain}_log.json', 'a') as f:
+        with open(self.__get_domain_log, 'a') as f:
             f.write(f'{uiid_str}:{url}:{param}:{method_type}\n')
         return payload
 
