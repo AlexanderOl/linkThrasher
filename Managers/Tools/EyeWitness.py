@@ -27,14 +27,14 @@ class EyeWitness:
                 os.makedirs(domain_dir)
 
             txt_filepath = f"{tool_dir}/{self.__domain}_raw.txt"
-            txt_file = open(txt_filepath, 'a')
+            txt_file = open(txt_filepath, 'w')
             for subdomain in urls:
                 txt_file.write("%s\n" % str(subdomain))
             txt_file.close()
 
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
             command = f'cd /root/Desktop/TOOLs/EyeWitness/Python/; ' \
-                      f'./EyeWitness.py -f {subdomains_filepath} --web -d {self.__tool_result_dir}/{self.__domain} --no-prompt'
+                      f'./EyeWitness.py -f {subdomains_filepath} --web -d {self.__tool_result_dir}/{self.__domain} --timeout 8 --no-prompt'
             stream = os.popen(command)
             bash_outputs = stream.readlines()
 
