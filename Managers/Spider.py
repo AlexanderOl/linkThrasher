@@ -176,7 +176,8 @@ class Spider:
                 or self._current_domain not in parsed.netloc:
             return
 
-        if self._url_ignore_ext_regex.search(parsed.query):
+        if self._url_ignore_ext_regex.search(parsed.query) or \
+                self._url_ignore_ext_regex.search(parsed.netloc):
             self._file_get_DTOs.append(GetRequestDTO(url))
             return
 

@@ -36,8 +36,9 @@ class SubdomainChecker:
             for item in self.__checked_subdomains:
                 curr_resp_length = item.response_length
                 curr_status_code = item.status_code
-                if len(filter(lambda dto: dto.response_length == curr_resp_length and
-                                          dto.status_code == curr_status_code, filtered_dtos)) <= 10:
+                if len(filtered_dtos) == 0 or \
+                        len(list(filter(lambda dto: dto.response_length == curr_resp_length and
+                                               dto.status_code == curr_status_code, filtered_dtos))) <= 10:
                     filtered_dtos.append(item)
 
             cache_manager.save_result(filtered_dtos)

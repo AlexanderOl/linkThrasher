@@ -66,7 +66,8 @@ class XssManager:
                 web_page = response.text
                 if self.payload in web_page:
                     curr_resp_length = len(web_page)
-                    if len(filter(lambda dto: dto.response_length == curr_resp_length, result)) <= 10:
+                    if len(result) == 0 or \
+                            len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) <= 10:
                         print("XssFinder GET XSS: - " + url)
                         result.append(XssFoundDTO(XssType.Get, url, self.payload, web_page))
                     else:
@@ -89,7 +90,8 @@ class XssManager:
                             web_page = response.text
                             if self.payload in web_page:
                                 curr_resp_length = len(web_page)
-                                if len(filter(lambda dto: dto.response_length == curr_resp_length, result)) <= 10:
+                                if len(result) == 0 or \
+                                        len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) <= 10:
                                     print(f'Found FORM XSS! url:{dto.link} , param:{param}, action:{form.action}')
                                     result.append(XssFoundDTO(XssType.PostForm, dto.link, payload, web_page))
                                 else:
@@ -111,7 +113,8 @@ class XssManager:
                             web_page = response.text
                             if self.payload in web_page:
                                 curr_resp_length = len(web_page)
-                                if len(filter(lambda dto: dto.response_length == curr_resp_length, result)) <= 10:
+                                if len(result) == 0 or \
+                                        len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) <= 10:
                                     print(f'Found FORM XSS! url:{url}')
                                     result.append(XssFoundDTO(XssType.GetForm, dto.link, param, web_page))
                                 else:
