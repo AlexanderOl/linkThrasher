@@ -119,9 +119,9 @@ class Spider:
             print(f'Url ({target_url}) - Exception: {inst}')
             return
 
-        href_for_search = self.__get_href_for_search(web_page, target_url)
+        urls_for_search = self.__get_urls_for_search(web_page, target_url)
 
-        for item in href_for_search:
+        for item in urls_for_search:
             self.__recursive_search(item, current_depth)
 
     def __get_forms(self, target_url, web_page):
@@ -183,29 +183,38 @@ class Spider:
 
         return url
 
-    def __get_href_for_search(self, web_page, target_url):
+    def __get_urls_for_search(self, web_page, target_url):
         self._checked_urls.add(target_url)
-        href_list = set()
-        urls = BeautifulSoup(web_page, "html.parser").findAll('a')
-        url_parts = urlparse(target_url)
-        main_url = f"{url_parts.scheme}://{url_parts.hostname}"
-        for url in urls:
-            try:
-                href = url.get('href')
-                is_valid_href = self.__check_href(href, target_url)
-                if is_valid_href:
-                    if href[0] == '/':
-                        href_list.add(main_url + href)
-                    elif str(href[0:4]) == "http":
-                        href_list.add(href)
-                    else:
-                        href_list.add(f'{main_url}/{href}')
-            except Exception as inst:
-                print(inst)
 
+        href_urls = self.__get_url_from_html(tag='a', attr='href', web_page=web_page, target_url=target_url)
+        data_url = self.__get_url_from_html(tag='div', attr='data-url', web_page=web_page, target_url=target_url)
+
+        href_urls.update(data_url)
         dict_href = {}
-        for found_href in href_list:
+        for found_href in href_urls:
             parsed = urlparse(found_href)
             dict_href[f'{parsed[0]}{parsed[1]}{parsed[2]}'] = found_href
 
         return set(dict_href.values())
+
+    def __get_url_from_html(self, tag, attr, web_page, target_url):
+        html_urls = set()
+        urls = BeautifulSoup(web_page, "html.parser").findAll(tag)
+        url_parts = urlparse(target_url)
+        main_url = f"{url_parts.scheme}://{url_parts.hostname}"
+
+        for url in urls:
+            try:
+                url_part = url.get(attr)
+                is_valid_href = self.__check_href(url_part, target_url)
+                if is_valid_href:
+                    if url_part[0] == '/':
+                        html_urls.add(main_url + url_part)
+                    elif str(url_part[0:4]) == "http":
+                        html_urls.add(url_part)
+                    else:
+                        html_urls.add(f'{main_url}/{url_part}')
+            except Exception as inst:
+                print(inst)
+
+        return html_urls
