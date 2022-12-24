@@ -34,7 +34,7 @@ class EyeWitness:
 
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
             command = f'cd /root/Desktop/TOOLs/EyeWitness/Python/; ' \
-                      f'./EyeWitness.py -f {subdomains_filepath} --web -d {self.__tool_result_dir}/{self.__domain} --timeout 8 --no-prompt'
+                      f'./EyeWitness.py -f {subdomains_filepath} --web -d {self.__tool_result_dir}/{self.__domain} --timeout 15 --no-prompt'
             stream = os.popen(command)
             bash_outputs = stream.readlines()
 

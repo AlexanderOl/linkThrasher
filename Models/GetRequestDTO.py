@@ -28,4 +28,4 @@ class GetRequestDTO:
         return self._content_type
 
     def __str__(self):
-        return f'{self._url} - Code:{self._status_code} - Length:{self._content_type}'
+        return f'{self._url} - Code:{self._status_code} - Length:{self._response_length} - Type:{self._content_type}'

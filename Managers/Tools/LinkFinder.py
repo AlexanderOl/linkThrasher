@@ -19,7 +19,7 @@ class LinkFinder:
             '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
             '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.js$')
 
-    def search_urls_in_js(self, script_urls: set) -> List[GetRequestDTO]:
+    def search_urls_in_js(self, script_urls: set) -> set:
 
         result = set()
         if len(script_urls) == 0:
