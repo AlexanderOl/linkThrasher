@@ -12,8 +12,7 @@ class Hakrawler:
     def __init__(self, domain, raw_cookies):
         self.__domain = domain
         self.__raw_cookies = raw_cookies
-        self.__social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "cdn-cgi", "intercom",
-                               "atlassian"]
+        self.__social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "intercom", "atlassian"]
         self.__tool_name = self.__class__.__name__
 
     def get_requests_dtos(self, start_url) -> List[GetRequestDTO]:
@@ -52,18 +51,20 @@ class Hakrawler:
                 if not any(word in output for word in self.__social_media) and self.__domain in output:
                     script_urls.add(output)
 
-        link_finder = LinkFinder(self.__domain)
-        link_finder.search_urls_in_js(script_urls)
+        link_finder = LinkFinder(self.__domain, start_url)
+        get_urls_from_js = link_finder.search_urls_in_js(script_urls)
+        href_urls.update(get_urls_from_js)
 
         return self.__check_href_urls(href_urls)
 
-    def __check_href_urls(self, href_urls):
+    def __check_href_urls(self, href_urls) -> List[GetRequestDTO]:
         result: List[GetRequestDTO] = []
-        for item in href_urls:
+        for url in href_urls:
             try:
-                response = requests.get(item)
-                result.append(GetRequestDTO(item, response))
+                response = requests.get(url)
+                print(f'Url ({url}) - status code:{response.status_code}, length: {len(response.text)}')
+                result.append(GetRequestDTO(url, response))
             except Exception as ex:
-                print(f'Exception - {ex} on url - {item}')
+                print(f'Exception - {ex} on url - {url}')
 
         return result

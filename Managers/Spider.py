@@ -16,8 +16,7 @@ class Spider:
         self._cookies = cookies
         self._headers = headers
         self._max_depth = int(max_depth)
-        self._social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "cdn-cgi", "intercom",
-                              "atlassian",
+        self._social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "intercom", "atlassian",
                               "instagram", "github", "letgo", "yahoo"]
         self._checked_urls = set()
         self._checked_hrefs = set()

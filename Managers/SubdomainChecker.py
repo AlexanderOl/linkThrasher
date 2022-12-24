@@ -38,7 +38,7 @@ class SubdomainChecker:
                 curr_status_code = item.status_code
                 if len(filtered_dtos) == 0 or \
                         len(list(filter(lambda dto: dto.response_length == curr_resp_length and
-                                               dto.status_code == curr_status_code, filtered_dtos))) < 5:
+                                               dto.status_code == curr_status_code, filtered_dtos))) < 3:
                     filtered_dtos.append(item)
 
             cache_manager.save_result(filtered_dtos)
