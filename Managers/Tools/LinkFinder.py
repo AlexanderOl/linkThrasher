@@ -19,7 +19,7 @@ class LinkFinder:
         if not os.path.exists(output_filepath):
             domain_tool_directory_path = os.path.join(pathlib.Path().resolve(), tool_directory)
             for url in script_urls:
-                command = f'cd {domain_tool_directory_path}; wget {url}'
+                command = f'cd {domain_tool_directory_path}; wget {url} -q'
                 stream = os.popen(command)
                 stream.read()
 
