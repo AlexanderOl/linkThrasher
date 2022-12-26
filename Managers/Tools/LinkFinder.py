@@ -41,7 +41,7 @@ class LinkFinder:
         bash_outputs = stream.readlines()
 
         for found in set([x.lower() for x in bash_outputs]):
-            if self._url_ignore_ext_regex.search(found):
+            if self._url_ignore_ext_regex.search(found) or ':' in found:
                 continue
             if found.endswith('\n'):
                 found = found[:-1]

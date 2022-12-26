@@ -35,6 +35,8 @@ class CacheManager:
 
     def get_saved_result(self):
         try:
+            if not os.path.exists(self.result_dir):
+                os.makedirs(self.result_dir)
             if os.path.exists(self.result_filepath) and os.path.getsize(self.result_filepath) > 0:
                 file = open(self.result_filepath, 'rb')
                 data = pickle.load(file)

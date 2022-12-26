@@ -11,6 +11,7 @@ from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
 from Managers.SstiManager import SstiManager
 from Managers.Tools.Dirb import Dirb
+from Managers.Tools.Gobuster import Gobuster
 from Managers.Tools.Hakrawler import Hakrawler
 from Managers.XssManager import XssManager
 from Models.GetRequestDTO import GetRequestDTO
@@ -34,6 +35,9 @@ class SingleUrlFlowManager:
 
         # dirb = Dirb(domain)
         # dirb.check_single_url(start_url)
+
+        gobuster = Gobuster(domain)
+        gobuster.check_single_url(start_url)
 
         cookie_manager = CookieManager(self.main_domain, self.download_path)
 
