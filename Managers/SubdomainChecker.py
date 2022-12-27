@@ -47,15 +47,20 @@ class SubdomainChecker:
 
     def __check_subdomain(self, subdomain):
         url = f'http://{subdomain}/'
-        self._request_handler.handle_request(url=url,
-                                             except_ssl_action=self.__except_ssl_action,
-                                             except_ssl_action_args=[url])
+        response = self._request_handler.handle_request(url=url,
+                                                        except_ssl_action=self.__except_ssl_action,
+                                                        except_ssl_action_args=[url],
+                                                        timeout=5)
+
+        if response is not None:
+            print(f'{url} - status_code:{response.status_code}', flush=True)
+            self._checked_subdomains.append(GetRequestDTO(url, response))
 
     def __except_ssl_action(self, args):
         url = args[0]
         url = url.replace('http:', 'https:')
         if validators.url(url):
-            response = self._request_handler.handle_request(url)
+            response = self._request_handler.handle_request(url, timeout=5)
             if response is not None:
                 print(f'{url} - status_code:{response.status_code}', flush=True)
                 self._checked_subdomains.append(GetRequestDTO(url, response))

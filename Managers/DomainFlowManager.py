@@ -1,23 +1,20 @@
 import os
-from datetime import datetime
+import urllib3
 
-from Managers.SubdomainChecker import SubdomainChecker
-from Managers.Tools.Amass import Amass
-from Managers.Tools.Dirb import Dirb
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
+from Managers.SubdomainChecker import SubdomainChecker
+from Managers.ThreadManager import ThreadManager
+from Managers.Tools.Amass import Amass
 from Managers.Tools.EyeWitness import EyeWitness
-from Managers.Tools.Httpx import Httpx
-from Managers.Tools.Nmap import Nmap
 from Managers.Tools.MassDns import MassDns
 from Managers.Tools.SubFinder import SubFinder
-from Managers.Tools.Sublister import Sublister
-from Managers.ThreadManager import ThreadManager
 
 
 class DomainFlowManager:
     def __init__(self, headers):
         self.download_path = os.environ.get('download_path')
         self.headers = headers
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def check_domain(self, domain):
         print(f'Checking {domain} domain')
@@ -35,8 +32,8 @@ class DomainFlowManager:
         # subfinder_subdomains = set()
 
         massdns = MassDns(domain)
-        # massdns_subdomains = massdns.get_subdomains()
-        massdns_subdomains = set()
+        massdns_subdomains = massdns.get_subdomains()
+        # massdns_subdomains = set()
 
         all_subdomains = amass_subdomains\
             .union(sublister_subdomains)\
