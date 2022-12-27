@@ -4,16 +4,18 @@ import requests
 from datetime import datetime
 from typing import List
 from Managers.CacheManager import CacheManager
+from Managers.RequestHandler import RequestHandler
 from Managers.Tools.LinkFinder import LinkFinder
 from Models.GetRequestDTO import GetRequestDTO
 
 
 class Hakrawler:
-    def __init__(self, domain, raw_cookies):
+    def __init__(self, domain, raw_cookies, headers, cookies):
         self.__domain = domain
-        self.__raw_cookies = raw_cookies
-        self.__social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "intercom", "atlassian"]
-        self.__tool_name = self.__class__.__name__
+        self._raw_cookies = raw_cookies
+        self._social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "intercom", "atlassian"]
+        self._tool_name = self.__class__.__name__
+        self._request_handler = RequestHandler(cookies, headers)
 
     def get_requests_dtos(self, start_url) -> List[GetRequestDTO]:
         cache_manager = CacheManager('Hakrawler', self.__domain)
@@ -22,15 +24,14 @@ class Hakrawler:
             result = self.__get_urls(start_url)
             cache_manager.save_result(result)
 
-        print(
-            f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.__domain}) {self.__tool_name} found {len(result)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.__domain}) {self._tool_name} found {len(result)} items')
         return result
 
     def __get_urls(self, start_url) -> List[GetRequestDTO]:
 
         cookie_param = ''
-        if self.__raw_cookies:
-            cookie_param = f"-h 'Cookie: {self.__raw_cookies}'"
+        if self._raw_cookies:
+            cookie_param = f"-h 'Cookie: {self._raw_cookies}'"
 
         command = f"echo '{start_url}' | hakrawler - d 5 {cookie_param} "
         stream = os.popen(command)
@@ -44,11 +45,11 @@ class Hakrawler:
                 output = output[:-1]
             if output.startswith('[href] '):
                 output = output.replace('[href] ', '')
-                if not any(word in output for word in self.__social_media) and self.__domain in output:
+                if not any(word in output for word in self._social_media) and self.__domain in output:
                     href_urls.add(output)
             elif output.startswith('[script] '):
                 output = output.replace('[script] ', '')
-                if not any(word in output for word in self.__social_media) and self.__domain in output:
+                if not any(word in output for word in self._social_media) and self.__domain in output:
                     script_urls.add(output)
 
         link_finder = LinkFinder(self.__domain, start_url)
@@ -60,11 +61,12 @@ class Hakrawler:
     def __check_href_urls(self, href_urls) -> List[GetRequestDTO]:
         result: List[GetRequestDTO] = []
         for url in href_urls:
-            try:
-                response = requests.get(url)
+
+            response = self._request_handler.handle_request(url)
+            if response is None:
+                continue
+            if response.status_code < 400 or str(response.status_code)[0] == '5':
                 print(f'Url ({url}) - status code:{response.status_code}, length: {len(response.text)}')
                 result.append(GetRequestDTO(url, response))
-            except Exception as ex:
-                print(f'Exception - {ex} on url - {url}')
 
         return result

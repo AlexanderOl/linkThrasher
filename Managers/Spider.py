@@ -5,6 +5,7 @@ from typing import List
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from Managers.CacheManager import CacheManager
+from Managers.RequestHandler import RequestHandler
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO, FormDetailsDTO
 
@@ -13,8 +14,6 @@ class Spider:
     def __init__(self, current_domain, cookies, headers, max_depth, main_domain):
         self._current_domain = current_domain
         self._main_domain = main_domain
-        self._cookies = cookies
-        self._headers = headers
         self._max_depth = int(max_depth)
         self._social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "intercom", "atlassian",
                               "instagram", "github", "letgo", "yahoo"]
@@ -49,6 +48,7 @@ class Spider:
             'video/x-flv',
             'video/webm'
         ]
+        self._request_handler = RequestHandler(cookies, headers)
 
     def get_all_links(self, start_url) -> List[GetRequestDTO]:
 
@@ -80,48 +80,48 @@ class Spider:
         else:
             current_depth += 1
 
-        target_url = self.__check_target_url(target_url)
-        if not target_url:
+        checked_url = self.__check_target_url(target_url)
+        if not checked_url:
             return
 
-        try:
-            response = requests.get(target_url, headers=self._headers, cookies=self._cookies, verify=False)
-
-            print(f'Url ({target_url}) - status code:{response.status_code}, length: {len(response.text)}')
-
-            if response.headers['Content-Type'] in self._ignore_content_types:
-                self._file_get_DTOs.append(GetRequestDTO(target_url, response))
-                return
-
-            if len(self._get_DTOs) > 0:
-                if any(dto for dto in self._get_DTOs if
-                       dto.response_length == len(response.text) and
-                       dto.status_code == response.status_code and
-                       dto.content_type == response.headers['Content-Type']):
-                    return
-
-            if response.status_code < 300 and len(response.history) <= 2:
-                web_page = response.text
-                dto = GetRequestDTO(target_url, response)
-                self._get_DTOs.append(dto)
-                self.__get_forms(target_url, web_page)
-            else:
-                return
-        except requests.exceptions.SSLError:
-            if target_url.startswith('http:'):
-                return
-            print(f'Url ({target_url}) - SSLError')
-            target_url = target_url.replace('https:', 'http:')
-            self.__recursive_search(target_url, current_depth)
-            return
-        except Exception as inst:
-            print(f'Url ({target_url}) - Exception: {inst}')
+        response = self._request_handler.handle_request(url=checked_url,
+                                                        except_ssl_action=self.__except_ssl_action,
+                                                        except_ssl_action_args=[checked_url, current_depth])
+        if response is None:
             return
 
-        urls_for_search = self.__get_urls_for_search(web_page, target_url)
+        if response.headers['Content-Type'] in self._ignore_content_types:
+            self._file_get_DTOs.append(GetRequestDTO(checked_url, response))
+            return
+
+        if len(self._get_DTOs) > 0:
+            if any(dto for dto in self._get_DTOs if
+                   dto.response_length == len(response.text) and
+                   dto.status_code == response.status_code and
+                   dto.content_type == response.headers['Content-Type']):
+                return
+
+        if response.status_code < 300 and len(response.history) <= 2:
+            web_page = response.text
+            dto = GetRequestDTO(checked_url, response)
+            self._get_DTOs.append(dto)
+            self.__get_forms(checked_url, web_page)
+        else:
+            return
+
+        urls_for_search = self.__get_urls_for_search(web_page, checked_url)
 
         for item in urls_for_search:
             self.__recursive_search(item, current_depth)
+
+    def __except_ssl_action(self, args: []):
+        target_url = args[0]
+        current_depth = args[1]
+        if target_url.startswith('http:'):
+            return
+        print(f'Url ({target_url}) - ConnectionError(SSLError)')
+        target_url = target_url.replace('https:', 'http:')
+        self.__recursive_search(target_url, current_depth)
 
     def __get_forms(self, target_url, web_page):
         forms = BeautifulSoup(web_page, "html.parser").findAll('form')

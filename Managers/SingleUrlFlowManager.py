@@ -19,7 +19,7 @@ from Models.GetRequestDTO import GetRequestDTO
 
 class SingleUrlFlowManager:
     def __init__(self, headers):
-        self.headers = headers
+        self._headers = headers
         self.ngrok_url = os.environ.get('ngrok_url')
         self.max_depth = os.environ.get('max_depth')
         self.download_path = os.environ.get('download_path')
@@ -48,10 +48,10 @@ class SingleUrlFlowManager:
             raw_cookies = cookie_manager.get_raw_cookies()
             cookies_dict = cookie_manager.get_cookies_dict(raw_cookies)
 
-        hakrawler = Hakrawler(domain, raw_cookies)
+        hakrawler = Hakrawler(domain, raw_cookies, self._headers, cookies_dict)
         get_hakrawler_dtos = hakrawler.get_requests_dtos(start_url)
 
-        spider = Spider(domain, cookies_dict, self.headers, self.max_depth, self.main_domain)
+        spider = Spider(domain, cookies_dict, self._headers, self.max_depth, self.main_domain)
         get_spider_dtos, form_dtos = spider.get_all_links(start_url)
 
         get_hakrawler_dtos.extend(get_spider_dtos)
@@ -64,18 +64,18 @@ class SingleUrlFlowManager:
             print(f'{domain} get DTOs not found')
             return
 
-        xss_manager = XssManager(domain, cookies_dict, self.headers)
+        xss_manager = XssManager(domain, cookies_dict, self._headers)
         xss_manager.check_get_requests(get_dtos)
         xss_manager.check_form_requests(form_dtos)
 
-        ssrf_manager = SsrfManager(domain, cookies_dict, self.headers, self.ngrok_url)
+        ssrf_manager = SsrfManager(domain, cookies_dict, self._headers, self.ngrok_url)
         ssrf_manager.check_get_requests(get_dtos)
         ssrf_manager.check_form_requests(form_dtos)
 
-        sqli_manager = SqliManager(domain, cookies_dict, self.headers)
+        sqli_manager = SqliManager(domain, cookies_dict, self._headers)
         sqli_manager.check_get_requests(get_dtos)
 
-        ssti_manager = SstiManager(domain, cookies_dict, self.headers)
+        ssti_manager = SstiManager(domain, cookies_dict, self._headers)
         ssti_manager.check_get_requests(get_dtos)
         ssti_manager.check_form_requests(form_dtos)
 
