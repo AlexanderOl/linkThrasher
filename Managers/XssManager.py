@@ -119,7 +119,7 @@ class XssManager:
                     prev_url = url
                     url += f'{param}={self._expected}&'
 
-                    response = self._request_handler.handle_request(dto.link, data=payload)
+                    response = self._request_handler.handle_request(dto.link)
                     if response is None:
                         continue
 

@@ -32,8 +32,8 @@ class DomainFlowManager:
         # subfinder_subdomains = set()
 
         massdns = MassDns(domain)
-        massdns_subdomains = massdns.get_subdomains()
-        # massdns_subdomains = set()
+        # massdns_subdomains = massdns.get_subdomains()
+        massdns_subdomains = set()
 
         all_subdomains = amass_subdomains\
             .union(sublister_subdomains)\
@@ -41,11 +41,14 @@ class DomainFlowManager:
             .union(massdns_subdomains)
 
         subdomain_checker = SubdomainChecker(domain, self.headers, self.download_path)
-        live_urls_statuses = subdomain_checker.check_all_subdomains(all_subdomains)
-        if len(live_urls_statuses) == 0:
+        start_urls_statuses = subdomain_checker.check_all_subdomains(all_subdomains)
+        if len(start_urls_statuses) == 0:
             print('No live subdomains found')
             return
-        live_urls = set(line.url for line in live_urls_statuses)
+        else:
+            print(f'Found {len(start_urls_statuses)} start urls')
+
+        live_urls = set(line.url for line in start_urls_statuses)
 
         eyewitness = EyeWitness(domain)
         eyewitness.visit_urls(live_urls)
