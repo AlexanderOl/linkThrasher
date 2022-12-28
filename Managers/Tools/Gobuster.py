@@ -3,6 +3,7 @@ import subprocess
 from datetime import datetime
 
 from Managers.CacheManager import CacheManager
+from Managers.Tools.Dirb import Dirb
 
 
 class Gobuster:
@@ -20,18 +21,15 @@ class Gobuster:
                 proc = subprocess.Popen(["gobuster", "dir", "-u", url, "-w" "/usr/share/dirb/wordlists/big.txt",
                                          "-t", "50", "-o" f"{self._tool_result_dir}/{self._domain}.txt"],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
                 proc.wait()
                 err_message = proc.stderr.read().decode()
 
-                if 'Error: ' in err_message and 'Length: ' in err_message:
-                    exclude_length = int(err_message.split('Length: ')[1].split(')')[0])
-                    command = f"gobuster dir -u {url} -w /usr/share/dirb/wordlists/big.txt -t 50 -v " \
-                              f"-o {self._tool_result_dir}/{self._domain}.txt --exclude-length {exclude_length}"
-                    stream = os.popen(command)
-                    stream.read()
+                if 'Error: ' in err_message:
+                    dirb = Dirb(self._domain)
+                    dirb.check_single_url(url)
                 else:
-                    print(f'Gobuster exception - url:{url}')
+                    print(f'({url}) err_message - {err_message}')
+
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: Gobuster {url} finished.')
                 duration = datetime.now() - then
                 self._cache_manager.save_result([f'Gobuster finished in {duration.total_seconds()} seconds'])

@@ -97,8 +97,7 @@ class Spider:
         if len(self._get_DTOs) > 0:
             if any(dto for dto in self._get_DTOs if
                    dto.response_length == len(response.text) and
-                   dto.status_code == response.status_code and
-                   dto.content_type == response.headers['Content-Type']):
+                   dto.status_code == response.status_code):
                 return
 
         if response.status_code < 300 and len(response.history) <= 2:
