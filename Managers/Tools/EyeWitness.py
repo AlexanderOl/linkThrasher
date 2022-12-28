@@ -1,7 +1,6 @@
 import os
 import pathlib
 from datetime import datetime
-
 from Managers.CacheManager import CacheManager
 
 
@@ -32,16 +31,19 @@ class EyeWitness:
                 txt_file.write("%s\n" % str(subdomain))
             txt_file.close()
 
-            subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
-            command = f'cd /root/Desktop/TOOLs/EyeWitness/Python/; ' \
-                      f'./EyeWitness.py -f {subdomains_filepath} --web -d {self.__tool_result_dir}/{self.__domain} --timeout 15 --no-prompt'
-            stream = os.popen(command)
-            bash_outputs = stream.readlines()
+            try:
+                subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
+                command = f'cd /root/Desktop/TOOLs/EyeWitness/Python/; ' \
+                          f'./EyeWitness.py -f {subdomains_filepath} --web -d {self.__tool_result_dir}/{self.__domain} --timeout 15 --no-prompt'
+                stream = os.popen(command)
+                bash_outputs = stream.readlines()
 
-            for line in bash_outputs:
-                if 'Finished in' in line:
-                    checked_domain = line.replace('\n', '')
-                    break
+                for line in bash_outputs:
+                    if 'Finished in' in line:
+                        checked_domain = line.replace('\n', '')
+                        break
+            except Exception as inst:
+                print(f'EyeWitness Exception ({inst}) Urls:({" ".join(urls)})')
 
             os.remove(txt_filepath)
 
