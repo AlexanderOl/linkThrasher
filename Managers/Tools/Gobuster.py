@@ -18,8 +18,9 @@ class Gobuster:
         if not report_lines:
             try:
                 then = datetime.now()
+                output_file = f'{self._tool_result_dir}/{self._domain}_raw.txt'
                 proc = subprocess.Popen(["gobuster", "dir", "-u", url, "-w" "/usr/share/dirb/wordlists/big.txt",
-                                         "-t", "50", "-o" f"{self._tool_result_dir}/{self._domain}_raw.txt"],
+                                         "-t", "50", "-o", output_file],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 proc.wait()
                 err_message = proc.stderr.read().decode()
@@ -29,6 +30,10 @@ class Gobuster:
                     dirb.check_single_url(url)
                 else:
                     print(f'({url}) err_message - {err_message}')
+
+                if os.path.exists(output_file) and os.path.getsize(output_file) == 0:
+                    os.remove(output_file)
+
 
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: Gobuster {url} finished.')
                 duration = datetime.now() - then
