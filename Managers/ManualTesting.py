@@ -45,10 +45,11 @@ class ManualTesting:
         for item in get_result:
             txt_file.write("%s\n" % str(item))
 
-        txt_file.write(f"{'-' * 100}\n")
+        if len(form_result) > 0:
+            txt_file.write(f"\n{'-' * 100}\n")
 
-        for item in form_result:
-            txt_file.write("%s\n" % str(item))
+            for item in form_result:
+                txt_file.write("%s\n" % str(item))
         txt_file.close()
 
         return get_dtos

@@ -45,7 +45,6 @@ class CacheManager:
         except:
             os.remove(self.result_filepath)
 
-
     def save_result(self, result, has_final_result=False):
         if not os.path.exists(self.result_dir):
             os.makedirs(self.result_dir)

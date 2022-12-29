@@ -19,7 +19,7 @@ class Gobuster:
             try:
                 then = datetime.now()
                 proc = subprocess.Popen(["gobuster", "dir", "-u", url, "-w" "/usr/share/dirb/wordlists/big.txt",
-                                         "-t", "50", "-o" f"{self._tool_result_dir}/{self._domain}.txt"],
+                                         "-t", "50", "-o" f"{self._tool_result_dir}/{self._domain}_raw.txt"],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 proc.wait()
                 err_message = proc.stderr.read().decode()

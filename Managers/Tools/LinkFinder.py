@@ -55,7 +55,7 @@ class LinkFinder:
                 else:
                     result.add(f'{self._start_url}{found}')
 
-        shutil.rmtree(tool_directory, ignore_errors=True)
+        # shutil.rmtree(tool_directory, ignore_errors=True)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} finished')
         return result
