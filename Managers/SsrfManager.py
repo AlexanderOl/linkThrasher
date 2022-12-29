@@ -74,7 +74,7 @@ class SsrfManager:
                         if any(s in str(param).lower() for s in self._url_params):
                             payload = form.params
                             old_param = payload[param]
-                            payload[param] = self.__get_param_ngrok_payload(dto.link, param, "POST")
+                            payload[param] = self.__get_param_ngrok_payload(dto.url, param, "POST")
 
                             response = self._request_handler.handle_request(url, post_data=payload)
                             if response is None:
@@ -87,7 +87,7 @@ class SsrfManager:
                     url = form.action + '?'
                     for param in form.params:
                         if any(s in str(param).lower() for s in self._url_params):
-                            payload = self.__get_param_ngrok_payload(dto.link, param, "POST")
+                            payload = self.__get_param_ngrok_payload(dto.url, param, "POST")
                             prev_url = url
                             url += (param + f'={payload}&')
 
@@ -101,4 +101,4 @@ class SsrfManager:
                     print("METHOD TYPE NOT FOUND: " + form.method_type)
                     return
         except Exception as inst:
-            print(f"Exception - ({dto.link}) - {inst}")
+            print(f"Exception - ({dto.url}) - {inst}")

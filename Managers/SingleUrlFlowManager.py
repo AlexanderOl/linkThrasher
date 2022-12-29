@@ -1,11 +1,13 @@
 import os
 from typing import List
+from urllib.parse import urlparse
 
 import urllib3
 from datetime import datetime
 from tldextract import tldextract
 
 from Managers.CookieManager import CookieManager
+from Managers.ManualTesting import ManualTesting
 from Managers.Spider import Spider
 from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
@@ -14,6 +16,7 @@ from Managers.Tools.Dirb import Dirb
 from Managers.Tools.Gobuster import Gobuster
 from Managers.Tools.Hakrawler import Hakrawler
 from Managers.XssManager import XssManager
+from Models.FormRequestDTO import FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
 
 
@@ -55,13 +58,12 @@ class SingleUrlFlowManager:
         get_spider_dtos, form_dtos = spider.get_all_links(start_url)
 
         get_hakrawler_dtos.extend(get_spider_dtos)
-        get_dtos: List[GetRequestDTO] = []
-        for dto in get_hakrawler_dtos:
-            if not any(item.url == dto.url for item in get_dtos):
-                get_dtos.append(dto)
 
-        if get_dtos is None:
-            print(f'{domain} get DTOs not found')
+        manual_testing = ManualTesting(domain)
+        get_dtos = manual_testing.save_urls_for_manual_testing(get_hakrawler_dtos, form_dtos)
+
+        if len(get_dtos) == 0:
+            print(f'{domain} request DTOs not found')
             return
 
         xss_manager = XssManager(domain, cookies_dict, self._headers)
@@ -80,3 +82,5 @@ class SingleUrlFlowManager:
         ssti_manager.check_form_requests(form_dtos)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SingleUrlFlowManager done with ({start_url})')
+
+

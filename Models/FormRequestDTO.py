@@ -24,13 +24,13 @@ class FormDetailsDTO:
 
 
 class FormRequestDTO:
-    def __init__(self, link: str, form_params: List[FormDetailsDTO]):
-        self._link = link
+    def __init__(self, url: str, form_params: List[FormDetailsDTO]):
+        self._url = url
         self._form_params = form_params
 
     @property
-    def link(self):
-        return self._link
+    def url(self):
+        return self._url
 
     @property
     def form_params(self) -> List[FormDetailsDTO]:
@@ -42,4 +42,4 @@ class FormRequestDTO:
             details += f"{form},"
         if details.endswith(','):
             details = details[:-1]
-        return f'Link:{self._link},FormDetails:[{details}]'
+        return f'Link:{self._url},FormDetails:[{details}]'

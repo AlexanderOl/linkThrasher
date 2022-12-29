@@ -97,7 +97,7 @@ class SstiManager:
                             old_param = form_params[param]
                             form_params[param] = payload
 
-                            response = self._request_handler.handle_request(dto.link, post_data=form_params)
+                            response = self._request_handler.handle_request(dto.url, post_data=form_params)
                             if response is None:
                                 continue
 
@@ -110,7 +110,7 @@ class SstiManager:
                                                  f'STATUS-{response.status_code};' \
                                                  f'DETAILS-{web_page[start_index:last_index]};'
                                 print(log_header_msg)
-                                result.append(SstiFoundDTO(SstiType.PostForm, dto.link, form_params, web_page))
+                                result.append(SstiFoundDTO(SstiType.PostForm, dto.url, form_params, web_page))
                             if str(response.status_code)[0] == '5':
                                 print("SstiManager: 500 status - " + url)
                             elif response.status_code == 400:
@@ -134,7 +134,7 @@ class SstiManager:
                                                  f'STATUS-{response.status_code};' \
                                                  f'DETAILS-{web_page[start_index:last_index]};'
                                 print(log_header_msg)
-                                result.append(SstiFoundDTO(SstiType.GetForm, dto.link, param, web_page))
+                                result.append(SstiFoundDTO(SstiType.GetForm, dto.url, param, web_page))
                             if str(response.status_code)[0] == '5':
                                 print("SstiManager: 500 status - " + url)
                             elif response.status_code == 400:
@@ -143,4 +143,4 @@ class SstiManager:
                     print("METHOD TYPE NOT FOUND: " + form.method_type)
                     return
         except Exception as inst:
-            print(f"Exception - ({dto.link}) - {inst}")
+            print(f"Exception - ({dto.url}) - {inst}")

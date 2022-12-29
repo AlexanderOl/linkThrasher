@@ -104,7 +104,7 @@ class Spider:
             web_page = response.text
             dto = GetRequestDTO(checked_url, response)
             self._get_DTOs.append(dto)
-            self.__get_forms(checked_url, web_page)
+            self.__find_forms(checked_url, web_page)
         else:
             return
 
@@ -122,7 +122,7 @@ class Spider:
         target_url = target_url.replace('https:', 'http:')
         self.__recursive_search(target_url, current_depth)
 
-    def __get_forms(self, target_url, web_page):
+    def __find_forms(self, target_url, web_page):
         forms = BeautifulSoup(web_page, "html.parser").findAll('form')
         if forms:
             form_details: List[FormDetailsDTO] = []
