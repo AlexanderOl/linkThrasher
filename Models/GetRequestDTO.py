@@ -9,7 +9,10 @@ class GetRequestDTO:
             self._url = args[0]
             self._response_length = len(args[1].text)
             self._status_code = args[1].status_code
-            self._content_type = args[1].headers['Content-Type']
+            if 'Content-Type' in args[1].headers:
+                self._content_type = args[1].headers['Content-Type']
+            else:
+                self._content_type = 'No Content-Type'
 
     @property
     def url(self) -> str:

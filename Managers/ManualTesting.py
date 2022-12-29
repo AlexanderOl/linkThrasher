@@ -41,7 +41,7 @@ class ManualTesting:
                 checked_urls.add(to_check)
                 form_result.add(str(dto))
 
-        txt_file = open(txt_filepath, 'w')
+        txt_file = open(txt_filepath, 'a')
         for item in get_result:
             txt_file.write("%s\n" % str(item))
 

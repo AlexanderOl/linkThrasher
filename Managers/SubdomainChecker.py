@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 import validators
@@ -18,18 +19,20 @@ class SubdomainChecker:
         raw_cookies = cookie_manager.get_raw_cookies()
         cookies = cookie_manager.get_cookies_dict(raw_cookies)
         self._request_handler = RequestHandler(cookies, headers)
+        self._out_of_scope_domains = os.environ.get("out_of_scope_domains")
 
     def check_all_subdomains(self, all_subdomains: set) -> List[GetRequestDTO]:
         cache_manager = CacheManager(self._tool_name, self._domain)
         checked_subdomains = cache_manager.get_saved_result()
 
         if not checked_subdomains:
-
-            if len(all_subdomains) == 0:
-                all_subdomains.add(f'{self._domain}')
+            out_of_scope = self._out_of_scope_domains.split(';')
+            subdomains = set(filter(lambda o: o not in out_of_scope, all_subdomains))
+            if len(subdomains) == 0:
+                subdomains.add(f'{self._domain}')
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_subdomain, all_subdomains)
+            thread_man.run_all(self.__check_subdomain, subdomains)
 
             filtered_dtos: List[GetRequestDTO] = []
             for item in self._checked_subdomains:

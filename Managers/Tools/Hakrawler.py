@@ -66,7 +66,6 @@ class Hakrawler:
             if response is None:
                 continue
             if response.status_code < 400 or str(response.status_code)[0] == '5':
-                print(f'Url ({url}) - status code:{response.status_code}, length: {len(response.text)}')
                 result.append(GetRequestDTO(url, response))
 
         return result
