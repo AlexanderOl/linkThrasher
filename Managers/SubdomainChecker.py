@@ -21,7 +21,7 @@ class SubdomainChecker:
         self._request_handler = RequestHandler(cookies, headers)
         self._out_of_scope_domains = os.environ.get("out_of_scope_domains")
 
-    def check_all_subdomains(self, all_subdomains: set) -> List[GetRequestDTO]:
+    def check_all_subdosmains(self, all_subdomains: set) -> List[GetRequestDTO]:
         cache_manager = CacheManager(self._tool_name, self._domain)
         checked_subdomains = cache_manager.get_saved_result()
 
