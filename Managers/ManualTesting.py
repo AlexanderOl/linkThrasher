@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, re
 
 from Models.FormRequestDTO import FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
@@ -27,6 +27,11 @@ class ManualTesting:
         get_result = set()
         checked_urls = set()
         for dto in get_dtos:
+            if re.search(r'\{[}\d+\}', dto.url):
+                to_check = dto.url.rsplit('}', 1)[0]
+                if to_check not in checked_urls:
+                    checked_urls.add(to_check)
+                    get_result.add(dto.url)
             if '?' in dto.url:
                 to_check = dto.url.split('?')[0]
                 if to_check not in checked_urls:
@@ -40,6 +45,9 @@ class ManualTesting:
             if to_check not in checked_urls:
                 checked_urls.add(to_check)
                 form_result.add(str(dto))
+
+        if len(form_result) == 0 and len(get_result) == 0:
+            return get_dtos
 
         txt_file = open(txt_filepath, 'a')
         for item in get_result:
