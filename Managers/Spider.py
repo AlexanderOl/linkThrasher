@@ -90,7 +90,7 @@ class Spider:
         if response is None:
             return
 
-        if response.headers['Content-Type'] in self._ignore_content_types:
+        if 'Content-Type' in response.headers and response.headers['Content-Type'] in self._ignore_content_types:
             self._file_get_DTOs.append(GetRequestDTO(checked_url, response))
             return
 
