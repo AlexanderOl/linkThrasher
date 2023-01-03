@@ -24,13 +24,23 @@ class FormDetailsDTO:
 
 
 class FormRequestDTO:
-    def __init__(self, url: str, form_params: List[FormDetailsDTO]):
+    def __init__(self, url: str, form_params: List[FormDetailsDTO], status_code: int, response_length: int):
         self._url = url
         self._form_params = form_params
+        self._status_code = status_code
+        self._response_length = response_length
 
     @property
     def url(self):
         return self._url
+
+    @property
+    def status_code(self) -> int:
+        return self._status_code
+
+    @property
+    def response_length(self) -> int:
+        return self._response_length
 
     @property
     def form_params(self) -> List[FormDetailsDTO]:

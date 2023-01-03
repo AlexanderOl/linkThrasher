@@ -1,5 +1,6 @@
 import os
-from typing import List, re
+import re
+from typing import List
 
 from Models.FormRequestDTO import FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
@@ -27,7 +28,7 @@ class ManualTesting:
         get_result = set()
         checked_urls = set()
         for dto in get_dtos:
-            if re.search(r'\{[}\d+\}', dto.url):
+            if re.search(r'\{(.*?)\}', dto.url):
                 to_check = dto.url.rsplit('}', 1)[0]
                 if to_check not in checked_urls:
                     checked_urls.add(to_check)

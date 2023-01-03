@@ -16,8 +16,8 @@ class Dirb:
             stream = os.popen(command)
             bash_outputs = stream.readlines()
 
-            if len(bash_outputs) == 0 and 'https' not in url:
-                url = url.replace('http', 'https')
+            if len(bash_outputs) == 0 and not url.startswith('https:'):
+                url = url.replace('http:', 'https:')
                 self.check_single_url(url)
             filtered_output = list(filter(lambda o: 'CODE:' in o or 'DIRECTORY:' in o, bash_outputs))
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: Dirb {url} finished. Found {len(filtered_output)}')

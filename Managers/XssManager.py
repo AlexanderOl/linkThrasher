@@ -39,7 +39,7 @@ class XssManager:
             result: List[XssFoundDTO] = []
 
             for item in form_results:
-                self.check_form_request(item, result)
+                self.__check_form(item, result)
 
             cache_manager.save_result(result, has_final_result=True)
 
@@ -82,7 +82,7 @@ class XssManager:
         if str(response.status_code)[0] == '5':
             print("XssManager: 500 status - " + url)
 
-    def check_form_request(self, dto: FormRequestDTO, result: List[XssFoundDTO]):
+    def __check_form(self, dto: FormRequestDTO, result: List[XssFoundDTO]):
         for form in dto.form_params:
             if form.method_type == "POST":
                 for param in form.params:

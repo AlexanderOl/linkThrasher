@@ -34,13 +34,22 @@ class SubdomainChecker:
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_subdomain, subdomains)
 
+            if len(self._checked_subdomains) > 2:
+                origin = next(s for s in self._checked_subdomains if s.url == f'/{self._domain}/')
+                www = next(s for s in self._checked_subdomains if s.url == f'/www.{self._domain}/')
+                if origin is not None and www is not None and \
+                        origin.status_code == www.status_code and \
+                        origin.response_length == www.response_length:
+                    self._checked_subdomains.remove(www)
+
             filtered_dtos: List[GetRequestDTO] = []
             for item in self._checked_subdomains:
                 curr_resp_length = item.response_length
                 curr_status_code = item.status_code
+
                 if len(filtered_dtos) == 0 or \
                         len(list(filter(lambda dto: dto.response_length == curr_resp_length and
-                                               dto.status_code == curr_status_code, filtered_dtos))) < 3:
+                                                    dto.status_code == curr_status_code, filtered_dtos))) < 3:
                     filtered_dtos.append(item)
 
             cache_manager.save_result(filtered_dtos)

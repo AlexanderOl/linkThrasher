@@ -104,7 +104,7 @@ class Spider:
             web_page = response.text
             dto = GetRequestDTO(checked_url, response)
             self._get_DTOs.append(dto)
-            self.__find_forms(checked_url, web_page)
+            self.__find_forms(checked_url, web_page, dto)
         else:
             return
 
@@ -122,7 +122,7 @@ class Spider:
         target_url = target_url.replace('https:', 'http:')
         self.__recursive_search(target_url, current_depth)
 
-    def __find_forms(self, target_url, web_page):
+    def __find_forms(self, target_url, web_page, dto: GetRequestDTO):
         forms = BeautifulSoup(web_page, "html.parser").findAll('form')
         if forms:
             form_details: List[FormDetailsDTO] = []
@@ -143,9 +143,11 @@ class Spider:
                     param_name = BeautifulSoup(str(input_tag), "html.parser").find('input').get('name')
                     if param_name:
                         default_value = BeautifulSoup(str(input_tag), "html.parser").find('input').get('value')
+                        if default_value is None:
+                            default_value = ''
                         params[param_name] = default_value
                 form_details.append(FormDetailsDTO(action_tag, params, method))
-            self._form_DTOs.append(FormRequestDTO(target_url, form_details))
+            self._form_DTOs.append(FormRequestDTO(target_url, form_details, dto.status_code, dto.response_length))
 
     def __check_href(self, href, target_url):
         result = False
@@ -202,12 +204,22 @@ class Spider:
                 url_part = url.get(attr)
                 is_valid_href = self.__check_href(url_part, target_url)
                 if is_valid_href:
-                    if url_part[0] == '/':
+                    if url_part.startswith('/'):
                         html_urls.add(main_url + url_part)
-                    elif str(url_part[0:4]) == "http":
+                    elif url_part.startswith('http'):
                         html_urls.add(url_part)
+                    elif url_part.startswith('..'):
+                        html_urls.add(f'{main_url}/{url_part[2:]}')
                     else:
-                        html_urls.add(f'{main_url}/{url_part}')
+                        if '/' in url_part:
+                            second_part = url_part.rsplit('/', 1)[1]
+                            if target_url.endswith(second_part):
+                                html_urls.add(f'{target_url.rsplit("/", 1)[0]}/{url_part}')
+                            else:
+                                html_urls.add(f'{main_url}/{url_part}')
+                                print(f'Need attention ({target_url} with {url_part}). Temp result is - {main_url}/{url_part}')
+                        else:
+                            html_urls.add(f'{main_url}/{url_part}')
             except Exception as inst:
                 print(inst)
 

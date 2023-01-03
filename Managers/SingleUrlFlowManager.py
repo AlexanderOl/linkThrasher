@@ -36,14 +36,10 @@ class SingleUrlFlowManager:
         if domain[0] == '.':
             domain = domain[1:]
 
-        # dirb = Dirb(domain)
-        # dirb.check_single_url(start_url)
-
         gobuster = Gobuster(domain)
         gobuster.check_single_url(start_url)
 
         cookie_manager = CookieManager(self.main_domain, self.download_path)
-
         if self.raw_cookies:
             cookies_dict = self.raw_cookies
             raw_cookies = self.raw_cookies
@@ -53,6 +49,7 @@ class SingleUrlFlowManager:
 
         hakrawler = Hakrawler(domain, raw_cookies, self._headers, cookies_dict)
         get_hakrawler_dtos = hakrawler.get_requests_dtos(start_url)
+        # get_hakrawler_dtos = []
 
         spider = Spider(domain, cookies_dict, self._headers, self.max_depth, self.main_domain)
         get_spider_dtos, form_dtos = spider.get_all_links(start_url)
@@ -76,11 +73,10 @@ class SingleUrlFlowManager:
 
         sqli_manager = SqliManager(domain, cookies_dict, self._headers)
         sqli_manager.check_get_requests(get_dtos)
+        sqli_manager.check_form_requests(form_dtos)
 
         ssti_manager = SstiManager(domain, cookies_dict, self._headers)
         ssti_manager.check_get_requests(get_dtos)
         ssti_manager.check_form_requests(form_dtos)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SingleUrlFlowManager done with ({start_url})')
-
-

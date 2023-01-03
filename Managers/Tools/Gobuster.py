@@ -18,7 +18,7 @@ class Gobuster:
         if not report_lines:
             try:
                 then = datetime.now()
-                output_file = f'{self._tool_result_dir}/{self._domain}_raw.txt'
+                output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
                 proc = subprocess.Popen(["gobuster", "dir", "-u", url, "-w" "/usr/share/dirb/wordlists/big.txt",
                                          "-t", "50", "-o", output_file],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
