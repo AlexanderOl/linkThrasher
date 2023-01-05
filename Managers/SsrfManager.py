@@ -1,4 +1,5 @@
 import os
+import urllib
 import uuid
 import urllib.parse as urlparse
 from typing import List
@@ -10,9 +11,10 @@ from Models.FormRequestDTO import FormRequestDTO
 
 class SsrfManager:
 
-    def __init__(self, domain, cookies, headers, ngrok_url):
+    def __init__(self, domain, cookies, headers):
         self._domain = domain
-        self._ngrok_url = ngrok_url
+        ngrok_url = os.environ.get('ngrok_url')
+        self._ngrok_url_safe = urllib.parse.quote(ngrok_url, safe='')
         self._url_params = ['url', 'redirect']
         self._tool_dir = f'Results/SsrfManager'
         self._get_domain_log = f'{self._tool_dir}/GET_{self._domain}_log.json'
@@ -54,14 +56,14 @@ class SsrfManager:
         param_split = query.split('=')
         main_url_split = url.split(query)
         uiid_str = str(uuid.uuid4())
-        payload = main_url_split[0] + param_split[0] + f'={self._ngrok_url}{uiid_str}' + main_url_split[1]
+        payload = main_url_split[0] + param_split[0] + f'={self._ngrok_url_safe}{uiid_str}' + main_url_split[1]
         with open(self._get_domain_log, 'a') as f:
             f.write(f'{uiid_str}:{payload}\n')
         return payload
 
     def __get_param_ngrok_payload(self, url: str, param: str, method_type: str):
         uiid_str = str(uuid.uuid4())
-        payload = f'{self._ngrok_url}{uiid_str}'
+        payload = f'{self._ngrok_url_safe}{uiid_str}'
         with open(self._get_domain_log, 'a') as f:
             f.write(f'{uiid_str}:{url}:{param}:{method_type}\n')
         return payload
