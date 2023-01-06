@@ -35,8 +35,8 @@ class SubdomainChecker:
             thread_man.run_all(self.__check_subdomain, subdomains)
 
             if len(self._checked_subdomains) > 2:
-                origin = next(s for s in self._checked_subdomains if s.url == f'/{self._domain}/')
-                www = next(s for s in self._checked_subdomains if s.url == f'/www.{self._domain}/')
+                origin = next((s for s in self._checked_subdomains if f'/{self._domain}/' in s.url), None)
+                www = next((s for s in self._checked_subdomains if f'/www.{self._domain}/' in s.url), None)
                 if origin is not None and www is not None and \
                         origin.status_code == www.status_code and \
                         origin.response_length == www.response_length:

@@ -67,7 +67,7 @@ class SingleUrlFlowManager:
         xss_manager.check_get_requests(get_dtos)
         xss_manager.check_form_requests(form_dtos)
 
-        ssrf_manager = SsrfManager(domain, cookies_dict, self._headers, self.ngrok_url)
+        ssrf_manager = SsrfManager(domain, cookies_dict, self._headers)
         ssrf_manager.check_get_requests(get_dtos)
         ssrf_manager.check_form_requests(form_dtos)
 

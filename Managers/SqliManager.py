@@ -118,9 +118,9 @@ class SqliManager:
 
         self.__send_error_based_request(f'{base_url}{self._single_error_based_payload}', result)
 
-        for payloads in self._time_based_payloads:
-            self.__send_time_based_request(f'{base_url}{payloads["TruePld"]}', f'{base_url}{payloads["FalsePld"]}',
-                                           result)
+        # for payloads in self._time_based_payloads:
+        #     self.__send_time_based_request(f'{base_url}{payloads["TruePld"]}', f'{base_url}{payloads["FalsePld"]}',
+        #                                    result)
 
     def __check_get_params(self, dto: GetRequestDTO, result: List[SqliFoundDTO]):
         error_based_payloads_urls = set()
@@ -131,12 +131,16 @@ class SqliManager:
         for query in queries:
             param_split = query.split('=')
             main_url_split = dto.url.split(query)
-            for payloads in self._time_based_payloads:
-                time_based_payloads_urls.add(
-                    (f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',
-                     f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}'))
-            for payload in self._error_based_payloads:
-                error_based_payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
+            # for payloads in self._time_based_payloads:
+            #     time_based_payloads_urls.add(
+            #         (f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',
+            #          f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}'))
+
+            error_based_payloads_urls.add(
+                f'{main_url_split[0]}{param_split[0]}={self._single_error_based_payload}{main_url_split[1]}')
+
+            # for payload in self._error_based_payloads:
+            #     error_based_payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
 
         for payload in error_based_payloads_urls:
             self.__send_error_based_request(payload, result)
