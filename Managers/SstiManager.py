@@ -12,8 +12,8 @@ from Models.SstiFoundDTO import SstiFoundDTO, SstiType
 class SstiManager:
     def __init__(self, domain, cookies, headers):
         self._domain = domain
-        self._payloads = ['{{7*8}}poc', '{7*8}poc', '@(7*8)poc']
-        self._expected = '56poc'
+        self._payloads = ['{{88*88}}', '{88*88}', '@(88*88)']
+        self._expected = '7744'
         self._request_handler = RequestHandler(cookies, headers)
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
