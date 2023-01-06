@@ -13,8 +13,9 @@ class EyeWitness:
         self._tool_dir = f"Results/{self._tool_name}"
 
     def divide_chunks(self, items):
-        for i in range(0, len(items), self._chunk_size):
-            yield items[i:i + self._chunk_size]
+        items_to_split = list(items)
+        for i in range(0, len(items_to_split), self._chunk_size):
+            yield items_to_split[i:i + self._chunk_size]
 
     def visit_urls(self, urls: set):
         if len(urls) == 0:
