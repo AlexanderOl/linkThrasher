@@ -13,6 +13,7 @@ class SstiManager:
     def __init__(self, domain, cookies, headers):
         self._domain = domain
         self._payloads = ['{{88*88}}', '{88*88}', '@(88*88)']
+        self._double_check = '77*77'
         self._expected = '7744'
         self._double_check_expected = '5929'
         self._request_handler = RequestHandler(cookies, headers)

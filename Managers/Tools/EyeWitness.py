@@ -9,7 +9,7 @@ class EyeWitness:
         self._tool_name = self.__class__.__name__
         self._domain = domain
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
-        self._chunk_size = 50
+        self._chunk_size = 30
         self._tool_dir = f"Results/{self._tool_name}"
 
     def divide_chunks(self, items):
