@@ -21,8 +21,8 @@ class EyeWitness:
         if len(urls) == 0:
             return
         cache_manager = CacheManager(self._tool_name, self._domain)
-        checked_domain = cache_manager.get_saved_result()
-        if not checked_domain:
+        result = cache_manager.get_saved_result()
+        if not result:
 
             if not os.path.exists(self._tool_dir):
                 os.makedirs(self._tool_dir)
@@ -37,12 +37,13 @@ class EyeWitness:
             for urls_batch in batches_list:
                 msg = self._visit_urls(urls_batch)
                 counter -= 1
-                print(f'left:{counter}, chunk_size:{len(urls_batch)}, result:{msg}')
+                print(f'[{datetime.now().strftime("%H:%M:%S")}]: left:{counter}, chunk_size:{len(urls_batch)}, result:{msg}')
 
             duration = datetime.now() - start
-            cache_manager.save_result([f'Eyewitness finished in {duration.total_seconds()} seconds'])
+            result = f'Eyewitness ({self._domain})  finished in {duration.total_seconds()} seconds'
+            cache_manager.save_result([result])
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} found {checked_domain} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: {result}')
 
     def _visit_urls(self, urls_batch):
         txt_filepath = f"{self._tool_dir}/{self._domain}_raw.txt"
