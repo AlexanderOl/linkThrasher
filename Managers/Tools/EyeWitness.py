@@ -35,9 +35,12 @@ class EyeWitness:
             batches_list = list(self.divide_chunks(urls))
             counter = len(batches_list)
             for urls_batch in batches_list:
-                msg = self._visit_urls(urls_batch)
+                msg = self.__make_screens(urls_batch, counter)
                 counter -= 1
-                print(f'[{datetime.now().strftime("%H:%M:%S")}]: left:{counter}, chunk_size:{len(urls_batch)}, result:{msg}')
+                print(
+                    f'[{datetime.now().strftime("%H:%M:%S")}]: left:{counter}, chunk_size:{len(urls_batch)}, result:{msg}')
+
+            self.__cleanup()
 
             duration = datetime.now() - start
             result = f'Eyewitness ({self._domain})  finished in {duration.total_seconds()} seconds'
@@ -45,7 +48,7 @@ class EyeWitness:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: {result}')
 
-    def _visit_urls(self, urls_batch):
+    def __make_screens(self, urls_batch, counter: int):
         txt_filepath = f"{self._tool_dir}/{self._domain}_raw.txt"
         txt_file = open(txt_filepath, 'w')
         for subdomain in urls_batch:
@@ -55,7 +58,7 @@ class EyeWitness:
         try:
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
             command = f'cd /root/Desktop/TOOLs/EyeWitness/Python/; ' \
-                      f'./EyeWitness.py -f {subdomains_filepath} --web -d {self._tool_result_dir}/{self._domain} --timeout 15 --no-prompt'
+                      f'./EyeWitness.py -f {subdomains_filepath} --thread 1 --web -d {self._tool_result_dir}/{self._domain}/{counter} --timeout 15 --no-prompt'
             stream = os.popen(command)
             bash_outputs = stream.readlines()
 
@@ -71,4 +74,14 @@ class EyeWitness:
 
         return result_msg
 
+    def __cleanup(self):
+        copy_all_cmd = f"cd {self._tool_result_dir}/{self._domain}; " + \
+                       "mkdir all -p && find . -name '*.png' -exec cp {} " + \
+                       f'{self._tool_result_dir}/{self._domain}/all/ \; 2>>/dev/null'
+        stream = os.popen(copy_all_cmd)
+        stream.read()
 
+        clean_up_cmd = f"cd {self._tool_result_dir}/{self._domain}; " + \
+                       "find . ! -name 'all' -type d -exec rm -r {} + 2>>/dev/null"
+        stream = os.popen(clean_up_cmd)
+        stream.read()
