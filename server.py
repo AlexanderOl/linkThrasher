@@ -6,6 +6,7 @@ from Managers.DomainFlowManager import DomainFlowManager
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Managers.ThreadManager import ThreadManager
 from Managers.Tools.Dirb import Dirb
+from Models.GetRequestDTO import GetRequestDTO
 
 headers = {
     'Cache-Control': 'max-age=0',
@@ -43,7 +44,7 @@ if __name__ == '__main__':
     elif check_mode == 'U':
         single_url_man = SingleUrlFlowManager(headers)
         single_url = os.environ.get('single_url')
-        single_url_man.run(single_url)
+        single_url_man.run(GetRequestDTO(single_url))
 
     elif check_mode == 'UL':
         file_path = 'Targets/urls.txt'

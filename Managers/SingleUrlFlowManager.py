@@ -1,9 +1,7 @@
 import os
-from typing import List
-from urllib.parse import urlparse
+from datetime import datetime
 
 import urllib3
-from datetime import datetime
 from tldextract import tldextract
 
 from Managers.CookieManager import CookieManager
@@ -12,11 +10,9 @@ from Managers.Spider import Spider
 from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
 from Managers.SstiManager import SstiManager
-from Managers.Tools.Dirb import Dirb
 from Managers.Tools.Gobuster import Gobuster
 from Managers.Tools.Hakrawler import Hakrawler
 from Managers.XssManager import XssManager
-from Models.FormRequestDTO import FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
 
 
@@ -30,14 +26,19 @@ class SingleUrlFlowManager:
         self.main_domain = os.environ.get('domain')
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    def run(self, start_url: str):
+    def run(self, get_dto: GetRequestDTO):
+
+        if 400 <= get_dto.status_code < 500:
+            return
+
+        start_url = get_dto.url
         domain_parts = tldextract.extract(start_url)
         domain = f'{domain_parts.subdomain}.{domain_parts.domain}.{domain_parts.suffix}'
         if domain[0] == '.':
             domain = domain[1:]
 
-        gobuster = Gobuster(domain)
-        gobuster.check_single_url(start_url)
+        # gobuster = Gobuster(domain)
+        # gobuster.check_single_url(start_url)
 
         cookie_manager = CookieManager(self.main_domain, self.download_path)
         if self.raw_cookies:

@@ -8,11 +8,12 @@ class SstiType(Enum):
 
 
 class SstiFoundDTO:
-    def __init__(self, url: str, ssti_type: SstiType, payload, web_page):
+    def __init__(self, url: str, ssti_type: SstiType, payload, web_page, header_msg):
         self._url = url
         self._ssti_type = ssti_type
         self._payload = payload
         self._web_page = web_page
+        self._header_msg = header_msg
 
     @property
     def url(self):
@@ -27,4 +28,4 @@ class SstiFoundDTO:
         return self._web_page
 
     def __str__(self):
-        return f'url: {self._url}, payload: {self._payload}'
+        return f'url: {self._url}, ssti_type: {self._ssti_type}, details: {self._header_msg}'

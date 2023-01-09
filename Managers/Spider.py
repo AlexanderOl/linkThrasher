@@ -57,7 +57,7 @@ class Spider:
         get_found = get_cache_manager.get_saved_result()
         form_found = form_cache_manager.get_saved_result()
 
-        if not get_found and not form_found:
+        if get_found is None or form_found is None:
             current_depth = 0
             self.__recursive_search(start_url, current_depth)
             get_cache_manager.save_result(self._get_DTOs)
@@ -123,6 +123,8 @@ class Spider:
         self.__recursive_search(target_url, current_depth)
 
     def __find_forms(self, target_url, web_page, dto: GetRequestDTO):
+        if '<form' not in web_page:
+            return
         forms = BeautifulSoup(web_page, "html.parser").findAll('form')
         if forms:
             form_details: List[FormDetailsDTO] = []
@@ -184,8 +186,10 @@ class Spider:
 
         href_urls = self.__get_url_from_html(tag='a', attr='href', web_page=web_page, target_url=target_url)
         data_url = self.__get_url_from_html(tag='div', attr='data-url', web_page=web_page, target_url=target_url)
+        form_url = self.__get_url_from_html(tag='form', attr='action', web_page=web_page, target_url=target_url)
 
         href_urls.update(data_url)
+        href_urls.update(form_url)
         dict_href = {}
         for found_href in href_urls:
             parsed = urlparse(found_href)

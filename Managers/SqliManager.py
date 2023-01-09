@@ -20,7 +20,7 @@ class SqliManager:
         ]
         self._delay_in_seconds = 5
         self._request_handler = RequestHandler(cookies, headers)
-        self._expected = 'syntax'
+        self._injections_to_check = ['syntax', 'xpath', 'exception', 'internalerror', 'warning:']
         self._single_error_based_payload = '\'"%5C)\\\\'
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
@@ -65,19 +65,9 @@ class SqliManager:
                     if response is None:
                         continue
 
-                    web_page = response.text
-                    if self._expected in web_page or ('exception' in web_page and dto.response_length != len(response.text)):
-                        curr_resp_length = len(web_page)
-                        if len(result) == 0 or \
-                                len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
-                            print(f'Found FORM SQLi! url:{dto.url} , param:{param}, action:{form.action}')
-                            result.append(SqliFoundDTO(SqliType.FORM_ERROR, dto.url, copy_form_params, web_page))
-                        else:
-                            print("Duplicate FORM SQLi: - " + url)
+                    self.__check_keywords(result, response, dto, SqliType.FORM_ERROR, params=copy_form_params)
 
-                    if str(response.status_code)[0] == '5':
-                        print("SqliManager: 500 status - " + url)
-                    elif response.status_code == 400:
+                    if response.status_code == 400:
                         copy_form_params[param] = old_param
             elif form.method_type == "GET":
                 parsed = urlparse.urlparse(dto.url)
@@ -94,20 +84,14 @@ class SqliManager:
                     if response is None:
                         continue
 
-                    web_page = response.text
-                    if self._expected in web_page:
-                        curr_resp_length = len(web_page)
-                        if len(result) == 0 or \
-                                len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
-                            print(f'Found FORM SQLi! url:{url}')
-                            result.append(SqliFoundDTO(SqliType.FORM_GET_ERROR, dto.url, param, web_page))
-                        else:
-                            print("Duplicate FORM SQLi: - " + url)
+                    self.__check_keywords(result, response, dto, SqliType.FORM_GET_ERROR, params=param)
+
                     if response.status_code == 400:
                         url = prev_url
             else:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
+
     def __check_url(self, dto: GetRequestDTO, result: List[SqliFoundDTO]):
 
         parsed = urlparse.urlparse(dto.url)
@@ -116,11 +100,11 @@ class SqliManager:
         # for payload in self._error_based_payloads:
         #     self.__send_error_based_request(f'{base_url}{payload}', result)
 
-        self.__send_error_based_request(f'{base_url}{self._single_error_based_payload}', result)
+        self.__send_error_based_request(f'{base_url}{self._single_error_based_payload}', result, dto)
 
-        # for payloads in self._time_based_payloads:
-        #     self.__send_time_based_request(f'{base_url}{payloads["TruePld"]}', f'{base_url}{payloads["FalsePld"]}',
-        #                                    result)
+        for payloads in self._time_based_payloads:
+            self.__send_time_based_request(f'{base_url}{payloads["TruePld"]}', f'{base_url}{payloads["FalsePld"]}',
+                                           result)
 
     def __check_get_params(self, dto: GetRequestDTO, result: List[SqliFoundDTO]):
         error_based_payloads_urls = set()
@@ -143,33 +127,18 @@ class SqliManager:
             #     error_based_payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
 
         for payload in error_based_payloads_urls:
-            self.__send_error_based_request(payload, result)
+            self.__send_error_based_request(payload, result, dto)
 
         for payloads in time_based_payloads_urls:
             self.__send_time_based_request(payloads[0], payloads[1], result)
 
-    def __send_error_based_request(self, url, result: List[SqliFoundDTO]):
+    def __send_error_based_request(self, url, result: List[SqliFoundDTO], dto: GetRequestDTO):
         try:
             response = self._request_handler.handle_request(url)
             if response is None:
                 return
-            if response.status_code == 200 or str(response.status_code)[0] == '5':
-                if not response.history or response.history[0].status_code != 301:
-                    web_page = response.text.lower()
-                    if self._expected in web_page:
-                        substr_index = web_page.find(self._expected)
-                        start_index = substr_index - 50 if substr_index - 50 > 0 else 0
-                        last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
-                        log_header_msg = f'injFOUND "{self._expected}":' \
-                                         f'STATUS-{response.status_code};' \
-                                         f'DETAILS-{web_page[start_index:last_index]};'
-                        curr_resp_length = len(web_page)
-                        if len(result) == 0 or \
-                                len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
-                            print(log_header_msg)
-                            result.append(SqliFoundDTO(url, SqliType.ERROR, self._single_error_based_payload, web_page))
-                        else:
-                            print("Duplicate GET SQLI: - " + url)
+
+            self.__check_keywords(result, response, dto, SqliType.ERROR)
 
         except Exception as inst:
             print(f"Exception - ({url}) - {inst}")
@@ -183,3 +152,25 @@ class SqliManager:
                 if response3 is not None and response3.elapsed.total_seconds() >= self._delay_in_seconds:
                     print(f"SQLiManager delay FOUND: - {true_payload} - {false_payload}")
                     return result.append(SqliFoundDTO(SqliType.TIME, true_payload, 'TIME_BASED', response1.text))
+
+    def __check_keywords(self, result, response, dto, sqli_type: SqliType, params=None):
+        web_page = response.text
+        for keyword in self._injections_to_check:
+            # if keyword in web_page and dto.response_length != len(response.text):
+            if keyword in web_page:
+                substr_index = web_page.find(keyword)
+                start_index = substr_index - 50 if substr_index - 50 > 0 else 0
+                last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
+                log_header_msg = f'injFOUND "{keyword}":' \
+                                 f'STATUS-{response.status_code};' \
+                                 f'DETAILS-{web_page[start_index:last_index]};'
+                curr_resp_length = len(web_page)
+                if len(result) == 0 or \
+                        len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
+                    print(log_header_msg)
+                    result.append(SqliFoundDTO(sqli_type, dto.url, params, web_page, log_header_msg))
+                else:
+                    print("Duplicate FORM SQLi: - " + dto.url)
+
+            if str(response.status_code)[0] == '5':
+                print("SqliManager: 500 status - " + dto.url)

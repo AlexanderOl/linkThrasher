@@ -18,6 +18,8 @@ class Gobuster:
         if not report_lines:
             try:
                 then = datetime.now()
+                print(f'[{then.strftime("%H:%M:%S")}]: Gobuster {url} start...')
+
                 output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
                 proc = subprocess.Popen(["gobuster", "dir", "-u", url, "-w" "/usr/share/dirb/wordlists/big.txt",
                                          "-t", "50", "-o", output_file],
@@ -33,7 +35,6 @@ class Gobuster:
 
                 if os.path.exists(output_file) and os.path.getsize(output_file) == 0:
                     os.remove(output_file)
-
 
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: Gobuster {url} finished.')
                 duration = datetime.now() - then

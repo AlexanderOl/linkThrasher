@@ -8,12 +8,13 @@ class XssType(Enum):
 
 
 class XssFoundDTO:
-    def __init__(self, xss_type: XssType, url: str, payload, web_page):
+    def __init__(self, xss_type: XssType, url: str, payload, web_page, header_msg):
         self._url = url
         self._xss_type = xss_type
         self._payload = payload
         self._web_page = web_page
         self._response_length = len(web_page)
+        self._header_msg = header_msg
 
     @property
     def url(self):
@@ -30,9 +31,10 @@ class XssFoundDTO:
     @property
     def web_page(self):
         return self._web_page
+
     @property
     def response_length(self):
         return self._web_page
 
     def __str__(self):
-        return f'url: {self._url}, payload: {self._payload}, xss_type: {self._xss_type}'
+        return f'url: {self._url}, xss_type: {self._xss_type}, details: {self._header_msg}'

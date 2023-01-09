@@ -15,7 +15,7 @@ class SsrfManager:
         self._domain = domain
         ngrok_url = os.environ.get('ngrok_url')
         self._ngrok_url_safe = urllib.parse.quote(ngrok_url, safe='')
-        self._url_params = ['url', 'redirect']
+        self._url_params = ['url', 'redirect', 'file', 'page', 'source']
         self._tool_dir = f'Results/SsrfManager'
         self._get_domain_log = f'{self._tool_dir}/GET_{self._domain}_log.json'
         self._form_domain_log = f'{self._tool_dir}/FORM_{self._domain}_log.json'
@@ -46,7 +46,7 @@ class SsrfManager:
         queries = [s for s in parsed.query.split("&") if any(xs in str(s).lower() for xs in self._url_params)]
 
         for query in queries:
-            csrf_payload = self.__get_url_ngrok_payload(url, query)
+            csrf_payload = self.__get_url_ngrok_payload(url, str(query))
             payloads_urls.add(csrf_payload)
 
         for url in payloads_urls:
@@ -78,7 +78,7 @@ class SsrfManager:
                             old_param = payload[param]
                             payload[param] = self.__get_param_ngrok_payload(dto.url, param, "POST")
 
-                            response = self._request_handler.handle_request(url, post_data=payload)
+                            response = self._request_handler.handle_request(dto.url, post_data=payload)
                             if response is None:
                                 continue
 

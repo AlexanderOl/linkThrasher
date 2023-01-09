@@ -10,11 +10,10 @@ from Models.XssFoundDTO import XssFoundDTO, XssType
 
 
 class XssManager:
-    def __init__(self, domain,  cookies, headers):
+    def __init__(self, domain, cookies, headers):
         self._domain = domain
         self._expected = '<poc>'
         self._request_handler = RequestHandler(cookies, headers)
-
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
@@ -24,7 +23,11 @@ class XssManager:
         if result is None:
             result: List[XssFoundDTO] = []
             for dto in dtos:
-                self.__send_xss_request(f'{dto.url}/{self._expected}', result)
+                url = f'{dto.url}/{self._expected}'
+                response = self._request_handler.handle_request(url)
+                if response is None:
+                    return
+                self.__check_keywords(result, response, url, XssType.Get, self._expected)
                 self.__check_params(dto.url, result)
             cache_manager.save_result(result, has_final_result=True)
 
@@ -55,8 +58,11 @@ class XssManager:
             main_url_split = url.split(query)
             payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={self._expected}{main_url_split[1]}')
 
-        for payload in payloads_urls:
-            self.__send_xss_request(payload, result)
+        for url in payloads_urls:
+            response = self._request_handler.handle_request(url)
+            if response is None:
+                return
+            self.__check_keywords(result, response, url, XssType.Get, self._expected)
 
         return result
 
@@ -64,23 +70,8 @@ class XssManager:
         response = self._request_handler.handle_request(url)
         if response is None:
             return
-        web_page = response.text
-        if self._expected in web_page:
-            substr_index = web_page.find(self._expected)
-            start_index = substr_index - 50 if substr_index - 50 > 0 else 0
-            last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
-            log_header_msg = f'injFOUND "{self._expected}":' \
-                             f'STATUS-{response.status_code};' \
-                             f'DETAILS-{web_page[start_index:last_index]};'
-            curr_resp_length = len(web_page)
-            if len(result) == 0 or \
-                    len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
-                print(log_header_msg)
-                result.append(XssFoundDTO(XssType.Get, url, self._expected, web_page))
-            else:
-                print("Duplicate GET XSS: - " + url)
-        if str(response.status_code)[0] == '5':
-            print("XssManager: 500 status - " + url)
+
+        self.__check_keywords(result, response, url, XssType.Get, self._expected)
 
     def __check_form(self, dto: FormRequestDTO, result: List[XssFoundDTO]):
         for form in dto.form_params:
@@ -94,19 +85,9 @@ class XssManager:
                     if response is None:
                         continue
 
-                    web_page = response.text
-                    if self._expected in web_page:
-                        curr_resp_length = len(web_page)
-                        if len(result) == 0 or \
-                                len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
-                            print(f'Found FORM XSS! url:{dto.url} , param:{param}, action:{form.action}')
-                            result.append(XssFoundDTO(XssType.PostForm, dto.url, payload, web_page))
-                        else:
-                            print("Duplicate FORM XSS: - " + url)
+                    self.__check_keywords(result, response, dto.url, XssType.PostForm, payload)
 
-                    if str(response.status_code)[0] == '5':
-                        print("XssManager: 500 status - " + url)
-                    elif response.status_code == 400:
+                    if response.status_code == 400:
                         payload[param] = old_param
             elif form.method_type == "GET":
                 parsed = urlparse.urlparse(dto.url)
@@ -123,18 +104,27 @@ class XssManager:
                     if response is None:
                         continue
 
-                    web_page = response.text
-                    if self._expected in web_page:
-                        curr_resp_length = len(web_page)
-                        if len(result) == 0 or \
-                                len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
-                            print(f'Found FORM XSS! url:{url}')
-                            result.append(XssFoundDTO(XssType.GetForm, dto.url, param, web_page))
-                        else:
-                            print("Duplicate FORM XSS: - " + url)
+                    self.__check_keywords(result, response, dto.url, XssType.GetForm, param)
+
                     if response.status_code == 400:
                         url = prev_url
             else:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
 
+    def __check_keywords(self, result, response, url, xss_type: XssType, param=None):
+        web_page = response.text
+        if self._expected in web_page:
+            substr_index = web_page.find(self._expected)
+            start_index = substr_index - 50 if substr_index - 50 > 0 else 0
+            last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
+            log_header_msg = f'injFOUND "{self._expected}":' \
+                             f'STATUS-{response.status_code};' \
+                             f'DETAILS-{web_page[start_index:last_index]};'
+            curr_resp_length = len(web_page)
+            if len(result) == 0 or \
+                    len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
+                print(log_header_msg)
+                result.append(XssFoundDTO(xss_type, url, param, web_page, log_header_msg))
+            else:
+                print("Duplicate FORM XSS: - " + url)

@@ -41,14 +41,14 @@ class DomainFlowManager:
             .union(massdns_subdomains)
 
         subdomain_checker = SubdomainChecker(domain, self.headers, self.download_path)
-        start_urls_statuses = subdomain_checker.check_all_subdomains(all_subdomains)
-        if len(start_urls_statuses) == 0:
+        start_urls_dtos = subdomain_checker.check_all_subdomains(all_subdomains)
+        if len(start_urls_dtos) == 0:
             print('No live subdomains found')
             return
         else:
-            print(f'Found {len(start_urls_statuses)} start urls')
+            print(f'Found {len(start_urls_dtos)} start urls')
 
-        live_urls = set(line.url for line in start_urls_statuses)
+        live_urls = set(line.url for line in start_urls_dtos)
 
         eyewitness = EyeWitness(domain)
         eyewitness.visit_urls(live_urls)
@@ -57,5 +57,5 @@ class DomainFlowManager:
         # nmap.check_ports(all_subdomains)
         single_url_man = SingleUrlFlowManager(self.headers)
         thread_man = ThreadManager()
-        thread_man.run_all(single_url_man.run, live_urls)
+        thread_man.run_all(single_url_man.run, start_urls_dtos)
 

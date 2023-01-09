@@ -39,12 +39,15 @@ class SstiManager:
         base_url = f'{parsed.scheme}://{parsed.hostname}{parsed.path}'
 
         for payload in self._payloads:
-            self.__send_ssti_request(f'{base_url}/{payload}', result)
+            url = f'{base_url}/{payload}'
+            response = self._request_handler.handle_request(url)
+            if response is None:
+                return
+            self.__check_keywords(result, response, url, SstiType.Get)
 
     def __check_get_params(self, dto: GetRequestDTO, result: List[SstiFoundDTO]):
         url = dto.url
         payloads_urls = set()
-        double_check_payloads = set()
         parsed = urlparse.urlparse(url)
         queries = filter(None, parsed.query.split("&"))
 
@@ -54,8 +57,11 @@ class SstiManager:
             for payload in self._payloads:
                 payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
 
-        for payload in payloads_urls:
-            self.__send_ssti_request(payload, result, double_check_payloads)
+        for url in payloads_urls:
+            response = self._request_handler.handle_request(url)
+            if response is None:
+                return
+            self.__check_keywords(result, response, url, SstiType.Get)
 
         return result
 
@@ -73,29 +79,6 @@ class SstiManager:
 
         print("Found FORM XSS: " + str(len(result)))
 
-    def __send_ssti_request(self, url, result: List[SstiFoundDTO]):
-        response = self._request_handler.handle_request(url)
-        if response is None:
-            return
-        web_page = response.text
-        if self._expected in web_page:
-            double_check_url = url.replace('88*88', self._double_check)
-            response2 = self._request_handler.handle_request(double_check_url)
-            if response2 is None:
-                return
-            web_page2 = response2.text
-            if self._double_check_expected in web_page2:
-                substr_index = web_page.find(self._expected)
-                start_index = substr_index - 50 if substr_index - 50 > 0 else 0
-                last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
-                log_header_msg = f'injFOUND "{self._expected}":' \
-                                 f'STATUS-{response.status_code};' \
-                                 f'DETAILS-{web_page[start_index:last_index]};'
-                print(log_header_msg)
-                return result.append(SstiFoundDTO(SstiType.Get, url, 'in_url', web_page))
-        if str(response.status_code)[0] == '5':
-            print("SstiManager: 500 status - " + url)
-
     def __check_form_request(self, dto: FormRequestDTO, result: List[SstiFoundDTO]):
         try:
             for form in dto.form_params:
@@ -110,26 +93,9 @@ class SstiManager:
                             if response is None:
                                 continue
 
-                            web_page = response.text
-                            if self._expected in web_page:
-                                double_check_url = url.replace('88*88', self._double_check)
-                                response2 = self._request_handler.handle_request(double_check_url)
-                                if response2 is None:
-                                    return
-                                web_page2 = response2.text
-                                if self._double_check_expected in web_page2:
-                                    substr_index = web_page.find(self._expected)
-                                    start_index = substr_index - 50 if substr_index - 50 > 0 else 0
-                                    last_index = substr_index + 50 if substr_index + 50 < len(
-                                        web_page) else substr_index
-                                    log_header_msg = f'injFOUND "{self._expected}":' \
-                                                     f'STATUS-{response.status_code};' \
-                                                     f'DETAILS-{web_page[start_index:last_index]};'
-                                    print(log_header_msg)
-                                    result.append(SstiFoundDTO(SstiType.PostForm, dto.url, form_params, web_page))
-                            if str(response.status_code)[0] == '5':
-                                print("SstiManager: 500 status - " + url)
-                            elif response.status_code == 400:
+                            self.__check_keywords(result, response, dto.url, SstiType.PostForm, form_params)
+
+                            if response.status_code == 400:
                                 form_params[param] = old_param
                 elif form.method_type == "GET":
                     url = form.action + '?'
@@ -142,27 +108,33 @@ class SstiManager:
                             if response is None:
                                 continue
 
-                            if self._expected in web_page:
-                                double_check_url = url.replace('88*88', self._double_check)
-                                response2 = self._request_handler.handle_request(double_check_url)
-                                if response2 is None:
-                                    return
-                                web_page2 = response2.text
-                                if self._double_check_expected in web_page2:
-                                    substr_index = web_page.find(self._expected)
-                                    start_index = substr_index - 50 if substr_index - 50 > 0 else 0
-                                    last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
-                                    log_header_msg = f'injFOUND "{self._expected}":' \
-                                                     f'STATUS-{response.status_code};' \
-                                                     f'DETAILS-{web_page[start_index:last_index]};'
-                                    print(log_header_msg)
-                                    result.append(SstiFoundDTO(SstiType.GetForm, dto.url, param, web_page))
-                            if str(response.status_code)[0] == '5':
-                                print("SstiManager: 500 status - " + url)
-                            elif response.status_code == 400:
+                            self.__check_keywords(result, response, url, SstiType.GetForm, param)
+
+                            if response.status_code == 400:
                                 url = prev_url
                 else:
                     print("METHOD TYPE NOT FOUND: " + form.method_type)
                     return
         except Exception as inst:
             print(f"Exception - ({dto.url}) - {inst}")
+
+    def __check_keywords(self, result, response, url, ssti_type, param=None):
+        web_page = response.text
+        if self._expected in web_page:
+            double_check_url = url.replace('88*88', self._double_check)
+            response2 = self._request_handler.handle_request(double_check_url)
+            if response2 is None:
+                return
+
+            web_page2 = response2.text
+            if self._double_check_expected in web_page2:
+                substr_index = web_page.find(self._expected)
+                start_index = substr_index - 50 if substr_index - 50 > 0 else 0
+                last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
+                log_header_msg = f'injFOUND "{self._expected}":' \
+                                 f'STATUS-{response.status_code};' \
+                                 f'DETAILS-{web_page[start_index:last_index]};'
+                print(log_header_msg)
+                return result.append(SstiFoundDTO(ssti_type, url, param, web_page, log_header_msg))
+        if str(response.status_code)[0] == '5':
+            print("SstiManager: 500 status - " + url)
