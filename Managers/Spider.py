@@ -28,27 +28,13 @@ class Spider:
             '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
             '|\.docx$|\.m4v$|\.pptx$|\.ppt$',
             re.IGNORECASE)
-        self._ignore_content_types = [
-            'audio/mpeg',
-            'audio/x-ms-wma',
-            'audio/vnd.rn-realaudio',
-            'audio/x-wav',
-            'image/gif',
-            'image/jpeg',
-            'image/png',
-            'image/tiff',
-            'image/vnd.microsoft.icon',
-            'image/x-icon',
-            'image/vnd.djvu',
-            'video/mpeg',
-            'video/mp4',
-            'video/quicktime',
-            'video/x-ms-wmv',
-            'video/x-msvideo',
-            'video/x-flv',
-            'video/webm'
-        ]
         self._request_handler = RequestHandler(cookies, headers)
+        self._allowed_content_types = [
+                    'application/json',
+                    'text/plain',
+                    'application/ld+json',
+                    'text/html'
+        ]
 
     def get_all_links(self, start_url) -> List[GetRequestDTO]:
 
@@ -90,7 +76,7 @@ class Spider:
         if response is None:
             return
 
-        if 'Content-Type' in response.headers and response.headers['Content-Type'] in self._ignore_content_types:
+        if 'Content-Type' in response.headers and not any(word in response.headers['Content-Type'] for word in self._allowed_content_types):
             self._file_get_DTOs.append(GetRequestDTO(checked_url, response))
             return
 
@@ -212,7 +198,7 @@ class Spider:
                         html_urls.add(main_url + url_part)
                     elif url_part.startswith('http'):
                         html_urls.add(url_part)
-                    elif url_part.startswith('..'):
+                    elif url_part.startswith('..') or url_part.startswith('\t'):
                         html_urls.add(f'{main_url}/{url_part[2:]}')
                     else:
                         if '/' in url_part:

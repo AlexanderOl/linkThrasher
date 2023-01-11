@@ -13,6 +13,7 @@ class XssManager:
     def __init__(self, domain, cookies, headers):
         self._domain = domain
         self._expected = '<poc>'
+        self._injections_to_check = ['syntax', 'xpath', '<poc>', 'internalerror', 'warning:', 'Server Error']
         self._request_handler = RequestHandler(cookies, headers)
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
@@ -114,17 +115,18 @@ class XssManager:
 
     def __check_keywords(self, result, response, url, xss_type: XssType, param=None):
         web_page = response.text
-        if self._expected in web_page:
-            substr_index = web_page.find(self._expected)
-            start_index = substr_index - 50 if substr_index - 50 > 0 else 0
-            last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
-            log_header_msg = f'injFOUND "{self._expected}":' \
-                             f'STATUS-{response.status_code};' \
-                             f'DETAILS-{web_page[start_index:last_index]};'
-            curr_resp_length = len(web_page)
-            if len(result) == 0 or \
-                    len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
-                print(log_header_msg)
-                result.append(XssFoundDTO(xss_type, url, param, web_page, log_header_msg))
-            else:
-                print("Duplicate FORM XSS: - " + url)
+        for keyword in self._injections_to_check:
+            if keyword in web_page:
+                substr_index = web_page.find(keyword)
+                start_index = substr_index - 50 if substr_index - 50 > 0 else 0
+                last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
+                log_header_msg = f'injFOUND "{keyword}":' \
+                                 f'STATUS-{response.status_code};' \
+                                 f'DETAILS-{web_page[start_index:last_index]};'
+                curr_resp_length = len(web_page)
+                if len(result) == 0 or \
+                        len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
+                    print(log_header_msg)
+                    result.append(XssFoundDTO(xss_type, url, param, web_page, log_header_msg))
+                else:
+                    print("Duplicate FORM XSS: - " + url)

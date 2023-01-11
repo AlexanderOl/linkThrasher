@@ -26,19 +26,15 @@ class SsrfManager:
         if not os.path.exists(self._tool_dir):
             os.makedirs(self._tool_dir)
 
-        if os.path.exists(self._get_domain_log):
-            os.remove(self._get_domain_log)
-
-        for dto in dtos:
-            self.__check_params(dto.url)
+        if not os.path.exists(self._get_domain_log):
+            for dto in dtos:
+                self.__check_params(dto.url)
 
     def check_form_requests(self, form_results: List[FormRequestDTO]):
 
-        if os.path.exists(self._form_domain_log):
-            os.remove(self._form_domain_log)
-
-        for item in form_results:
-            self.__send_ssrf_form_request(item)
+        if not os.path.exists(self._form_domain_log):
+            for item in form_results:
+                self.__send_ssrf_form_request(item)
 
     def __check_params(self, url):
         payloads_urls = set()

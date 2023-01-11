@@ -20,7 +20,7 @@ class SqliManager:
         ]
         self._delay_in_seconds = 5
         self._request_handler = RequestHandler(cookies, headers)
-        self._injections_to_check = ['syntax', 'xpath', 'exception', 'internalerror', 'warning:']
+        self._injections_to_check = ['syntax', 'xpath', 'internalerror', 'warning:', 'Server Error']
         self._single_error_based_payload = '\'"%5C)\\\\'
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):

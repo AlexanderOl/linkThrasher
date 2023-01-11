@@ -1,4 +1,6 @@
 import os
+from datetime import datetime
+
 import urllib3
 
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
@@ -58,4 +60,6 @@ class DomainFlowManager:
         single_url_man = SingleUrlFlowManager(self.headers)
         thread_man = ThreadManager()
         thread_man.run_all(single_url_man.run, start_urls_dtos)
+
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: DomainFlowManager done with ({domain})')
 

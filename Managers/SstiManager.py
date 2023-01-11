@@ -31,7 +31,7 @@ class SstiManager:
 
             cache_manager.save_result(result, has_final_result=True)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SqliManager GET found {len(result)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SstiManager GET found {len(result)} items')
 
     def __check_url(self, dto: GetRequestDTO, result: List[SstiFoundDTO]):
 

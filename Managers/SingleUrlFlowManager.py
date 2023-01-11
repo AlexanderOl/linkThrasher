@@ -37,8 +37,8 @@ class SingleUrlFlowManager:
         if domain[0] == '.':
             domain = domain[1:]
 
-        # gobuster = Gobuster(domain)
-        # gobuster.check_single_url(start_url)
+        gobuster = Gobuster(domain)
+        gobuster.check_single_url(start_url)
 
         cookie_manager = CookieManager(self.main_domain, self.download_path)
         if self.raw_cookies:

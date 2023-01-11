@@ -1,5 +1,7 @@
 import os
 import re
+from urllib.parse import urlparse
+
 import requests
 from datetime import datetime
 from typing import List
@@ -60,11 +62,24 @@ class Hakrawler:
 
     def __check_href_urls(self, href_urls) -> List[GetRequestDTO]:
         result: List[GetRequestDTO] = []
+        checked_hrefs = set()
         for url in href_urls:
+
+            url_parts = urlparse(url)
+            if url_parts.path in checked_hrefs:
+                continue
+            else:
+                checked_hrefs.add(url_parts.path)
 
             response = self._request_handler.handle_request(url)
             if response is None:
                 continue
+
+            if len(result) > 0 and any(dto for dto in result if
+                                       dto.response_length == len(response.text) and
+                                       dto.status_code == response.status_code):
+                continue
+
             if response.status_code < 400 or str(response.status_code)[0] == '5':
                 result.append(GetRequestDTO(url, response))
 
