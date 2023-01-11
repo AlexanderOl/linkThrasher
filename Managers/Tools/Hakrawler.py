@@ -18,6 +18,10 @@ class Hakrawler:
         self._social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "intercom", "atlassian"]
         self._tool_name = self.__class__.__name__
         self._request_handler = RequestHandler(cookies, headers)
+        self._url_ignore_ext_regex = re.compile(
+            '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
+            '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$',
+            re.IGNORECASE)
 
     def get_requests_dtos(self, start_url) -> List[GetRequestDTO]:
         cache_manager = CacheManager('Hakrawler', self.__domain)
@@ -66,7 +70,7 @@ class Hakrawler:
         for url in href_urls:
 
             url_parts = urlparse(url)
-            if url_parts.path in checked_hrefs:
+            if url_parts.path in checked_hrefs or self._url_ignore_ext_regex.search(url):
                 continue
             else:
                 checked_hrefs.add(url_parts.path)

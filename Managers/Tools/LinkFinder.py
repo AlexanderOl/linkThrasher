@@ -16,8 +16,8 @@ class LinkFinder:
         self._start_url = start_url
         self._black_list = ["application/", "text/", "image/", "mm/dd/yyyy", "yyyy/mm/dd", "dd/m/yyyy"]
         self._url_ignore_ext_regex = re.compile(
-            '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
-            '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.js$')
+            '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
+            '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$')
 
     def search_urls_in_js(self, script_urls: set) -> set:
 

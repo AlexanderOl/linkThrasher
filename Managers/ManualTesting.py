@@ -1,5 +1,6 @@
 import os
 import re
+import urllib
 from typing import List
 
 from Models.FormRequestDTO import FormRequestDTO
@@ -11,6 +12,7 @@ class ManualTesting:
         self._tool_name = self.__class__.__name__
         self._domain = domain
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
+        self._already_added_pathes = {}
 
     def save_urls_for_manual_testing(self, spider_dtos: List[GetRequestDTO], form_dtos: List[FormRequestDTO]):
         get_dtos: List[GetRequestDTO] = []
@@ -28,6 +30,11 @@ class ManualTesting:
         get_result = set()
         checked_urls = set()
         for dto in get_dtos:
+
+            is_added = self.__check_if_added(dto.url)
+            if is_added:
+                continue
+
             if re.search(r'\{(.*?)\}', dto.url):
                 to_check = dto.url.rsplit('}', 1)[0]
                 if to_check not in checked_urls:
@@ -62,3 +69,23 @@ class ManualTesting:
         txt_file.close()
 
         return get_dtos
+
+    def __check_if_added(self, url):
+        is_already_added = False
+        parsed = urllib.parse.urlparse(url)
+        params_to_check = filter(None, parsed.query.split("&"))
+        key_to_check = ''
+        for param_to_check in params_to_check:
+            param_value_split = param_to_check.split('=')
+            key_to_check += f'{param_value_split[0]};'
+
+        added_path = self._already_added_pathes.get(parsed.path)
+        if added_path:
+            if key_to_check in added_path:
+                is_already_added = True
+            else:
+                self._already_added_pathes[parsed.path].append(key_to_check)
+        else:
+            self._already_added_pathes[parsed.path] = [key_to_check]
+
+        return is_already_added
