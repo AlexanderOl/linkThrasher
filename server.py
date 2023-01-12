@@ -1,4 +1,7 @@
 import os
+import subprocess
+from threading import Timer
+
 from flask import Flask
 from dotenv import load_dotenv
 from Managers.CacheManager import CacheManager
@@ -13,26 +16,8 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
 }
-# app = Flask(__name__)
+
 load_dotenv('config.env')
-
-# @app.route("/")
-# def index():
-#     return '/run'
-
-
-# @app.route("/clear")
-# def clear():
-#     CacheManager.clear_all()
-
-
-# @app.route("/clear")
-# def clear():
-#     return CacheManager.clear_all()
-
-
-# @app.route("/run")
-# def main():
 
 if __name__ == '__main__':
     check_mode = os.environ.get('check_mode')
@@ -70,11 +55,15 @@ if __name__ == '__main__':
 
 
 # if __name__ == '__main__':
-# my_env = os.environ.copy()
-# my_env["PATH"] = "/usr/sbin:/sbin:" + my_env["PATH"]
-# a = subprocess.Popen(['bash', '1.sh'])
-# print(a)
-# from subprocess import check_output
-# a = check_output(['bash', '/mnt/c/F/1.sh'], shell=True)
-# print(a)
-# app.run(host="0.0.0.0")
+#     proc = subprocess.Popen(["curl", "https://8c9d-91-196-101-94.eu.ngrok.io/sss"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#     # proc.wait()
+#     # err_message2 = proc.stderr.read().decode()
+#     kill = lambda process: process.kill()
+#     my_timer = Timer(1200, kill, [proc])
+#     try:
+#         my_timer.start()
+#         proc.wait()
+#         err_message = proc.stderr.read().decode()
+#
+#     finally:
+#         my_timer.cancel()
