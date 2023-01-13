@@ -13,7 +13,7 @@ class XssManager:
     def __init__(self, domain, cookies, headers):
         self._domain = domain
         self._expected = '<poc>'
-        self._injections_to_check = ['syntax', 'xpath', '<poc>', 'internalerror', 'warning:', 'Server Error in']
+        self._injections_to_check = ['syntax', 'xpath', '<poc>', 'internalerror', 'warning: ', 'Server Error in']
         self._request_handler = RequestHandler(cookies, headers)
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):

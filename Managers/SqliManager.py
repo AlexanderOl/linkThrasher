@@ -20,7 +20,7 @@ class SqliManager:
         ]
         self._delay_in_seconds = 5
         self._request_handler = RequestHandler(cookies, headers)
-        self._injections_to_check = ['syntax', 'xpath', 'internalerror', 'warning:', 'Server Error in']
+        self._injections_to_check = ['syntax', 'xpath', 'internalerror', 'warning: ', 'Server Error in']
         self._single_error_based_payload = '\'"%5C)\\\\'
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
@@ -65,7 +65,7 @@ class SqliManager:
                     if response is None:
                         continue
 
-                    self.__check_keywords(result, response, dto, SqliType.FORM_ERROR, params=copy_form_params)
+                    self.__check_keywords(result, response, dto.url, SqliType.FORM_ERROR, params=copy_form_params)
 
                     if response.status_code == 400:
                         copy_form_params[param] = old_param
@@ -84,7 +84,7 @@ class SqliManager:
                     if response is None:
                         continue
 
-                    self.__check_keywords(result, response, dto, SqliType.FORM_GET_ERROR, params=param)
+                    self.__check_keywords(result, response, dto.url, SqliType.FORM_GET_ERROR, params=param)
 
                     if response.status_code == 400:
                         url = prev_url
@@ -138,7 +138,7 @@ class SqliManager:
             if response is None:
                 return
 
-            self.__check_keywords(result, response, dto, SqliType.ERROR)
+            self.__check_keywords(result, response, url, SqliType.ERROR)
 
         except Exception as inst:
             print(f"Exception - ({url}) - {inst}")
@@ -153,7 +153,7 @@ class SqliManager:
                     print(f"SQLiManager delay FOUND: - {true_payload} - {false_payload}")
                     return result.append(SqliFoundDTO(SqliType.TIME, true_payload, 'TIME_BASED', response1.text))
 
-    def __check_keywords(self, result, response, dto, sqli_type: SqliType, params=None):
+    def __check_keywords(self, result, response, url, sqli_type: SqliType, params=None):
         web_page = response.text
         for keyword in self._injections_to_check:
             # if keyword in web_page and dto.response_length != len(response.text):
@@ -168,9 +168,9 @@ class SqliManager:
                 if len(result) == 0 or \
                         len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
                     print(log_header_msg)
-                    result.append(SqliFoundDTO(sqli_type, dto.url, params, web_page, log_header_msg))
+                    result.append(SqliFoundDTO(sqli_type, url, params, web_page, log_header_msg))
                 else:
-                    print("Duplicate FORM SQLi: - " + dto.url)
+                    print("Duplicate FORM SQLi: - " + url)
 
             if str(response.status_code)[0] == '5':
-                print("SqliManager: 500 status - " + dto.url)
+                print("SqliManager: 500 status - " + url)

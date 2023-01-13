@@ -77,7 +77,7 @@ class SstiManager:
 
             cache_manager.save_result(result, has_final_result=True)
 
-        print("Found FORM XSS: " + str(len(result)))
+        print("Found FORM SSTI: " + str(len(result)))
 
     def __check_form_request(self, dto: FormRequestDTO, result: List[SstiFoundDTO]):
         try:
