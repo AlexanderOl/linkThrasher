@@ -2,6 +2,7 @@ import os
 import urllib
 import uuid
 import urllib.parse as urlparse
+from copy import deepcopy
 from typing import List
 
 from Managers.RequestHandler import RequestHandler
@@ -51,17 +52,17 @@ class SsrfManager:
     def __get_url_ngrok_payload(self, url: str, query: str):
         param_split = query.split('=')
         main_url_split = url.split(query)
-        uiid_str = str(uuid.uuid4())
-        payload = main_url_split[0] + param_split[0] + f'={self._ngrok_url_safe}{uiid_str}' + main_url_split[1]
+        uid_str = str(uuid.uuid4())
+        payload = main_url_split[0] + param_split[0] + f'={self._ngrok_url_safe}{uid_str}' + main_url_split[1]
         with open(self._get_domain_log, 'a') as f:
-            f.write(f'{uiid_str}:{payload}\n')
+            f.write(f'{uid_str}:{payload}\n')
         return payload
 
     def __get_param_ngrok_payload(self, url: str, param: str, method_type: str):
-        uiid_str = str(uuid.uuid4())
-        payload = f'{self._ngrok_url_safe}{uiid_str}'
+        uid_str = str(uuid.uuid4())
+        payload = f'{self._ngrok_url_safe}{uid_str}'
         with open(self._get_domain_log, 'a') as f:
-            f.write(f'{uiid_str}:{url}:{param}:{method_type}\n')
+            f.write(f'{uid_str}:{url}:{param}:{method_type}\n')
         return payload
 
     def __send_ssrf_form_request(self, dto: FormRequestDTO):
@@ -70,16 +71,12 @@ class SsrfManager:
                 if form.method_type == "POST":
                     for param in form.params:
                         if any(s in str(param).lower() for s in self._url_params):
-                            payload = form.params
-                            old_param = payload[param]
+                            payload = deepcopy(form.params)
                             payload[param] = self.__get_param_ngrok_payload(dto.url, param, "POST")
 
                             response = self._request_handler.handle_request(dto.url, post_data=payload)
                             if response is None:
                                 continue
-
-                            if response.status_code == 400:
-                                payload[param] = old_param
 
                 elif form.method_type == "GET":
                     url = form.action + '?'

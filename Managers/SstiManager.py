@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime
 import urllib.parse as urlparse
 from typing import List
@@ -84,19 +85,16 @@ class SstiManager:
             for form in dto.form_params:
                 if form.method_type == "POST":
                     for param in form.params:
-                        form_params = form.params
                         for payload in self._payloads:
-                            old_param = form_params[param]
-                            form_params[param] = payload
+                            payload_params = deepcopy(form.params)
+                            payload_params[param] = payload
 
-                            response = self._request_handler.handle_request(dto.url, post_data=form_params)
+                            response = self._request_handler.handle_request(dto.url, post_data=payload_params)
                             if response is None:
                                 continue
 
-                            self.__check_keywords(result, response, dto.url, SstiType.PostForm, form_params)
+                            self.__check_keywords(result, response, dto.url, SstiType.PostForm, payload_params)
 
-                            if response.status_code == 400:
-                                form_params[param] = old_param
                 elif form.method_type == "GET":
                     url = form.action + '?'
                     for param in form.params:

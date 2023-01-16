@@ -1,7 +1,7 @@
 import requests
 import re
 from datetime import datetime
-from typing import List
+from typing import List, Tuple
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from Managers.CacheManager import CacheManager
@@ -36,7 +36,7 @@ class Spider:
                     'text/html'
         ]
 
-    def get_all_links(self, start_url) -> List[GetRequestDTO]:
+    def get_all_links(self, start_url) -> Tuple[List[GetRequestDTO], List[FormRequestDTO]]:
 
         form_cache_manager = CacheManager('Spider/Form', self._current_domain)
         get_cache_manager = CacheManager('Spider/Get', self._current_domain)

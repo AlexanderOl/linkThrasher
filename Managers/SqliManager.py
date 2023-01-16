@@ -54,7 +54,7 @@ class SqliManager:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found FORM SQLi: {len(result)}')
 
-    def __check_form(self, dto: FormRequestDTO, result: List[FormRequestDTO]):
+    def __check_form(self, dto: FormRequestDTO, result: List[SqliFoundDTO]):
         for form in dto.form_params:
             if form.method_type == "POST":
                 for param in form.params:
@@ -160,7 +160,7 @@ class SqliManager:
                     print(f"SQLiManager delay FOUND: - {true_payload} - {false_payload}")
                     return result.append(SqliFoundDTO(SqliType.TIME, true_payload, 'TIME_BASED', response1.text))
 
-    def __check_keywords(self, result, response, url_payload, sqli_type: SqliType,
+    def __check_keywords(self, result: List[SqliFoundDTO], response, url_payload, sqli_type: SqliType,
                          post_payload=None,
                          original_url: str = None,
                          original_post_params=None):

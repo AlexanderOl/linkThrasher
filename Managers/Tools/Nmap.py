@@ -10,7 +10,7 @@ class Nmap:
         self.__tool_name = self.__class__.__name__
         self.__domain = domain
 
-    def check_ports(self, subdomains) -> set:
+    def check_ports(self, subdomains):
 
         cache_manager = CacheManager(self.__tool_name, self.__domain)
         report_lines = cache_manager.get_saved_result()
