@@ -68,7 +68,6 @@ class SubdomainChecker:
                                                         timeout=5)
 
         if response is not None:
-            print(f'{url} - status_code:{response.status_code}', flush=True)
             self._checked_subdomains.append(GetRequestDTO(url, response))
 
     def __except_ssl_action(self, args):
@@ -77,5 +76,4 @@ class SubdomainChecker:
         if validators.url(url):
             response = self._request_handler.handle_request(url, timeout=5)
             if response is not None:
-                print(f'{url} - status_code:{response.status_code}', flush=True)
                 self._checked_subdomains.append(GetRequestDTO(url, response))

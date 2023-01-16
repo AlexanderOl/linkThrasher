@@ -19,6 +19,6 @@ class Dirb:
             if len(bash_outputs) == 0 and not url.startswith('https:'):
                 url = url.replace('http:', 'https:')
                 self.check_single_url(url)
-            filtered_output = list(filter(lambda o: 'CODE:' in o or 'DIRECTORY:' in o, bash_outputs))
+            filtered_output = list(filter(lambda o: 'CODE:2' in o or 'DIRECTORY:' in o, bash_outputs))
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: Dirb {url} finished. Found {len(filtered_output)}')
             self.cache_manager.save_result(filtered_output)

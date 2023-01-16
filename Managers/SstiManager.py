@@ -131,9 +131,9 @@ class SstiManager:
                 substr_index = web_page.find(self._expected)
                 start_index = substr_index - 50 if substr_index - 50 > 0 else 0
                 last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
-                log_header_msg = f'injFOUND "{self._expected}":' \
-                                 f'STATUS-{response.status_code};' \
-                                 f'DETAILS-{web_page[start_index:last_index]};'
+                log_header_msg = f'injFOUND: {self._expected};' \
+                                 f'STATUS: {response.status_code};' \
+                                 f'DETAILS: {web_page[start_index:last_index]};'
                 print(log_header_msg)
                 return result.append(SstiFoundDTO(ssti_type, url, param, web_page, log_header_msg))
         if str(response.status_code)[0] == '5':
