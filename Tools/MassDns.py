@@ -6,22 +6,23 @@ from Managers.CacheManager import CacheManager
 
 class MassDns:
     def __init__(self, domain):
-        self.__tool_name = self.__class__.__name__
-        self.__domain = domain
-        self.__tool_result_dir = f'{os.environ.get("app_result_path")}{self.__tool_name}'
+        self._tool_name = self.__class__.__name__
+        self._domain = domain
+        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
 
     def get_subdomains(self) -> set:
-        cache_manager = CacheManager(self.__tool_name, self.__domain)
+        cache_manager = CacheManager(self._tool_name, self._domain)
         subdomains = cache_manager.get_saved_result()
         if not subdomains and not isinstance(subdomains, set):
+            if not os.path.exists(self._tool_result_dir):
+                os.makedirs(self._tool_result_dir)
 
-            if not os.path.exists(self.__tool_result_dir):
-                os.makedirs(self.__tool_result_dir)
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} starts...')
 
-            massdns_result_file = f"{self.__tool_result_dir}/{self.__domain}_raw.txt"
+            massdns_result_file = f"{self._tool_result_dir}/{self._domain}_raw.txt"
             command = f'cd /root/Desktop/TOOLs/massdns/; ' \
-                      f'./scripts/subbrute.py lists/all-1m.txt {self.__domain} | ' \
-                      f'./bin/massdns -r lists/resolvers.txt -t A -o S -w {massdns_result_file}'
+                      f'./scripts/subbrute.py lists/all-1m.txt {self._domain} | ' \
+                      f'./bin/massdns -r lists/resolvers.txt -t A -o S -w {massdns_result_file} -q'
             stream = os.popen(command)
             stream.read()
 
@@ -35,6 +36,6 @@ class MassDns:
             os.remove(massdns_result_file)
             cache_manager.save_result(subdomains)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.__domain}) {self.__tool_name} found {len(subdomains)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} found {len(subdomains)} items')
         return subdomains
 

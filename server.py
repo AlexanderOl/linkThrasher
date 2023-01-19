@@ -1,14 +1,8 @@
 import os
-import subprocess
-from threading import Timer
-
-from flask import Flask
 from dotenv import load_dotenv
-from Managers.CacheManager import CacheManager
 from Managers.DomainFlowManager import DomainFlowManager
+from Managers.MultipleUrlFlowManager import MultipleUrlFlowManager
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
-from Managers.ThreadManager import ThreadManager
-from Managers.Tools.Dirb import Dirb
 from Models.GetRequestDTO import GetRequestDTO
 
 headers = {
@@ -32,15 +26,8 @@ if __name__ == '__main__':
         single_url_man.run(GetRequestDTO(single_url))
 
     elif check_mode == 'UL':
-        file_path = 'Targets/urls.txt'
-        if os.path.exists(file_path):
-            urls = list(set(line.strip() for line in open(file_path)))
-            single_url_man = SingleUrlFlowManager(headers)
-            thread_man = ThreadManager()
-            thread_man.run_all(single_url_man.run, urls)
-        else:
-            print(os.path.dirname(os.path.realpath(__file__)))
-            print(f'{file_path} is missing')
+        multiple_url_man = MultipleUrlFlowManager(headers)
+        multiple_url_man.run()
 
     elif check_mode == 'DL':
         file_path = 'Targets/domains.txt'
@@ -52,7 +39,6 @@ if __name__ == '__main__':
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{file_path} is missing')
-
 
 # if __name__ == '__main__':
 #     proc = subprocess.Popen(["curl", "https://8c9d-91-196-101-94.eu.ngrok.io/sss"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)

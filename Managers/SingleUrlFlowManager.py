@@ -10,8 +10,8 @@ from Managers.Spider import Spider
 from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
 from Managers.SstiManager import SstiManager
-from Managers.Tools.Gobuster import Gobuster
-from Managers.Tools.Hakrawler import Hakrawler
+from Tools.Gobuster import Gobuster
+from Tools.Hakrawler import Hakrawler
 from Managers.XssManager import XssManager
 from Models.GetRequestDTO import GetRequestDTO
 
@@ -19,11 +19,11 @@ from Models.GetRequestDTO import GetRequestDTO
 class SingleUrlFlowManager:
     def __init__(self, headers):
         self._headers = headers
-        self.ngrok_url = os.environ.get('ngrok_url')
-        self.max_depth = os.environ.get('max_depth')
-        self.download_path = os.environ.get('download_path')
-        self.raw_cookies = os.environ.get('raw_cookies')
-        self.main_domain = os.environ.get('domain')
+        self._ngrok_url = os.environ.get('ngrok_url')
+        self._max_depth = os.environ.get('max_depth')
+        self._download_path = os.environ.get('download_path')
+        self._raw_cookies = os.environ.get('raw_cookies')
+        self._main_domain = os.environ.get('domain')
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def run(self, get_dto: GetRequestDTO):
@@ -40,19 +40,19 @@ class SingleUrlFlowManager:
         gobuster = Gobuster(domain)
         gobuster.check_single_url(start_url)
 
-        cookie_manager = CookieManager(self.main_domain, self.download_path)
-        if self.raw_cookies:
-            cookies_dict = self.raw_cookies
-            raw_cookies = self.raw_cookies
+        cookie_manager = CookieManager(self._main_domain, self._download_path)
+        if self._raw_cookies:
+            cookies = self._raw_cookies
+            raw_cookies = self._raw_cookies
         else:
             raw_cookies = cookie_manager.get_raw_cookies()
-            cookies_dict = cookie_manager.get_cookies_dict(raw_cookies)
+            cookies = cookie_manager.get_cookies_dict(raw_cookies)
 
-        hakrawler = Hakrawler(domain, raw_cookies, self._headers, cookies_dict)
+        hakrawler = Hakrawler(domain, raw_cookies, self._headers, cookies)
         get_hakrawler_dtos = hakrawler.get_requests_dtos(start_url)
         # get_hakrawler_dtos = []
 
-        spider = Spider(domain, cookies_dict, self._headers, self.max_depth, self.main_domain)
+        spider = Spider(domain, cookies, self._headers, self._max_depth, self._main_domain)
         get_spider_dtos, form_dtos = spider.get_all_links(start_url)
 
         get_hakrawler_dtos.extend(get_spider_dtos)

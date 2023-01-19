@@ -4,7 +4,7 @@ from datetime import datetime
 from threading import Timer
 
 from Managers.CacheManager import CacheManager
-from Managers.Tools.Dirb import Dirb
+from Tools.Dirb import Dirb
 
 
 class Gobuster:
