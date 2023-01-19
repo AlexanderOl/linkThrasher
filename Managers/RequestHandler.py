@@ -15,14 +15,12 @@ class RequestHandler:
                                          cookies=self._cookies,
                                          verify=False,
                                          timeout=timeout)
-                print(f'POST Url ({url}) - status code:{response.status_code}, length: {len(response.text)}')
             else:
                 response = requests.get(url,
                                         headers=self._headers,
                                         cookies=self._cookies,
                                         verify=False,
                                         timeout=timeout)
-                print(f'GET Url ({url}) - status code:{response.status_code}, length: {len(response.text)}')
             return response
 
         except requests.exceptions.ConnectionError:
