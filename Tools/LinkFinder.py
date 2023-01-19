@@ -23,7 +23,7 @@ class LinkFinder:
 
         result = set()
         if len(script_urls) == 0:
-            result
+            return result
 
         tool_directory = f"Results/{self._tool_name}/{self._domain}"
         if not os.path.exists(tool_directory):

@@ -64,19 +64,19 @@ class SingleUrlFlowManager:
             print(f'{domain} request DTOs not found')
             return
 
-        xss_manager = XssManager(domain, cookies_dict, self._headers)
+        xss_manager = XssManager(domain, cookies, self._headers)
         xss_manager.check_get_requests(get_dtos)
         xss_manager.check_form_requests(form_dtos)
 
-        ssrf_manager = SsrfManager(domain, cookies_dict, self._headers)
+        ssrf_manager = SsrfManager(domain, cookies, self._headers)
         ssrf_manager.check_get_requests(get_dtos)
         ssrf_manager.check_form_requests(form_dtos)
 
-        sqli_manager = SqliManager(domain, cookies_dict, self._headers)
+        sqli_manager = SqliManager(domain, cookies, self._headers)
         sqli_manager.check_get_requests(get_dtos)
         sqli_manager.check_form_requests(form_dtos)
 
-        ssti_manager = SstiManager(domain, cookies_dict, self._headers)
+        ssti_manager = SstiManager(domain, cookies, self._headers)
         ssti_manager.check_get_requests(get_dtos)
         ssti_manager.check_form_requests(form_dtos)
 

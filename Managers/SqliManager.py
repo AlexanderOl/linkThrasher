@@ -122,10 +122,10 @@ class SqliManager:
         for query in queries:
             param_split = query.split('=')
             main_url_split = dto.url.split(query)
-            # for payloads in self._time_based_payloads:
-            #     time_based_payloads_urls.add(
-            #         (f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',
-            #          f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}'))
+            for payloads in self._time_based_payloads:
+                time_based_payloads_urls.add(
+                    (f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',
+                     f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}'))
 
             error_based_payloads_urls.add(
                 f'{main_url_split[0]}{param_split[0]}={self._single_error_based_payload}{main_url_split[1]}')
