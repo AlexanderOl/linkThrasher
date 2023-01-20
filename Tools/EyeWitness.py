@@ -1,5 +1,6 @@
 import os
 import pathlib
+import re
 from datetime import datetime
 from Managers.CacheManager import CacheManager
 
@@ -11,6 +12,7 @@ class EyeWitness:
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._chunk_size = 30
         self._tool_dir = f"Results/{self._tool_name}"
+        self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
     def divide_chunks(self, items):
         items_to_split = list(items)
@@ -63,8 +65,9 @@ class EyeWitness:
             bash_outputs = stream.readlines()
 
             for line in bash_outputs:
-                if 'Finished in' in line:
-                    result_msg = line.replace('\n', '')
+                encoded_line = self._ansi_escape.sub('', line)
+                if 'Finished in' in encoded_line:
+                    result_msg = encoded_line.replace('\n', '')
                     break
         except Exception as inst:
             result_msg = f'EyeWitness Exception ({inst}) Urls:({" ".join(urls_batch)})'

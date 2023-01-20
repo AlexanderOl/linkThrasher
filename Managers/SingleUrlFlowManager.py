@@ -14,6 +14,7 @@ from Tools.Gobuster import Gobuster
 from Tools.Hakrawler import Hakrawler
 from Managers.XssManager import XssManager
 from Models.GetRequestDTO import GetRequestDTO
+from Tools.Nuclei import Nuclei
 
 
 class SingleUrlFlowManager:
@@ -39,6 +40,9 @@ class SingleUrlFlowManager:
 
         gobuster = Gobuster(domain)
         gobuster.check_single_url(start_url)
+
+        nuclei = Nuclei(domain)
+        nuclei.check_single_url(start_url)
 
         cookie_manager = CookieManager(self._main_domain, self._download_path)
         if self._raw_cookies:

@@ -17,6 +17,7 @@ class CacheManager:
                      'Spider',
                      'MassDns',
                      'Nmap',
+                     'Nuclei',
                      'SqliManager',
                      'SstiManager/Get',
                      'SstiManager/Form',
