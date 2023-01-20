@@ -82,7 +82,7 @@ class Hakrawler:
                                        dto.status_code == response.status_code):
                 continue
 
-            if response.status_code < 400 or str(response.status_code)[0] == '5':
+            if response.status_code < 400 or response.status_code == 500:
                 result.append(GetRequestDTO(url, response))
 
         return result

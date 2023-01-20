@@ -134,5 +134,5 @@ class SstiManager:
                                  f'DETAILS: {web_page[start_index:last_index]};'
                 print(log_header_msg)
                 return result.append(SstiFoundDTO(ssti_type, url, param, web_page, log_header_msg))
-        if str(response.status_code)[0] == '5':
+        if response.status_code == 500:
             print("SstiManager: 500 status - " + url)
