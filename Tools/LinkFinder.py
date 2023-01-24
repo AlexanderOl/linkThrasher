@@ -1,12 +1,7 @@
 import os
-import re
 import pathlib
-import shutil
+import re
 from datetime import datetime
-from typing import List
-
-from Managers.CacheManager import CacheManager
-from Models.GetRequestDTO import GetRequestDTO
 
 
 class LinkFinder:

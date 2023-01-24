@@ -1,28 +1,55 @@
 import os
+import pathlib
 import re
-import subprocess
 from datetime import datetime
-from threading import Timer
+from typing import List
 
 from Managers.CacheManager import CacheManager
-from Tools.Dirb import Dirb
+from Models.GetRequestDTO import GetRequestDTO
 
 
 class Nuclei:
-    def __init__(self, domain):
+    def __init__(self, cache_key):
         self._tool_name = self.__class__.__name__
-        self._domain = domain
+        self._cache_key = cache_key
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
-        self._cache_manager = CacheManager(self._tool_name, domain)
+        self._cache_manager = CacheManager(self._tool_name, cache_key)
         self._expected = ['[medium]', '[high]', '[critical]', '[unknown]', '[network]']
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        self._chunk_size = 30
+        self._main_txt_filepath = f"{self._tool_result_dir}/MAIN_{self._cache_key}.txt"
+
+    def check_multiple_uls(self, get_dtos: List[GetRequestDTO]):
+
+        report_lines = self._cache_manager.get_saved_result()
+        if not report_lines and not isinstance(report_lines, set):
+
+            batches = list(self.__divide_chunks(get_dtos))
+            counter = len(batches)
+            for dtos_batch in batches:
+                self.__check_batch(dtos_batch, counter)
+                counter -= 1
+                print(f'[{datetime.now().strftime("%H:%M:%S")}]: left:{counter}, chunk_size:{len(dtos_batch)}')
+
+            main_txt_file = open(self._main_txt_filepath, 'r')
+            report_lines = main_txt_file.readlines()
+
+            self._cache_manager.save_result(report_lines)
+
+    def __divide_chunks(self, items):
+        items_to_split = list(items)
+        for i in range(0, len(items_to_split), self._chunk_size):
+            yield items_to_split[i:i + self._chunk_size]
 
     def check_single_url(self, url):
         report_lines = self._cache_manager.get_saved_result()
         if not report_lines and not isinstance(report_lines, set):
             command = f"nuclei -u {url} " \
-                      f"--exclude-matchers http-missing-security-headers,old-copyright,favicon-detect,ssl-issuer," \
-                      f"tls-version,waf-detect,cname-fingerprint,akamai-cache-detect"
+                      f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing/ " \
+                      f"-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
+                      f"-t /root/Desktop/TOOLs/nuclei-templates/cves " \
+                      f"-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
+                      f"-t /root/Desktop/TOOLs/nuclei-templates/misconfiguration"
             stream = os.popen(command)
             bash_outputs = stream.readlines()
 
@@ -36,3 +63,32 @@ class Nuclei:
 
             self._cache_manager.save_result(result)
 
+    def __check_batch(self, dtos_batch: List[GetRequestDTO], counter):
+        txt_filepath = f"{self._tool_result_dir}/{self._cache_key}_{counter}.txt"
+        if os.path.exists(txt_filepath):
+            print(f"File found: {txt_filepath}")
+            return
+
+        txt_file = open(txt_filepath, 'w')
+        for dto in dtos_batch:
+            txt_file.write("%s\n" % str(dto.url))
+        txt_file.close()
+
+        filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
+        command = f"nuclei --list {filepath} " \
+                  f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing/ " \
+                  f"-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
+                  f"-t /root/Desktop/TOOLs/nuclei-templates/cves " \
+                  f"-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
+                  f"-t /root/Desktop/TOOLs/nuclei-templates/misconfiguration"
+        stream = os.popen(command)
+        bash_outputs = stream.readlines()
+
+        main_txt_file = open(self._main_txt_filepath, 'w')
+        for line in bash_outputs:
+            encoded_line = self._ansi_escape.sub('', line)
+            for keyword in self._expected:
+                if keyword in encoded_line:
+                    main_txt_file.write("%s\n" % str(encoded_line))
+            print(line)
+        main_txt_file.close()

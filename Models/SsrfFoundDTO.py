@@ -1,4 +1,3 @@
-import json
 from enum import Enum
 
 
@@ -10,21 +9,21 @@ class SsrfType(Enum):
 
 class SsrfFoundDTO:
     def __init__(self, ssrf_type: SsrfType, url: str, payload):
-        self.url = url
-        self.ssrf_type = ssrf_type
+        self._url = url
+        self._ssrf_type = ssrf_type
         self.payload = payload
 
     @property
     def url(self):
-        return self.url
+        return self._url
 
     @property
     def ssrf_type(self):
-        return self.ssrf_type
+        return self._ssrf_type
 
     @property
     def payload(self):
-        return self.payload
+        return self._payload
 
 
 

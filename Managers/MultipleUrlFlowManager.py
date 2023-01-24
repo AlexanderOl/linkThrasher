@@ -1,4 +1,5 @@
 import os
+from datetime import date
 from typing import List
 from urllib.parse import urlparse
 
@@ -8,6 +9,7 @@ from Managers.RequestHandler import RequestHandler
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Managers.ThreadManager import ThreadManager
 from Models.GetRequestDTO import GetRequestDTO
+from Tools.Nuclei import Nuclei
 
 
 class MultipleUrlFlowManager:
@@ -38,6 +40,9 @@ class MultipleUrlFlowManager:
                 if response is None:
                     continue
                 get_dtos.append(GetRequestDTO(url, response))
+
+            nuclei = Nuclei(str(date.today()))
+            nuclei.check_multiple_uls(get_dtos)
 
             single_url_man = SingleUrlFlowManager(self._headers)
             thread_man = ThreadManager()

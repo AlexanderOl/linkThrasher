@@ -14,11 +14,6 @@ class EyeWitness:
         self._tool_dir = f"Results/{self._tool_name}"
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
-    def divide_chunks(self, items):
-        items_to_split = list(items)
-        for i in range(0, len(items_to_split), self._chunk_size):
-            yield items_to_split[i:i + self._chunk_size]
-
     def visit_urls(self, urls: set):
         if len(urls) == 0:
             return
@@ -34,7 +29,7 @@ class EyeWitness:
                 os.makedirs(domain_dir)
 
             start = datetime.now()
-            batches_list = list(self.divide_chunks(urls))
+            batches_list = list(self.__divide_chunks(urls))
             counter = len(batches_list)
             for urls_batch in batches_list:
                 msg = self.__make_screens(urls_batch, counter)
@@ -49,6 +44,11 @@ class EyeWitness:
             cache_manager.save_result([result])
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: {result}')
+
+    def __divide_chunks(self, items):
+        items_to_split = list(items)
+        for i in range(0, len(items_to_split), self._chunk_size):
+            yield items_to_split[i:i + self._chunk_size]
 
     def __make_screens(self, urls_batch, counter: int):
         txt_filepath = f"{self._tool_dir}/{self._domain}_raw.txt"

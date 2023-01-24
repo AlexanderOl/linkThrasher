@@ -1,6 +1,6 @@
 import os
 import re
-import urllib
+import urllib.parse as urlparse
 from typing import List
 
 from Models.FormRequestDTO import FormRequestDTO
@@ -72,7 +72,7 @@ class ManualTesting:
 
     def __check_if_added(self, url):
         is_already_added = False
-        parsed = urllib.parse.urlparse(url)
+        parsed = urlparse.urlparse(url)
         params_to_check = filter(None, parsed.query.split("&"))
         key_to_check = ''
         for param_to_check in params_to_check:

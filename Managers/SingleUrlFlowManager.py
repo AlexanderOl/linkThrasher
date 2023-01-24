@@ -25,6 +25,7 @@ class SingleUrlFlowManager:
         self._download_path = os.environ.get('download_path')
         self._raw_cookies = os.environ.get('raw_cookies')
         self._main_domain = os.environ.get('domain')
+        self._check_mode = os.environ.get('check_mode')
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def run(self, get_dto: GetRequestDTO):
@@ -41,8 +42,9 @@ class SingleUrlFlowManager:
         gobuster = Gobuster(domain)
         gobuster.check_single_url(start_url)
 
-        nuclei = Nuclei(domain)
-        nuclei.check_single_url(start_url)
+        if self._check_mode == 'U':
+            nuclei = Nuclei(domain)
+            nuclei.check_single_url(start_url)
 
         cookie_manager = CookieManager(self._main_domain, self._download_path)
         if self._raw_cookies:
