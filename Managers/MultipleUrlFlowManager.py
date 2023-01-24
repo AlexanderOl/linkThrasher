@@ -1,10 +1,9 @@
 import os
+import urllib3
 from datetime import date
 from typing import List
 from urllib.parse import urlparse
-
-import urllib3
-
+from Managers.CacheManager import CacheManager
 from Managers.RequestHandler import RequestHandler
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Managers.ThreadManager import ThreadManager
@@ -17,11 +16,34 @@ class MultipleUrlFlowManager:
         self._headers = headers
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
         self._request_handler = RequestHandler(cookies='', headers=headers)
+        self._tool_name = self.__class__.__name__
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def run(self):
         file_path = 'Targets/urls.txt'
         if os.path.exists(file_path):
+
+            get_dtos = self.__get_cached_dtos(file_path)
+
+            nuclei = Nuclei(str(date.today()))
+            nuclei.check_multiple_uls(get_dtos)
+
+            single_url_man = SingleUrlFlowManager(self._headers)
+            thread_man = ThreadManager()
+            thread_man.run_all(single_url_man.run, get_dtos)
+
+        else:
+            print(os.path.dirname(os.path.realpath(__file__)))
+            print(f'{file_path} is missing')
+
+    def __get_cached_dtos(self, file_path) -> List[GetRequestDTO]:
+
+        cache_manager = CacheManager(self._tool_name, str(date.today()))
+
+        get_dtos = cache_manager.get_saved_result()
+
+        if not get_dtos and not isinstance(get_dtos, List):
+
             raw_urls = list(set(line.strip() for line in open(file_path)))
             urls = set()
             for url in raw_urls:
@@ -41,13 +63,4 @@ class MultipleUrlFlowManager:
                     continue
                 get_dtos.append(GetRequestDTO(url, response))
 
-            nuclei = Nuclei(str(date.today()))
-            nuclei.check_multiple_uls(get_dtos)
-
-            single_url_man = SingleUrlFlowManager(self._headers)
-            thread_man = ThreadManager()
-            thread_man.run_all(single_url_man.run, get_dtos)
-
-        else:
-            print(os.path.dirname(os.path.realpath(__file__)))
-            print(f'{file_path} is missing')
+        return get_dtos

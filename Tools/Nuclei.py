@@ -80,7 +80,7 @@ class Nuclei:
                   f"-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
                   f"-t /root/Desktop/TOOLs/nuclei-templates/cves " \
                   f"-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
-                  f"-t /root/Desktop/TOOLs/nuclei-templates/misconfiguration"
+                  f"-t /root/Desktop/TOOLs/nuclei-templates/miscellaneous"
         stream = os.popen(command)
         bash_outputs = stream.readlines()
 

@@ -7,7 +7,7 @@ from Managers.CacheManager import CacheManager
 from Managers.RequestHandler import RequestHandler
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO
-from Models.SstiFoundDTO import SstiFoundDTO, SstiType
+from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
 class SstiManager:
@@ -25,7 +25,7 @@ class SstiManager:
         result = cache_manager.get_saved_result()
 
         if result is None:
-            result: List[SstiFoundDTO] = []
+            result: List[InjectionFoundDTO] = []
             for dto in dtos:
                 self.__check_url(dto, result)
                 self.__check_get_params(dto, result)
@@ -34,7 +34,7 @@ class SstiManager:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SstiManager GET found {len(result)} items')
 
-    def __check_url(self, dto: GetRequestDTO, result: List[SstiFoundDTO]):
+    def __check_url(self, dto: GetRequestDTO, result: List[InjectionFoundDTO]):
 
         parsed = urlparse.urlparse(dto.url)
         base_url = f'{parsed.scheme}://{parsed.hostname}{parsed.path}'
@@ -44,9 +44,9 @@ class SstiManager:
             response = self._request_handler.handle_request(url)
             if response is None:
                 return
-            self.__check_keywords(result, response, url, SstiType.Get)
+            self.__check_keywords(result, response, url, InjectionType.Ssti_Get)
 
-    def __check_get_params(self, dto: GetRequestDTO, result: List[SstiFoundDTO]):
+    def __check_get_params(self, dto: GetRequestDTO, result: List[InjectionFoundDTO]):
         url = dto.url
         payloads_urls = set()
         parsed = urlparse.urlparse(url)
@@ -62,7 +62,7 @@ class SstiManager:
             response = self._request_handler.handle_request(url)
             if response is None:
                 return
-            self.__check_keywords(result, response, url, SstiType.Get)
+            self.__check_keywords(result, response, url, InjectionType.Ssti_Get)
 
         return result
 
@@ -71,7 +71,7 @@ class SstiManager:
         result = cache_manager.get_saved_result()
 
         if result is None:
-            result: List[SstiFoundDTO] = []
+            result: List[InjectionFoundDTO] = []
 
             for item in form_results:
                 self.__check_form_request(item, result)
@@ -80,7 +80,7 @@ class SstiManager:
 
         print("Found FORM SSTI: " + str(len(result)))
 
-    def __check_form_request(self, dto: FormRequestDTO, result: List[SstiFoundDTO]):
+    def __check_form_request(self, dto: FormRequestDTO, result: List[InjectionFoundDTO]):
         try:
             for form in dto.form_params:
                 if form.method_type == "POST":
@@ -93,7 +93,7 @@ class SstiManager:
                             if response is None:
                                 continue
 
-                            self.__check_keywords(result, response, dto.url, SstiType.PostForm, payload_params)
+                            self.__check_keywords(result, response, dto.url, InjectionType.Ssti_PostForm, payload_params)
 
                 elif form.method_type == "GET":
                     url = form.action + '?'
@@ -106,7 +106,7 @@ class SstiManager:
                             if response is None:
                                 continue
 
-                            self.__check_keywords(result, response, url, SstiType.GetForm, param)
+                            self.__check_keywords(result, response, url, InjectionType.Ssti_GetForm, param)
 
                             if response.status_code == 400:
                                 url = prev_url
@@ -116,7 +116,7 @@ class SstiManager:
         except Exception as inst:
             print(f"Exception - ({dto.url}) - {inst}")
 
-    def __check_keywords(self, result, response, url, ssti_type, param=None):
+    def __check_keywords(self, result, response, url, inj_type: InjectionType, param=None):
         web_page = response.text
         if self._expected in web_page:
             double_check_url = url.replace('88*88', self._double_check)
@@ -133,6 +133,6 @@ class SstiManager:
                                  f'STATUS: {response.status_code};' \
                                  f'DETAILS: {web_page[start_index:last_index]};'
                 print(log_header_msg)
-                return result.append(SstiFoundDTO(ssti_type, url, param, web_page, log_header_msg))
+                return result.append(InjectionFoundDTO(inj_type, url, param, web_page, log_header_msg))
         if response.status_code == 500:
             print("SstiManager: 500 status - " + url)

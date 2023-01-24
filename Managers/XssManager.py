@@ -1,6 +1,4 @@
 from copy import deepcopy
-
-import requests
 import urllib.parse as urlparse
 from datetime import datetime
 from typing import List
@@ -8,7 +6,7 @@ from Managers.CacheManager import CacheManager
 from Managers.RequestHandler import RequestHandler
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO
-from Models.XssFoundDTO import XssFoundDTO, XssType
+from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
 class XssManager:
@@ -24,13 +22,13 @@ class XssManager:
         result = cache_manager.get_saved_result()
 
         if result is None:
-            result: List[XssFoundDTO] = []
+            result: List[InjectionFoundDTO] = []
             for dto in dtos:
                 url = f'{dto.url}/{self._expected}'
                 response = self._request_handler.handle_request(url)
                 if response is None:
                     return
-                self.__check_keywords(result, response, url, XssType.Get, self._expected, original_url=dto.url)
+                self.__check_keywords(result, response, url, InjectionType.Xss_Get, self._expected, original_url=dto.url)
                 self.__check_params(dto.url, result)
             cache_manager.save_result(result, has_final_result=True)
 
@@ -42,7 +40,7 @@ class XssManager:
         result = cache_manager.get_saved_result()
 
         if result is None:
-            result: List[XssFoundDTO] = []
+            result: List[InjectionFoundDTO] = []
 
             for item in form_results:
                 self.__check_form(item, result)
@@ -51,7 +49,7 @@ class XssManager:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found FORM XSS: {len(result)}')
 
-    def __check_params(self, original_url, result: List[XssFoundDTO]):
+    def __check_params(self, original_url, result: List[InjectionFoundDTO]):
         payloads_urls = set()
         parsed = urlparse.urlparse(original_url)
         queries = filter(None, parsed.query.split("&"))
@@ -65,11 +63,11 @@ class XssManager:
             response = self._request_handler.handle_request(url)
             if response is None:
                 return
-            self.__check_keywords(result, response, url, XssType.Get, self._expected, original_url=original_url)
+            self.__check_keywords(result, response, url, InjectionType.Xss_Get, self._expected, original_url=original_url)
 
         return result
 
-    def __check_form(self, dto: FormRequestDTO, result: List[XssFoundDTO]):
+    def __check_form(self, dto: FormRequestDTO, result: List[InjectionFoundDTO]):
         for form in dto.form_params:
             if form.method_type == "POST":
                 for param in form.params:
@@ -80,7 +78,8 @@ class XssManager:
                     if response is None:
                         continue
 
-                    self.__check_keywords(result, response, dto.url, XssType.PostForm,post_payload=payload,original_post_params=form.params)
+                    self.__check_keywords(result, response, dto.url, InjectionType.Xss_PostForm,
+                                          post_payload=payload, original_post_params=form.params)
 
             elif form.method_type == "GET":
                 parsed = urlparse.urlparse(dto.url)
@@ -97,7 +96,7 @@ class XssManager:
                     if response is None:
                         continue
 
-                    self.__check_keywords(result, response, url, XssType.GetForm, original_url=dto.url)
+                    self.__check_keywords(result, response, url, InjectionType.Xss_GetForm, original_url=dto.url)
 
                     if response.status_code == 400:
                         url = prev_url
@@ -108,7 +107,7 @@ class XssManager:
     def __check_keywords(self, result,
                          response,
                          url,
-                         xss_type: XssType,
+                         inj_type: InjectionType,
                          post_payload=None,
                          original_url: str = None,
                          original_post_params=None):
@@ -134,6 +133,6 @@ class XssManager:
                 if len(result) == 0 or \
                         len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
                     print(log_header_msg)
-                    result.append(XssFoundDTO(xss_type, url, post_payload, web_page, log_header_msg))
+                    result.append(InjectionFoundDTO(inj_type, url, post_payload, web_page, log_header_msg))
                 else:
                     print("Duplicate FORM XSS: - " + url)

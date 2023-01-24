@@ -16,17 +16,16 @@ class CacheManager:
                      'FormRequestFetcher',
                      'Spider',
                      'MassDns',
+                     'MultipleUrlFlowManager',
                      'Nmap',
                      'Nuclei',
                      'SqliManager',
-                     'SstiManager/Get',
-                     'SstiManager/Form',
+                     'SstiManager',
                      'SsrfManager',
                      'SubdomainChecker',
                      'Sublister',
                      'SubFinder',
-                     'XssManager/Get',
-                     'XssManager/Form']
+                     'XssManager']
         for path in path_list:
             result_path = f'Results/{path}'
             if os.path.exists(result_path):
