@@ -27,8 +27,8 @@ class Lfimap:
                                          "--no-error", "-t", "50", "--delay", "2000ms", "-o", output_file],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-                kill = lambda process: process.kill()
-                my_timer = Timer(1200, kill, [proc])
+                kill_action = lambda process: process.kill()
+                my_timer = Timer(1200, kill_action, [proc])
                 try:
                     my_timer.start()
                     proc.wait()

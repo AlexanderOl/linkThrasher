@@ -68,7 +68,7 @@ class SqliManager:
                     self.__check_keywords(result,
                                           response,
                                           dto.url,
-                                          InjectionType.Sqli_FORM_ERROR,
+                                          InjectionType.Sqli_PostForm_Error,
                                           post_payload=copy_form_params,
                                           original_post_params=form.params)
 
@@ -90,7 +90,7 @@ class SqliManager:
                     self.__check_keywords(result,
                                           response,
                                           url,
-                                          InjectionType.Sqli_FORM_GET_ERROR,
+                                          InjectionType.Ssti_Get,
                                           original_url=dto.url)
 
                     if response.status_code == 400:
@@ -145,7 +145,7 @@ class SqliManager:
             if response is None:
                 return
 
-            self.__check_keywords(result, response, url, InjectionType.Sqli_ERROR, original_url=dto.url)
+            self.__check_keywords(result, response, url, InjectionType.Sqli_Get_Error, original_url=dto.url)
 
         except Exception as inst:
             print(f"Exception - ({url}) - {inst}")
@@ -159,7 +159,7 @@ class SqliManager:
                 if response3 is not None and response3.elapsed.total_seconds() >= self._delay_in_seconds:
                     msg = f"SQLiManager delay FOUND! TRUE:{true_payload} ; FALSE:{false_payload}"
                     print(msg)
-                    return result.append(InjectionFoundDTO(InjectionType.Sqli_TIME, true_payload, 'TIME_BASED', response1.text, msg))
+                    return result.append(InjectionFoundDTO(InjectionType.Sqli_Get_Time, true_payload, 'TIME_BASED', response1.text, msg))
 
     def __check_keywords(self, result: List[InjectionFoundDTO], response, url_payload, inj_type: InjectionType,
                          post_payload=None,

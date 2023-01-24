@@ -96,7 +96,7 @@ class XssManager:
                     if response is None:
                         continue
 
-                    self.__check_keywords(result, response, url, InjectionType.Xss_GetForm, original_url=dto.url)
+                    self.__check_keywords(result, response, url, InjectionType.Xss_Get, original_url=dto.url)
 
                     if response.status_code == 400:
                         url = prev_url

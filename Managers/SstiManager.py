@@ -106,7 +106,7 @@ class SstiManager:
                             if response is None:
                                 continue
 
-                            self.__check_keywords(result, response, url, InjectionType.Ssti_GetForm, param)
+                            self.__check_keywords(result, response, url, InjectionType.Ssti_Get, param)
 
                             if response.status_code == 400:
                                 url = prev_url

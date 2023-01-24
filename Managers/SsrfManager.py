@@ -62,7 +62,7 @@ class SsrfManager:
                 msg = f'OPEN REDIRECT in GET FOUND! url: {url}'
                 print(msg)
                 results.append(
-                    InjectionFoundDTO(InjectionType.Open_Redirect_POST, url, self._ngrok_url_safe, response.text, msg))
+                    InjectionFoundDTO(InjectionType.Open_Redirect_PostForm, url, self._ngrok_url_safe, response.text, msg))
 
     def __get_url_ngrok_payload(self, url: str, query: str):
         param_split = query.split('=')
@@ -95,7 +95,7 @@ class SsrfManager:
                                     'ngrok' in response.headers['Location']:
                                 msg = f'OPEN REDIRECT in POST FOUND! param: {param}, url: {dto.url}'
                                 print(msg)
-                                results.append(InjectionFoundDTO(InjectionType.Open_Redirect_POST, dto.url, param, response.text, msg))
+                                results.append(InjectionFoundDTO(InjectionType.Open_Redirect_PostForm, dto.url, param, response.text, msg))
 
                 elif form.method_type == "GET":
                     url = form.action + '?'
@@ -112,7 +112,7 @@ class SsrfManager:
                                 msg = f'OPEN REDIRECT in GET FOUND! param: {param}, url: {dto.url}'
                                 print(msg)
                                 results.append(
-                                    InjectionFoundDTO(InjectionType.Open_Redirect_GET, dto.url, param, response.text, msg))
+                                    InjectionFoundDTO(InjectionType.Open_Redirect_Get, dto.url, param, response.text, msg))
                             if response.status_code == 400:
                                 url = prev_url
                 else:

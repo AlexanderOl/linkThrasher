@@ -2,18 +2,15 @@ from enum import Enum
 
 
 class InjectionType(Enum):
-    Sqli_ERROR = 0,
-    Sqli_TIME = 1,
-    Sqli_FORM_ERROR = 2,
-    Sqli_FORM_GET_ERROR = 3,
-    Ssti_Get = 4,
-    Ssti_PostForm =5,
-    Ssti_GetForm = 6,
-    Xss_Get = 7,
-    Xss_PostForm = 8,
-    Xss_GetForm = 9,
-    Open_Redirect_POST = 10,
-    Open_Redirect_GET = 11
+    Sqli_Get_Error = 0,
+    Sqli_Get_Time = 1,
+    Sqli_PostForm_Error = 2,
+    Ssti_Get = 3,
+    Ssti_PostForm = 4,
+    Xss_Get = 5,
+    Xss_PostForm = 6,
+    Open_Redirect_PostForm = 7,
+    Open_Redirect_Get = 8
 
 
 class InjectionFoundDTO:
@@ -38,4 +35,4 @@ class InjectionFoundDTO:
         return self._response_length
 
     def __str__(self):
-        return f'url: {self._url}, sqliType: {self._inj_type}, details: {self._header_msg}'
+        return f'Url: {self._url}, Injection: {self._inj_type}, Details: {self._header_msg}'
