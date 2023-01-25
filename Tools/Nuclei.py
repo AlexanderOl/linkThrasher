@@ -22,7 +22,7 @@ class Nuclei:
     def check_multiple_uls(self, get_dtos: List[GetRequestDTO]):
 
         report_lines = self._cache_manager.get_saved_result()
-        if not report_lines and not isinstance(report_lines, set):
+        if not report_lines and not isinstance(report_lines, List):
 
             batches = list(self.__divide_chunks(get_dtos))
             counter = len(batches)
@@ -71,7 +71,7 @@ class Nuclei:
 
         txt_file = open(txt_filepath, 'w')
         for dto in dtos_batch:
-            txt_file.write("%s\n" % str(dto.url))
+            txt_file.write(f"{dto.url}\n")
         txt_file.close()
 
         filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
@@ -84,11 +84,11 @@ class Nuclei:
         stream = os.popen(command)
         bash_outputs = stream.readlines()
 
-        main_txt_file = open(self._main_txt_filepath, 'w')
+        main_txt_file = open(self._main_txt_filepath, 'a')
         for line in bash_outputs:
             encoded_line = self._ansi_escape.sub('', line)
             for keyword in self._expected:
                 if keyword in encoded_line:
-                    main_txt_file.write("%s\n" % str(encoded_line))
+                    main_txt_file.write(f"{encoded_line}\n")
             print(line)
         main_txt_file.close()

@@ -24,12 +24,11 @@ class SubdomainChecker:
     def check_all_subdomains(self, all_subdomains: set) -> List[GetRequestDTO]:
         cache_manager = CacheManager(self._tool_name, self._domain)
         checked_subdomains = cache_manager.get_saved_result()
-
         out_of_scope = self._out_of_scope_domains.split(';')
-
         if not checked_subdomains:
 
-            subdomains = set(filter(lambda o: o not in out_of_scope, all_subdomains))
+            subdomains = [subdomain for subdomain in all_subdomains if all(oos not in subdomain for oos in out_of_scope)]
+
             if len(subdomains) == 0:
                 subdomains.add(f'{self._domain}')
 
