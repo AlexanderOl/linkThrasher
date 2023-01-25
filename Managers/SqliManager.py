@@ -66,14 +66,14 @@ class SqliManager:
                     if response is None:
                         continue
 
-                    result = self.__check_keywords(result,
+                    need_to_discard_payload = self.__check_keywords(result,
                                               response,
                                               dto.url,
                                               InjectionType.Sqli_PostForm_Error,
                                               post_payload=copy_form_params,
                                               original_post_params=form.params)
 
-                    if result:
+                    if need_to_discard_payload:
                         copy_form_params[param] = prev_param
 
             elif form.method_type == "GET":
@@ -170,6 +170,7 @@ class SqliManager:
                          original_url: str = None,
                          original_post_params=None):
         web_page = response.text.lower()
+        need_to_discard_payload = False
         for keyword in self._injections_to_check:
             if keyword in web_page:
 
@@ -185,7 +186,7 @@ class SqliManager:
                 start_index = substr_index - 50 if substr_index - 50 > 0 else 0
                 last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
                 log_header_msg = f'injFOUND: {keyword};' \
-                                 f'STATUS: {response.status_code};' \
+                                 f'URL: {url_payload}' \
                                  f'DETAILS: {web_page[start_index:last_index]};'
                 curr_resp_length = len(web_page)
                 if len(result) == 0 or \
@@ -195,8 +196,10 @@ class SqliManager:
                 else:
                     print("Duplicate FORM SQLi: - " + url_payload)
 
-                return True
+                need_to_discard_payload = True
 
             if response.status_code == 500:
                 print("SqliManager: 500 status - " + url_payload)
-                return True
+                need_to_discard_payload = True
+
+        return need_to_discard_payload

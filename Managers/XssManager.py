@@ -28,7 +28,8 @@ class XssManager:
                 response = self._request_handler.handle_request(url)
                 if response is None:
                     return
-                self.__check_keywords(result, response, url, InjectionType.Xss_Get, self._expected, original_url=dto.url)
+                self.__check_keywords(result, response, url, InjectionType.Xss_Get, self._expected,
+                                      original_url=dto.url)
                 self.__check_params(dto.url, result)
             cache_manager.save_result(result, has_final_result=True)
 
@@ -63,7 +64,8 @@ class XssManager:
             response = self._request_handler.handle_request(url)
             if response is None:
                 return
-            self.__check_keywords(result, response, url, InjectionType.Xss_Get, self._expected, original_url=original_url)
+            self.__check_keywords(result, response, url, InjectionType.Xss_Get, self._expected,
+                                  original_url=original_url)
 
         return result
 
@@ -79,11 +81,12 @@ class XssManager:
                     if response is None:
                         continue
 
-                    result = self.__check_keywords(result, response, dto.url, InjectionType.Xss_PostForm,
-                                                   post_payload=payload,
-                                                   original_post_params=form.params)
+                    need_to_discard_payload = self.__check_keywords(result, response, dto.url,
+                                                                    InjectionType.Xss_PostForm,
+                                                                    post_payload=payload,
+                                                                    original_post_params=form.params)
 
-                    if result:
+                    if need_to_discard_payload:
                         payload[param] = prev_param
 
             elif form.method_type == "GET":
@@ -101,9 +104,10 @@ class XssManager:
                     if response is None:
                         continue
 
-                    result = self.__check_keywords(result, response, url, InjectionType.Xss_Get, original_url=dto.url)
+                    need_to_discard_payload = self.__check_keywords(result, response, url, InjectionType.Xss_Get,
+                                                                    original_url=dto.url)
 
-                    if response.status_code == 400 or result:
+                    if response.status_code == 400 or need_to_discard_payload:
                         url = prev_url
             else:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
@@ -117,6 +121,7 @@ class XssManager:
                          original_url: str = None,
                          original_post_params=None):
         web_page = response.text
+        need_to_discard_payload = False
         for keyword in self._injections_to_check:
             if keyword in web_page:
 
@@ -132,7 +137,7 @@ class XssManager:
                 start_index = substr_index - 50 if substr_index - 50 > 0 else 0
                 last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
                 log_header_msg = f'injFOUND: {keyword};' \
-                                 f'STATUS: {response.status_code};' \
+                                 f'URL: {url};' \
                                  f'DETAILS: {web_page[start_index:last_index]};'
                 curr_resp_length = len(web_page)
                 if len(result) == 0 or \
@@ -141,5 +146,6 @@ class XssManager:
                     result.append(InjectionFoundDTO(inj_type, url, post_payload, web_page, log_header_msg))
                 else:
                     print("Duplicate FORM XSS: - " + url)
+                need_to_discard_payload = True
 
-                return True
+        return need_to_discard_payload
