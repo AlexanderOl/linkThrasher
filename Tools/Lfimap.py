@@ -1,6 +1,7 @@
 import os
 import pathlib
 import urllib.parse as urlparse
+from datetime import datetime
 from typing import List
 
 from Managers.CacheManager import CacheManager
@@ -115,11 +116,13 @@ class Lfimap:
 
             self._cache_manager.save_result(result)
 
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Lfimap found {len(result)} items')
+
     def __create_pwn_payloads(self, get_dtos: List[GetRequestDTO], start_url: str) -> set:
         checked_urls = set()
         result = set()
 
-        parsed_parts = urlparse(start_url)
+        parsed_parts = urlparse.urlparse(start_url)
         result.add(f'{parsed_parts.scheme}://{parsed_parts.netloc}/PWN')
 
         for dto in get_dtos:
