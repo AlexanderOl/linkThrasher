@@ -10,9 +10,8 @@ from Models.GetRequestDTO import GetRequestDTO
 class Lfimap:
     def __init__(self, domain):
         tool_name = self.__class__.__name__
-        # self._tool_name = self.__class__.__name__
         self._domain = domain
-        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
+        self._tool_result_dir = f'{os.environ.get("app_result_path")}{tool_name}'
         self._cache_manager = CacheManager(tool_name, domain)
         self._target_url_params = ['cat',
                                    'dir',
