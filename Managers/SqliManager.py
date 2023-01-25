@@ -59,18 +59,22 @@ class SqliManager:
             if form.method_type == "POST":
                 for param in form.params:
                     copy_form_params = deepcopy(form.params)
+                    prev_param = copy_form_params[param]
                     copy_form_params[param] = self._single_error_based_payload
 
                     response = self._request_handler.handle_request(dto.url, post_data=copy_form_params)
                     if response is None:
                         continue
 
-                    self.__check_keywords(result,
-                                          response,
-                                          dto.url,
-                                          InjectionType.Sqli_PostForm_Error,
-                                          post_payload=copy_form_params,
-                                          original_post_params=form.params)
+                    result = self.__check_keywords(result,
+                                              response,
+                                              dto.url,
+                                              InjectionType.Sqli_PostForm_Error,
+                                              post_payload=copy_form_params,
+                                              original_post_params=form.params)
+
+                    if result:
+                        copy_form_params[param] = prev_param
 
             elif form.method_type == "GET":
                 parsed = urlparse.urlparse(dto.url)
@@ -191,5 +195,8 @@ class SqliManager:
                 else:
                     print("Duplicate FORM SQLi: - " + url_payload)
 
+                return True
+
             if response.status_code == 500:
                 print("SqliManager: 500 status - " + url_payload)
+                return True

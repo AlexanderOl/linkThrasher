@@ -72,14 +72,19 @@ class XssManager:
             if form.method_type == "POST":
                 for param in form.params:
                     payload = deepcopy(form.params)
+                    prev_param = payload[param]
                     payload[param] = self._expected
 
                     response = self._request_handler.handle_request(dto.url, post_data=payload)
                     if response is None:
                         continue
 
-                    self.__check_keywords(result, response, dto.url, InjectionType.Xss_PostForm,
-                                          post_payload=payload, original_post_params=form.params)
+                    result = self.__check_keywords(result, response, dto.url, InjectionType.Xss_PostForm,
+                                                   post_payload=payload,
+                                                   original_post_params=form.params)
+
+                    if result:
+                        payload[param] = prev_param
 
             elif form.method_type == "GET":
                 parsed = urlparse.urlparse(dto.url)
@@ -96,9 +101,9 @@ class XssManager:
                     if response is None:
                         continue
 
-                    self.__check_keywords(result, response, url, InjectionType.Xss_Get, original_url=dto.url)
+                    result = self.__check_keywords(result, response, url, InjectionType.Xss_Get, original_url=dto.url)
 
-                    if response.status_code == 400:
+                    if response.status_code == 400 or result:
                         url = prev_url
             else:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
@@ -136,3 +141,5 @@ class XssManager:
                     result.append(InjectionFoundDTO(inj_type, url, post_payload, web_page, log_header_msg))
                 else:
                     print("Duplicate FORM XSS: - " + url)
+
+                return True

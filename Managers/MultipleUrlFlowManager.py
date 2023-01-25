@@ -40,6 +40,7 @@ class MultipleUrlFlowManager:
 
         cache_manager = CacheManager(self._tool_name, str(date.today()))
         get_dtos = cache_manager.get_saved_result()
+        out_of_scope = self._out_of_scope_urls.split(';')
 
         if not get_dtos and not isinstance(get_dtos, List):
 
@@ -52,7 +53,6 @@ class MultipleUrlFlowManager:
                     urls.add(url)
                 urls.add(combined)
 
-            out_of_scope = self._out_of_scope_urls.split(';')
             filtered_urls = [url for url in urls if all(oos not in url for oos in out_of_scope)]
 
             get_dtos: List[GetRequestDTO] = []
@@ -63,5 +63,8 @@ class MultipleUrlFlowManager:
                 get_dtos.append(GetRequestDTO(url, response))
 
             cache_manager.save_result(get_dtos)
-
+        else:
+            out_of_scope = self._out_of_scope_urls.split(';')
+            filtered_urls = list([dto for dto in get_dtos if all(oos not in dto.url for oos in out_of_scope)])
+            get_dtos = filtered_urls
         return get_dtos
