@@ -172,7 +172,7 @@ class Lfimap:
         txt_filepath = f"{self._tool_result_dir}/{self._domain}.txt"
         if os.path.exists(txt_filepath):
             print(f"File found: {txt_filepath}")
-            return
+            return txt_filepath
 
         txt_file = open(txt_filepath, 'w')
         for payload in pwn_payloads:

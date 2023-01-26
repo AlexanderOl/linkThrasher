@@ -140,12 +140,12 @@ class XssManager:
                                  f'URL: {url};' \
                                  f'DETAILS: {web_page[start_index:last_index]};'
                 curr_resp_length = len(web_page)
-                if len(result) == 0 or \
-                        len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
+                if not any(lambda dto: dto.response_length == curr_resp_length and dto.details_msg == log_header_msg,
+                           result):
                     print(log_header_msg)
                     result.append(InjectionFoundDTO(inj_type, url, post_payload, web_page, log_header_msg))
                 else:
-                    print("Duplicate FORM XSS: - " + url)
+                    print("Duplicate XSS: - " + url)
                 need_to_discard_payload = True
 
         return need_to_discard_payload

@@ -189,8 +189,8 @@ class SqliManager:
                                  f'URL: {url_payload}' \
                                  f'DETAILS: {web_page[start_index:last_index]};'
                 curr_resp_length = len(web_page)
-                if len(result) == 0 or \
-                        len(list(filter(lambda dto: dto.response_length == curr_resp_length, result))) < 5:
+                if not any(lambda dto: dto.response_length == curr_resp_length and dto.details_msg == log_header_msg,
+                           result):
                     print(log_header_msg)
                     result.append(InjectionFoundDTO(inj_type, url_payload, post_payload, web_page, log_header_msg))
                 else:

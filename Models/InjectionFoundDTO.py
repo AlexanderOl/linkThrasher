@@ -34,5 +34,9 @@ class InjectionFoundDTO:
     def response_length(self):
         return self._response_length
 
+    @property
+    def details_msg(self):
+        return self._header_msg
+
     def __str__(self):
         return f'Url: {self._url}, Injection: {self._inj_type}, Details: {self._header_msg}'
