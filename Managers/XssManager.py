@@ -129,7 +129,7 @@ class XssManager:
                 if original_url is not None:
                     check_response = self._request_handler.handle_request(original_url)
                 else:
-                    check_response = self._request_handler.handle_request(original_url, post_data=original_post_params)
+                    check_response = self._request_handler.handle_request(url, post_data=original_post_params)
 
                 if check_response is None or keyword in check_response.text.lower():
                     return
