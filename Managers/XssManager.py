@@ -14,6 +14,7 @@ class XssManager:
         self._domain = domain
         self._expected = '<poc>'
         self._injections_to_check = ['syntax', 'xpath', '<poc>', 'internalerror', 'warning: ', 'exception: ']
+        self._false_positives = ['malformed request syntax']
         self._request_handler = RequestHandler(cookies, headers)
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
@@ -123,14 +124,14 @@ class XssManager:
         web_page = response.text
         need_to_discard_payload = False
         for keyword in self._injections_to_check:
-            if keyword in web_page:
+            if keyword in web_page and not any(word in web_page for word in self._false_positives):
 
                 if original_url is not None:
                     check_response = self._request_handler.handle_request(original_url)
                 else:
                     check_response = self._request_handler.handle_request(original_url, post_data=original_post_params)
 
-                if keyword in check_response.text.lower():
+                if check_response is None or keyword in check_response.text.lower():
                     return
 
                 substr_index = web_page.find(keyword)

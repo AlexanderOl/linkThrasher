@@ -13,6 +13,7 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 class SqliManager:
     def __init__(self, domain, cookies, headers):
         self._domain = domain
+        self._false_positives = ['malformed request syntax']
         self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C']
         self._time_based_payloads = [
             {'TruePld': '\'OR(if(1=1,sleep(5),0))OR\'', 'FalsePld': '\'OR(if(1=2,sleep(5),0))OR\''},
@@ -169,14 +170,14 @@ class SqliManager:
         web_page = response.text.lower()
         need_to_discard_payload = False
         for keyword in self._injections_to_check:
-            if keyword in web_page:
+            if keyword in web_page and not any(word in web_page for word in self._false_positives):
 
                 if original_url is not None:
                     check_response = self._request_handler.handle_request(original_url)
                 else:
                     check_response = self._request_handler.handle_request(url_payload, post_data=original_post_params)
 
-                if keyword in check_response.text.lower():
+                if check_response is None or keyword in check_response.text.lower():
                     return
 
                 substr_index = web_page.find(keyword)
