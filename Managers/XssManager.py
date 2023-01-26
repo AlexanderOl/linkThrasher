@@ -140,8 +140,8 @@ class XssManager:
                                  f'URL: {url};' \
                                  f'DETAILS: {web_page[start_index:last_index]};'
                 curr_resp_length = len(web_page)
-                if not any(lambda dto: dto.response_length == curr_resp_length and dto.details_msg == log_header_msg,
-                           result):
+                if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg
+                           for dto in result):
                     print(log_header_msg)
                     result.append(InjectionFoundDTO(inj_type, url, post_payload, web_page, log_header_msg))
                 else:

@@ -34,6 +34,8 @@ class Nuclei:
             main_txt_file = open(self._main_txt_filepath, 'r')
             report_lines = main_txt_file.readlines()
 
+            self.__cleanup(len(batches))
+
             self._cache_manager.save_result(report_lines)
 
     def __divide_chunks(self, items):
@@ -89,6 +91,14 @@ class Nuclei:
             encoded_line = self._ansi_escape.sub('', line)
             for keyword in self._expected:
                 if keyword in encoded_line:
-                    main_txt_file.write(f"{encoded_line}\n")
+                    main_txt_file.write(f"{encoded_line}")
             print(line)
         main_txt_file.close()
+
+    def __cleanup(self, length):
+        for i in range(0, length):
+            filepath = f"{self._tool_result_dir}/{self._cache_key}_{i}.txt"
+            if os.path.exists(filepath):
+                os.remove(filepath)
+        if os.path.exists(self._main_txt_filepath):
+            os.remove(self._main_txt_filepath)

@@ -38,7 +38,7 @@ class LinkFinder:
         for found in set([x.lower() for x in bash_outputs]):
             if 'linkfinder.py' in found:
                 break
-            if self._url_ignore_ext_regex.search(found) or ':' in found:
+            if self._url_ignore_ext_regex.search(found) or 'mailto:' in found:
                 continue
             if found.endswith('\n'):
                 found = found[:-1]

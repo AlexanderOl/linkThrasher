@@ -13,7 +13,7 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 class SqliManager:
     def __init__(self, domain, cookies, headers):
         self._domain = domain
-        # self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C']
+        self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C']
         self._time_based_payloads = [
             {'TruePld': '\'OR(if(1=1,sleep(5),0))OR\'', 'FalsePld': '\'OR(if(1=2,sleep(5),0))OR\''},
             {'TruePld': '\'OR(if(1=1,sleep(5),0))--%20', 'FalsePld': '\'OR(if(1=2,sleep(5),0))--%20'},
@@ -22,7 +22,6 @@ class SqliManager:
         self._delay_in_seconds = 5
         self._request_handler = RequestHandler(cookies, headers)
         self._injections_to_check = ['syntax', 'xpath', 'internalerror', 'warning: ', 'exception: ']
-        self._single_error_based_payload = '\'"%5C)\\\\'
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
@@ -60,21 +59,22 @@ class SqliManager:
                 for param in form.params:
                     copy_form_params = deepcopy(form.params)
                     prev_param = copy_form_params[param]
-                    copy_form_params[param] = self._single_error_based_payload
+                    for payload in self._error_based_payloads:
+                        copy_form_params[param] = payload
 
-                    response = self._request_handler.handle_request(dto.url, post_data=copy_form_params)
-                    if response is None:
-                        continue
+                        response = self._request_handler.handle_request(dto.url, post_data=copy_form_params)
+                        if response is None:
+                            continue
 
-                    need_to_discard_payload = self.__check_keywords(result,
-                                              response,
-                                              dto.url,
-                                              InjectionType.Sqli_PostForm_Error,
-                                              post_payload=copy_form_params,
-                                              original_post_params=form.params)
+                        need_to_discard_payload = self.__check_keywords(result,
+                                                                        response,
+                                                                        dto.url,
+                                                                        InjectionType.Sqli_PostForm_Error,
+                                                                        post_payload=copy_form_params,
+                                                                        original_post_params=form.params)
 
-                    if need_to_discard_payload:
-                        copy_form_params[param] = prev_param
+                        if need_to_discard_payload:
+                            copy_form_params[param] = prev_param
 
             elif form.method_type == "GET":
                 parsed = urlparse.urlparse(dto.url)
@@ -84,21 +84,22 @@ class SqliManager:
                 else:
                     url = form.action + '?'
                 for param in form.params:
-                    prev_url = url
-                    url += f'{param}={self._single_error_based_payload}&'
+                    for payload in self._error_based_payloads:
+                        prev_url = url
+                        url += f'{param}={payload}&'
 
-                    response = self._request_handler.handle_request(url)
-                    if response is None:
-                        continue
+                        response = self._request_handler.handle_request(url)
+                        if response is None:
+                            continue
 
-                    self.__check_keywords(result,
-                                          response,
-                                          url,
-                                          InjectionType.Ssti_Get,
-                                          original_url=dto.url)
+                        self.__check_keywords(result,
+                                              response,
+                                              url,
+                                              InjectionType.Ssti_Get,
+                                              original_url=dto.url)
 
-                    if response.status_code == 400:
-                        url = prev_url
+                        if response.status_code == 400:
+                            url = prev_url
             else:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
@@ -108,10 +109,8 @@ class SqliManager:
         parsed = urlparse.urlparse(dto.url)
         base_url = f'{parsed.scheme}://{parsed.hostname}{parsed.path}/'
 
-        # for payload in self._error_based_payloads:
-        #     self.__send_error_based_request(f'{base_url}{payload}', result)
-
-        self.__send_error_based_request(f'{base_url}{self._single_error_based_payload}', result, dto)
+        for payload in self._error_based_payloads:
+            self.__send_error_based_request(f'{base_url}{payload}', result, dto)
 
         for payloads in self._time_based_payloads:
             self.__send_time_based_request(f'{base_url}{payloads["TruePld"]}', f'{base_url}{payloads["FalsePld"]}',
@@ -131,11 +130,8 @@ class SqliManager:
                     (f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',
                      f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}'))
 
-            error_based_payloads_urls.add(
-                f'{main_url_split[0]}{param_split[0]}={self._single_error_based_payload}{main_url_split[1]}')
-
-            # for payload in self._error_based_payloads:
-            #     error_based_payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
+            for payload in self._error_based_payloads:
+                error_based_payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
 
         for payload in error_based_payloads_urls:
             self.__send_error_based_request(payload, result, dto)
@@ -163,7 +159,8 @@ class SqliManager:
                 if response3 is not None and response3.elapsed.total_seconds() >= self._delay_in_seconds:
                     msg = f"SQLiManager delay FOUND! TRUE:{true_payload} ; FALSE:{false_payload}"
                     print(msg)
-                    return result.append(InjectionFoundDTO(InjectionType.Sqli_Get_Time, true_payload, 'TIME_BASED', response1.text, msg))
+                    return result.append(
+                        InjectionFoundDTO(InjectionType.Sqli_Get_Time, true_payload, 'TIME_BASED', response1.text, msg))
 
     def __check_keywords(self, result: List[InjectionFoundDTO], response, url_payload, inj_type: InjectionType,
                          post_payload=None,
@@ -185,12 +182,13 @@ class SqliManager:
                 substr_index = web_page.find(keyword)
                 start_index = substr_index - 50 if substr_index - 50 > 0 else 0
                 last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
-                log_header_msg = f'injFOUND: {keyword};' \
-                                 f'URL: {url_payload}' \
+                log_header_msg = f'injFOUND: {keyword}; ' \
+                                 f'URL: {url_payload}; ' \
                                  f'DETAILS: {web_page[start_index:last_index]};'
                 curr_resp_length = len(web_page)
-                if not any(lambda dto: dto.response_length == curr_resp_length and dto.details_msg == log_header_msg,
-                           result):
+
+                if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg
+                           for dto in result):
                     print(log_header_msg)
                     result.append(InjectionFoundDTO(inj_type, url_payload, post_payload, web_page, log_header_msg))
                 else:

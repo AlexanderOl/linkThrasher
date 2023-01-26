@@ -92,28 +92,37 @@ class Lfimap:
 
         result = self._cache_manager.get_saved_result()
         if not result and not isinstance(result, set):
-            pwn_payloads = self.__create_pwn_payloads(get_dtos, start_url)
-            payloads_filepath = self.__create_payloads_file(pwn_payloads)
-
-            filepath = os.path.join(pathlib.Path().resolve(), payloads_filepath)
-            command = f'cd /root/Desktop/TOOLs/lfimap/; ' \
-                      f'python lfimap.py -F {filepath} -a'
-            stream = os.popen(command)
-            bash_outputs = stream.readlines()
-            if any('Try specifying parameter --http-ok 404' in line for line in bash_outputs):
-                new_cmd = f'{command} --http-ok 404'
-                stream = os.popen(new_cmd)
-                bash_outputs = stream.readlines()
-            elif any('Try specifying parameter --http-ok 200' in line for line in bash_outputs):
-                new_cmd = f'{command} --http-ok 200'
-                stream = os.popen(new_cmd)
-                bash_outputs = stream.readlines()
-
-            os.remove(filepath)
-
             result = set()
+
+            try:
+                pwn_payloads = self.__create_pwn_payloads(get_dtos, start_url)
+                if len(pwn_payloads) == 0:
+                    self._cache_manager.save_result(result)
+                    return
+
+                payloads_filepath = self.__create_payloads_file(pwn_payloads)
+
+                filepath = os.path.join(pathlib.Path().resolve(), payloads_filepath)
+                command = f'cd /root/Desktop/TOOLs/lfimap/; ' \
+                          f'python lfimap.py -F {filepath} -a'
+                stream = os.popen(command)
+                bash_outputs = stream.readlines()
+                if any('Try specifying parameter --http-ok 404' in line for line in bash_outputs):
+                    new_cmd = f'{command} --http-ok 404'
+                    stream = os.popen(new_cmd)
+                    bash_outputs = stream.readlines()
+                elif any('Try specifying parameter --http-ok 200' in line for line in bash_outputs):
+                    new_cmd = f'{command} --http-ok 200'
+                    stream = os.popen(new_cmd)
+                    bash_outputs = stream.readlines()
+
+                os.remove(filepath)
+            except Exception as inst:
+                result_msg = f'Lfimap Exception ({inst}) filepath:({filepath})'
+                print(result_msg)
+
             for line in bash_outputs:
-                if '[+]' in line:
+                if '[+]' in line and '[+] Info disclosure ->' not in line:
                     result.add(line)
 
             self._cache_manager.save_result(result)

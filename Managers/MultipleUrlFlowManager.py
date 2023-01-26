@@ -17,6 +17,7 @@ class MultipleUrlFlowManager:
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
         self._request_handler = RequestHandler(cookies='', headers=headers)
         self._tool_name = self.__class__.__name__
+        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def run(self):
@@ -26,7 +27,7 @@ class MultipleUrlFlowManager:
             get_dtos = self.__get_cached_dtos(file_path)
 
             nuclei = Nuclei(str(date.today()))
-            nuclei.check_multiple_uls(get_dtos)
+            # nuclei.check_multiple_uls(get_dtos)
 
             single_url_man = SingleUrlFlowManager(self._headers)
             thread_man = ThreadManager()
@@ -43,6 +44,9 @@ class MultipleUrlFlowManager:
         out_of_scope = self._out_of_scope_urls.split(';')
 
         if not get_dtos and not isinstance(get_dtos, List):
+
+            for f in os.listdir(self._tool_result_dir):
+                os.remove(os.path.join(self._tool_result_dir, f))
 
             raw_urls = list(set(line.strip() for line in open(file_path)))
             urls = set()
