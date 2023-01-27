@@ -13,8 +13,9 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 class SqliManager:
     def __init__(self, domain, cookies, headers):
         self._domain = domain
-        self._false_positives = ['malformed request syntax']
-        self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C']
+        self._false_positives = ['malformed request syntax',
+                                 'eval|internal|range|reference|syntax|type']
+        self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
         self._time_based_payloads = [
             {'TruePld': '\'OR(if(1=1,sleep(5),0))OR\'', 'FalsePld': '\'OR(if(1=2,sleep(5),0))OR\''},
             {'TruePld': '\'OR(if(1=1,sleep(5),0))--%20', 'FalsePld': '\'OR(if(1=2,sleep(5),0))--%20'},
@@ -22,7 +23,7 @@ class SqliManager:
         ]
         self._delay_in_seconds = 5
         self._request_handler = RequestHandler(cookies, headers)
-        self._injections_to_check = ['syntax', 'xpath', 'internalerror', 'warning: ', 'exception: ']
+        self._injections_to_check = [' syntax', 'xpath', 'internalerror', 'warning: ', 'exception: ']
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 

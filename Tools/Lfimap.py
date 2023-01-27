@@ -141,7 +141,7 @@ class Lfimap:
             is_added = self.__check_if_added(dto.url)
             if is_added:
                 continue
-            target_params = filter(None, (f'{target_param}=' in dto.url for target_param in self._target_url_params))
+            target_params = list(filter(lambda param: f'{param}=' in dto.url, self._target_url_params))
             for tp in target_params:
                 if tp in checked_urls:
                     continue

@@ -14,7 +14,8 @@ class XssManager:
         self._domain = domain
         self._expected = '<poc>'
         self._injections_to_check = ['syntax', 'xpath', '<poc>', 'internalerror', 'warning: ', 'exception: ']
-        self._false_positives = ['malformed request syntax']
+        self._false_positives = ['malformed request syntax',
+                                 'eval|internal|range|reference|syntax|type']
         self._request_handler = RequestHandler(cookies, headers)
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
