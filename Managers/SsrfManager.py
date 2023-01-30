@@ -57,8 +57,9 @@ class SsrfManager:
         for url in payloads_urls:
             response = self._request_handler.handle_request(url)
             if response is not None and \
-                    str(response.status_code).startswith('3') and \
-                    'ngrok' in response.headers['Location']:
+                    str(response.status_code).startswith('3') \
+                    and 'Location' in response.headers \
+                    and 'ngrok' in response.headers['Location']:
                 msg = f'OPEN REDIRECT in GET FOUND! url: {url}'
                 print(msg)
                 results.append(
@@ -91,8 +92,9 @@ class SsrfManager:
 
                             response = self._request_handler.handle_request(dto.url, post_data=payload)
                             if response is not None and \
-                                    str(response.status_code).startswith('3') and \
-                                    'ngrok' in response.headers['Location']:
+                                    str(response.status_code).startswith('3') \
+                                    and 'Location' in response.headers \
+                                    and 'ngrok' in response.headers['Location']:
                                 msg = f'OPEN REDIRECT in POST FOUND! param: {param}, url: {dto.url}'
                                 print(msg)
                                 results.append(InjectionFoundDTO(InjectionType.Open_Redirect_PostForm, dto.url, param, response.text, msg))
@@ -106,9 +108,10 @@ class SsrfManager:
                             url += (param + f'={payload}&')
 
                             response = self._request_handler.handle_request(url)
-                            if response is not None and \
-                                    str(response.status_code).startswith('3') and \
-                                    'ngrok' in response.headers['Location']:
+                            if response is not None \
+                                    and str(response.status_code).startswith('3') \
+                                    and 'Location' in response.headers \
+                                    and 'ngrok' in response.headers['Location']:
                                 msg = f'OPEN REDIRECT in GET FOUND! param: {param}, url: {dto.url}'
                                 print(msg)
                                 results.append(
