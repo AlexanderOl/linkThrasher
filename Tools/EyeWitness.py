@@ -51,6 +51,11 @@ class EyeWitness:
             yield items_to_split[i:i + self._chunk_size]
 
     def __make_screens(self, urls_batch, counter: int):
+
+        counter_directory_path = f'{self._tool_result_dir}/{self._domain}/{counter}'
+        if os.path.exists(counter_directory_path):
+            print(f"{counter_directory_path} exits")
+            return
         txt_filepath = f"{self._tool_dir}/{self._domain}_raw.txt"
         txt_file = open(txt_filepath, 'w')
         for subdomain in urls_batch:
@@ -60,7 +65,7 @@ class EyeWitness:
         try:
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
             command = f'cd /root/Desktop/TOOLs/EyeWitness/Python/; ' \
-                      f'./EyeWitness.py -f {subdomains_filepath} --thread 1 --web -d {self._tool_result_dir}/{self._domain}/{counter} --timeout 15 --no-prompt'
+                      f'./EyeWitness.py -f {subdomains_filepath} --thread 1 --web -d {counter_directory_path} --timeout 15 --no-prompt'
             stream = os.popen(command)
             bash_outputs = stream.readlines()
 
