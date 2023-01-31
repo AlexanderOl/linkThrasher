@@ -54,8 +54,8 @@ class EyeWitness:
 
         counter_directory_path = f'{self._tool_result_dir}/{self._domain}/{counter}'
         if os.path.exists(counter_directory_path):
-            print(f"{counter_directory_path} exits")
-            return
+            return f"{counter_directory_path} exits"
+
         txt_filepath = f"{self._tool_dir}/{self._domain}_raw.txt"
         txt_file = open(txt_filepath, 'w')
         for subdomain in urls_batch:
