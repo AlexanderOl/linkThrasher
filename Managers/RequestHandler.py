@@ -14,12 +14,14 @@ class RequestHandler:
                                          data=post_data,
                                          headers=self._headers,
                                          cookies=self._cookies,
+                                         allow_redirects=False,
                                          verify=False,
                                          timeout=timeout)
             else:
                 response = requests.get(url,
                                         headers=self._headers,
                                         cookies=self._cookies,
+                                        allow_redirects=False,
                                         verify=False,
                                         timeout=timeout)
             return response
