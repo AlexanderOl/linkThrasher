@@ -13,8 +13,9 @@ from Tools.SubFinder import SubFinder
 
 class DomainFlowManager:
     def __init__(self, headers):
-        self.download_path = os.environ.get('download_path')
-        self.headers = headers
+        self._download_path = os.environ.get('download_path')
+        self._headers = headers
+        self._check_mode = os.environ.get('check_mode')
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def check_domain(self, domain):
@@ -41,7 +42,7 @@ class DomainFlowManager:
             .union(massdns_subdomains)
         # .union(sublister_subdomains)
 
-        subdomain_checker = SubdomainChecker(domain, self.headers, self.download_path)
+        subdomain_checker = SubdomainChecker(domain, self._headers, self._download_path)
         start_urls_dtos = subdomain_checker.check_all_subdomains(all_subdomains)
         if len(start_urls_dtos) == 0:
             print('No live subdomains found')
@@ -54,12 +55,14 @@ class DomainFlowManager:
         eyewitness = EyeWitness(domain)
         eyewitness.visit_urls(live_urls)
 
-        nuclei = Nuclei(str(date.today()))
-        nuclei.check_multiple_uls(start_urls_dtos)
+        if self._check_mode == 'D':
+            nuclei = Nuclei(str(date.today()))
+            nuclei.check_multiple_uls(start_urls_dtos)
+
         # nmap = Nmap(domain)
         # nmap.check_ports(all_subdomains)
 
-        single_url_man = SingleUrlFlowManager(self.headers)
+        single_url_man = SingleUrlFlowManager(self._headers)
         thread_man = ThreadManager()
         thread_man.run_all(single_url_man.run, start_urls_dtos)
 
