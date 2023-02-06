@@ -31,7 +31,7 @@ class SingleUrlFlowManager:
 
     def run(self, get_dto: GetRequestDTO):
 
-        if 400 <= get_dto.status_code < 500:
+        if 404 <= get_dto.status_code < 500:
             return
 
         start_url = get_dto.url

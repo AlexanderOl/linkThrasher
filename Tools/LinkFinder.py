@@ -40,6 +40,8 @@ class LinkFinder:
                 break
             if self._url_ignore_ext_regex.search(found) or 'mailto:' in found:
                 continue
+            if found.startswith('./'):
+                result.add(f'{self._start_url}{found[2:]}')
             if found.endswith('\n'):
                 found = found[:-1]
             if not any(word in found for word in self._black_list):

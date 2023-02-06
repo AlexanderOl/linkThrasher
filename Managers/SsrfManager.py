@@ -16,8 +16,8 @@ class SsrfManager:
 
     def __init__(self, domain, cookies, headers):
         self._domain = domain
-        ngrok_url = os.environ.get('ngrok_url')
-        self._ngrok_url_safe = urllib.parse.quote(ngrok_url, safe='')
+        self._ngrok_url = os.environ.get('ngrok_url')
+        self._ngrok_url_safe = urllib.parse.quote(self._ngrok_url, safe='')
         self._url_params = ['url', 'redirect', 'file', 'page', 'source']
         self._tool_dir = f'Results/SsrfManager'
         self._get_domain_log = f'{self._tool_dir}/GET_{self._domain}_uids.txt'
@@ -59,7 +59,7 @@ class SsrfManager:
             if response is not None and \
                     str(response.status_code).startswith('3') \
                     and 'Location' in response.headers \
-                    and 'ngrok' in response.headers['Location']:
+                    and response.headers['Location'].startswith(self._ngrok_url):
                 msg = f'OPEN REDIRECT in GET FOUND! url: {url}'
                 print(msg)
                 results.append(
@@ -68,15 +68,15 @@ class SsrfManager:
     def __get_url_ngrok_payload(self, url: str, query: str):
         param_split = query.split('=')
         main_url_split = url.split(query)
-        uid_str = str(uuid.uuid4())
-        payload = main_url_split[0] + param_split[0] + f'={self._ngrok_url_safe}{uid_str}' + main_url_split[1]
+        uid_str = str(uuid.uuid4())[0:8]
+        payload = main_url_split[0] + param_split[0] + f'={self._ngrok_url_safe}/{uid_str}' + main_url_split[1]
         with open(self._get_domain_log, 'a') as f:
             f.write(f'{uid_str}:{payload}\n')
         return payload
 
     def __get_param_ngrok_payload(self, url: str, param: str, method_type: str):
-        uid_str = str(uuid.uuid4())
-        payload = f'{self._ngrok_url_safe}{uid_str}'
+        uid_str = str(uuid.uuid4())[0:8]
+        payload = f'{self._ngrok_url_safe}/{uid_str}'
         with open(self._get_domain_log, 'a') as f:
             f.write(f'{uid_str}:{url}:{param}:{method_type}\n')
         return payload
@@ -94,7 +94,7 @@ class SsrfManager:
                             if response is not None and \
                                     str(response.status_code).startswith('3') \
                                     and 'Location' in response.headers \
-                                    and 'ngrok' in response.headers['Location']:
+                                    and response.headers['Location'].startswith(self._ngrok_url):
                                 msg = f'OPEN REDIRECT in POST FOUND! param: {param}, url: {dto.url}'
                                 print(msg)
                                 results.append(InjectionFoundDTO(InjectionType.Open_Redirect_PostForm, dto.url, param, response.text, msg))
@@ -111,7 +111,7 @@ class SsrfManager:
                             if response is not None \
                                     and str(response.status_code).startswith('3') \
                                     and 'Location' in response.headers \
-                                    and 'ngrok' in response.headers['Location']:
+                                    and response.headers['Location'].startswith(self._ngrok_url):
                                 msg = f'OPEN REDIRECT in GET FOUND! param: {param}, url: {dto.url}'
                                 print(msg)
                                 results.append(
