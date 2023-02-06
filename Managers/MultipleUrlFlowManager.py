@@ -27,7 +27,7 @@ class MultipleUrlFlowManager:
             get_dtos = self.__get_cached_dtos(file_path)
 
             nuclei = Nuclei(str(date.today()))
-            # nuclei.check_multiple_uls(get_dtos)
+            nuclei.check_multiple_uls(get_dtos)
 
             single_url_man = SingleUrlFlowManager(self._headers)
             thread_man = ThreadManager()

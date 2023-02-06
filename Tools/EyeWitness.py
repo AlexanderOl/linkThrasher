@@ -61,7 +61,7 @@ class EyeWitness:
         for subdomain in urls_batch:
             txt_file.write("%s\n" % str(subdomain))
         txt_file.close()
-
+        result_msg = ''
         try:
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
             command = f'cd /root/Desktop/TOOLs/EyeWitness/Python/; ' \

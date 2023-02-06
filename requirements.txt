@@ -4,3 +4,5 @@ urllib3
 tldextract
 validators
 bs4
+jsbeautifier
+netaddr
