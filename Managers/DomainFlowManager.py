@@ -19,7 +19,6 @@ class DomainFlowManager:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def check_domain(self, domain):
-        print(f'Checking {domain} domain')
 
         # sublister = Sublister(domain)
         # sublister_subdomains = sublister.get_subdomains()

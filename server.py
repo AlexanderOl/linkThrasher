@@ -34,8 +34,11 @@ if __name__ == '__main__':
         if os.path.exists(file_path):
             domains = list(set(line.strip() for line in open(file_path)))
             domain_man = DomainFlowManager(headers)
+            counter = len(domains)
             for domain in domains:
+                print(f'Checking {domain} domain. Counter: {counter}')
                 domain_man.check_domain(domain)
+                counter -= 1
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{file_path} is missing')
