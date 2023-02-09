@@ -19,11 +19,6 @@ class DomainFlowManager:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def check_domain(self, domain):
-
-        # sublister = Sublister(domain)
-        # sublister_subdomains = sublister.get_subdomains()
-        # sublister_subdomains = set()
-
         amass = Amass(domain)
         amass_subdomains = amass.get_subdomains()
         # amass_subdomains = set()
@@ -39,7 +34,6 @@ class DomainFlowManager:
         all_subdomains = amass_subdomains \
             .union(subfinder_subdomains) \
             .union(massdns_subdomains)
-        # .union(sublister_subdomains)
 
         subdomain_checker = SubdomainChecker(domain, self._headers, self._download_path)
         start_urls_dtos = subdomain_checker.check_all_subdomains(all_subdomains)

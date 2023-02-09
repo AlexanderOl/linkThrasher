@@ -23,7 +23,6 @@ class CacheManager:
                      'SstiManager',
                      'SsrfManager',
                      'SubdomainChecker',
-                     'Sublister',
                      'SubFinder',
                      'XssManager']
         for path in path_list:
