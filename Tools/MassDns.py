@@ -9,8 +9,14 @@ class MassDns:
         self._tool_name = self.__class__.__name__
         self._domain = domain
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
+        self._massdns_out_of_scope_domains = os.environ.get("massdns_out_of_scope_domains")
 
     def get_subdomains(self) -> set:
+        out_of_scope = self._massdns_out_of_scope_domains.split(';')
+
+        if any(oos in self._domain for oos in out_of_scope):
+            print(f'{self._domain} out of scope massdns')
+            return set()
         cache_manager = CacheManager(self._tool_name, self._domain)
         subdomains = cache_manager.get_saved_result()
         if not subdomains and not isinstance(subdomains, set):
@@ -25,8 +31,8 @@ class MassDns:
                       f'./bin/massdns -r lists/resolvers.txt -t A -o S -w {massdns_result_file} -q'
             stream = os.popen(command)
             stream.read()
-
             subdomains = set()
+
             if os.path.exists(massdns_result_file):
                 with open(massdns_result_file) as file:
                     for line in file:
