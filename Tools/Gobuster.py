@@ -37,13 +37,13 @@ class Gobuster:
                 try:
                     my_timer.start()
                     proc.wait()
-                    err_message = proc.stderr.read().decode()
+                    msg = proc.stderr.read().decode()
+                    print(f'({base_url}) msg - {msg}')
 
-                    if 'Error: ' in err_message:
+                    if 'Error: ' in msg:
                         dirb = Dirb(self._domain)
                         dirb.check_single_url(base_url)
-                    else:
-                        print(f'({base_url}) err_message - {err_message}')
+
 
                 finally:
                     my_timer.cancel()
