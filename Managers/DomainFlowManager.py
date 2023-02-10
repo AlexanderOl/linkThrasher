@@ -48,9 +48,8 @@ class DomainFlowManager:
         eyewitness = EyeWitness(domain)
         eyewitness.visit_urls(live_urls)
 
-        if self._check_mode == 'D':
-            nuclei = Nuclei(str(date.today()))
-            nuclei.check_multiple_uls(start_urls_dtos)
+        nuclei = Nuclei(domain)
+        nuclei.check_multiple_uls(start_urls_dtos)
 
         # nmap = Nmap(domain)
         # nmap.check_ports(all_subdomains)
