@@ -37,11 +37,12 @@ class Dirb:
                     my_timer.cancel()
                     self.check_single_url(url)
 
-                filtered_output = list(filter(lambda o: 'CODE:2' in o or 'DIRECTORY:' in o, report_lines))
+                filtered_output = list(filter(lambda line: 'CODE:2' in line or 'DIRECTORY:' in line, report_lines))
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: Dirb {url} finished. Found {len(filtered_output)}')
                 self._cache_manager.save_result(filtered_output)
 
             finally:
-                my_timer.cancel()
+                if my_timer.is_alive():
+                    my_timer.cancel()
 
 
