@@ -30,7 +30,7 @@ class Gobuster:
                 output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
                 cmd_arr = ["gobuster", "dir",
                                          "-u", base_url,
-                                         "-w", f"{self._app_wordlists_path}/ExploitDb.txt",
+                                         "-w", f"{self._app_wordlists_path}ExploitDB.txt",
                                          "--no-error", "-t", "50", "-o", output_file]
                 proc = subprocess.Popen(cmd_arr, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 kill_action = lambda process: process.kill()
@@ -41,16 +41,15 @@ class Gobuster:
                     msg = proc.stderr.read().decode()
                     print(f'({base_url}); '
                           f'msg - {msg}; '
-                          f'cmd - gobuster dir -u {base_url} -w {self._app_wordlists_path}/ExploitDb.txt --no-error -t 50')
+                          f'cmd - gobuster dir -u {base_url} -w {self._app_wordlists_path}ExploitDB.txt --no-error -t 50')
 
-                    if 'Error: ' in msg:
+                    if 'Error: ' in msg and ' => ' in msg:
                         cmd_arr.append('-d')
-                        if '302' in msg:
-                            cmd_arr.append('302')
-                        if '403' in msg:
-                            cmd_arr.append('403')
-                        if '400' in msg:
-                            cmd_arr.append('400')
+                        status_code = msg.split(' => ', 1)[1].split(' (', 1)[0]
+                        if status_code.isdigit():
+                            cmd_arr.append(status_code)
+                        else:
+                            print(f"Gobuster error - {status_code} is not a astatus code")
                         my_timer.cancel()
 
                         proc2 = subprocess.Popen(cmd_arr, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

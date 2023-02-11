@@ -42,7 +42,8 @@ class CacheManager:
                 file.close()
                 return data
         except:
-            os.remove(self.result_filepath)
+            if os.path.exists(self.result_filepath):
+                os.remove(self.result_filepath)
 
     def save_result(self, result, has_final_result=False):
         if not os.path.exists(self.result_dir):
