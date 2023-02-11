@@ -13,6 +13,7 @@ class Gobuster:
         self._tool_name = self.__class__.__name__
         self._domain = domain
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
+        self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
         self._cache_manager = CacheManager(self._tool_name, domain)
 
     def check_single_url(self, url):
@@ -27,23 +28,38 @@ class Gobuster:
                 print(f'[{then.strftime("%H:%M:%S")}]: Gobuster {base_url} start...')
 
                 output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
-
-                proc = subprocess.Popen(["gobuster", "dir", "-u", base_url, "-w" "/usr/share/dirb/wordlists/big.txt",
-                                         "--no-error", "-t", "50", "--delay", "2000ms", "-o", output_file],
-                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
+                cmd_arr = ["gobuster", "dir",
+                                         "-u", base_url,
+                                         "-w", f"{self._app_wordlists_path}/ExploitDb.txt",
+                                         "--no-error", "-t", "50", "-o", output_file]
+                proc = subprocess.Popen(cmd_arr, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 kill_action = lambda process: process.kill()
                 my_timer = Timer(1200, kill_action, [proc])
                 try:
                     my_timer.start()
                     proc.wait()
                     msg = proc.stderr.read().decode()
-                    print(f'({base_url}) msg - {msg}')
+                    print(f'({base_url}); '
+                          f'msg - {msg}; '
+                          f'cmd - gobuster dir -u {base_url} -w {self._app_wordlists_path}/ExploitDb.txt --no-error -t 50')
 
                     if 'Error: ' in msg:
-                        dirb = Dirb(self._domain)
-                        dirb.check_single_url(base_url)
+                        cmd_arr.append('-d')
+                        if '302' in msg:
+                            cmd_arr.append('302')
+                        if '403' in msg:
+                            cmd_arr.append('403')
+                        if '400' in msg:
+                            cmd_arr.append('400')
+                        my_timer.cancel()
 
+                        proc2 = subprocess.Popen(cmd_arr, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                        kill_action2 = lambda process: process.kill()
+                        my_timer = Timer(600, kill_action2, [proc2])
+                        my_timer.start()
+                        proc2.wait()
+                        final_msg = proc2.stderr.read()
+                        print(f'({base_url}); Final message: {final_msg}; ')
 
                 finally:
                     my_timer.cancel()
