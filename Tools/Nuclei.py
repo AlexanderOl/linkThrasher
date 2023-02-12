@@ -96,7 +96,7 @@ class Nuclei:
         main_txt_file.close()
 
     def __cleanup(self, length):
-        for i in range(0, length):
+        for i in range(0, length + 1):
             filepath = f"{self._tool_result_dir}/{self._cache_key}_{i}.txt"
             if os.path.exists(filepath):
                 os.remove(filepath)

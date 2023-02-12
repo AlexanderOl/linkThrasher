@@ -3,9 +3,7 @@ import subprocess
 from datetime import datetime
 from threading import Timer
 from urllib.parse import urlparse
-
 from Managers.CacheManager import CacheManager
-from Tools.Dirb import Dirb
 
 
 class Gobuster:
@@ -57,7 +55,7 @@ class Gobuster:
                         my_timer = Timer(600, kill_action2, [proc2])
                         my_timer.start()
                         proc2.wait()
-                        final_msg = proc2.stderr.read()
+                        final_msg = proc2.stderr.read().decode()
                         print(f'({base_url}); Final message: {final_msg}; ')
 
                 finally:
