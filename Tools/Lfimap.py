@@ -123,7 +123,9 @@ class Lfimap:
 
             for line in bash_outputs:
                 if '[+]' in line and not any(word in line for word in [
-                    'raw.githubusercontent.com/hansmach1ne/lfimap/main/exploits', '[+] Info disclosure ->']):
+                    'raw.githubusercontent.com/hansmach1ne/lfimap/main/exploits',
+                    '[+] Info disclosure ->',
+                    '[+] Discovered possible']):
                     result.add(line)
 
             self._cache_manager.save_result(result)

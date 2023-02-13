@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List
 from Managers.CacheManager import CacheManager
 from Managers.RequestHandler import RequestHandler
+from Managers.ThreadManager import ThreadManager
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO
 from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
@@ -11,6 +12,7 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 class XssManager:
     def __init__(self, domain, cookies, headers):
+        self._result = None
         self._domain = domain
         self._expected = '<poc>'
         self._injections_to_check = ['syntax', 'xpath', '<poc>', 'internalerror', 'warning: ', 'exception: ']
@@ -21,36 +23,32 @@ class XssManager:
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
         cache_manager = CacheManager('XssManager/Get', self._domain)
-        result = cache_manager.get_saved_result()
+        self._result = cache_manager.get_saved_result()
 
-        if result is None:
-            result: List[InjectionFoundDTO] = []
-            for dto in dtos:
-                url = f'{dto.url}/{self._expected}'
-                response = self._request_handler.handle_request(url)
-                if response is None:
-                    return
-                self.__check_keywords(result, response, url, InjectionType.Xss_Get, self._expected,
-                                      original_url=dto.url)
-                self.__check_params(dto.url, result)
-            cache_manager.save_result(result, has_final_result=True)
+        if self._result is None:
+            self._result: List[InjectionFoundDTO] = []
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found GET XSS: {len(result)}')
+            thread_man = ThreadManager()
+            thread_man.run_all(self.__check_route_params, dtos)
 
-    def check_form_requests(self, form_results: List[FormRequestDTO]):
+            cache_manager.save_result(self._result, has_final_result=True)
+
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found GET XSS: {len(self._result)}')
+
+    def check_form_requests(self, form_dtos: List[FormRequestDTO]):
 
         cache_manager = CacheManager('XssManager/Form', self._domain)
-        result = cache_manager.get_saved_result()
+        self._result = cache_manager.get_saved_result()
 
-        if result is None:
-            result: List[InjectionFoundDTO] = []
+        if self._result is None:
+            self._result: List[InjectionFoundDTO] = []
 
-            for item in form_results:
-                self.__check_form(item, result)
+            thread_man = ThreadManager()
+            thread_man.run_all(self.__check_form, form_dtos)
 
-            cache_manager.save_result(result, has_final_result=True)
+            cache_manager.save_result(self._result, has_final_result=True)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found FORM XSS: {len(result)}')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found FORM XSS: {len(self._result)}')
 
     def __check_params(self, original_url, result: List[InjectionFoundDTO]):
         payloads_urls = set()
@@ -71,7 +69,7 @@ class XssManager:
 
         return result
 
-    def __check_form(self, dto: FormRequestDTO, result: List[InjectionFoundDTO]):
+    def __check_form(self, dto: FormRequestDTO):
         for form in dto.form_params:
             if form.method_type == "POST":
                 for param in form.params:
@@ -83,7 +81,7 @@ class XssManager:
                     if response is None:
                         continue
 
-                    need_to_discard_payload = self.__check_keywords(result, response, dto.url,
+                    need_to_discard_payload = self.__check_keywords(response, dto.url,
                                                                     InjectionType.Xss_PostForm,
                                                                     post_payload=payload,
                                                                     original_post_params=form.params)
@@ -106,7 +104,7 @@ class XssManager:
                     if response is None:
                         continue
 
-                    need_to_discard_payload = self.__check_keywords(result, response, url, InjectionType.Xss_Get,
+                    need_to_discard_payload = self.__check_keywords(response, url, InjectionType.Xss_Get,
                                                                     original_url=dto.url)
 
                     if response.status_code == 400 or need_to_discard_payload:
@@ -115,7 +113,7 @@ class XssManager:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
 
-    def __check_keywords(self, result,
+    def __check_keywords(self,
                          response,
                          url,
                          inj_type: InjectionType,
@@ -143,11 +141,20 @@ class XssManager:
                                  f'DETAILS: {web_page[start_index:last_index]};'
                 curr_resp_length = len(web_page)
                 if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg
-                           for dto in result):
+                           for dto in self._result):
                     print(log_header_msg)
-                    result.append(InjectionFoundDTO(inj_type, url, post_payload, web_page, log_header_msg))
+                    self._result.append(InjectionFoundDTO(inj_type, url, post_payload, web_page, log_header_msg))
                 else:
                     print("Duplicate XSS: - " + url)
                 need_to_discard_payload = True
 
         return need_to_discard_payload
+
+    def __check_route_params(self, dto: GetRequestDTO):
+        url = f'{dto.url}/{self._expected}'
+        response = self._request_handler.handle_request(url)
+        if response is None:
+            return
+        self.__check_keywords(response, url, InjectionType.Xss_Get, self._expected,
+                              original_url=dto.url)
+        self.__check_params(dto.url)

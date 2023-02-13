@@ -40,8 +40,9 @@ class SingleUrlFlowManager:
         if domain[0] == '.':
             domain = domain[1:]
 
-        gobuster = Gobuster(domain)
-        gobuster.check_single_url(start_url)
+        if self._check_mode == 'U':
+            gobuster = Gobuster(domain)
+            gobuster.check_single_url(start_url)
 
         if self._check_mode == 'U':
             nuclei = Nuclei(domain)

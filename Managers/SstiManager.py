@@ -5,6 +5,7 @@ from typing import List
 
 from Managers.CacheManager import CacheManager
 from Managers.RequestHandler import RequestHandler
+from Managers.ThreadManager import ThreadManager
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO
 from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
@@ -12,6 +13,7 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 class SstiManager:
     def __init__(self, domain, cookies, headers):
+        self._result = None
         self._domain = domain
         self._payloads = ['{{88*88}}', '{88*88}', '@(88*88)']
         self._double_check = '77*77'
@@ -22,19 +24,20 @@ class SstiManager:
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
         cache_manager = CacheManager('SstiManager/Get', self._domain)
-        result = cache_manager.get_saved_result()
+        self._result = cache_manager.get_saved_result()
 
-        if result is None:
-            result: List[InjectionFoundDTO] = []
-            for dto in dtos:
-                self.__check_url(dto, result)
-                self.__check_get_params(dto, result)
+        if self._result is None:
+            self._result: List[InjectionFoundDTO] = []
 
-            cache_manager.save_result(result, has_final_result=True)
+            thread_man = ThreadManager()
+            thread_man.run_all(self.__check_url, dtos)
+            thread_man.run_all(self.__check_get_params, dtos)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SstiManager GET found {len(result)} items')
+            cache_manager.save_result(self._result, has_final_result=True)
 
-    def __check_url(self, dto: GetRequestDTO, result: List[InjectionFoundDTO]):
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SstiManager GET found {len(self._result)} items')
+
+    def __check_url(self, dto: GetRequestDTO):
 
         parsed = urlparse.urlparse(dto.url)
         base_url = f'{parsed.scheme}://{parsed.hostname}{parsed.path}'
@@ -44,9 +47,9 @@ class SstiManager:
             response = self._request_handler.handle_request(url)
             if response is None:
                 return
-            self.__check_keywords(result, response, url, InjectionType.Ssti_Get)
+            self.__check_keywords(response, url, InjectionType.Ssti_Get)
 
-    def __check_get_params(self, dto: GetRequestDTO, result: List[InjectionFoundDTO]):
+    def __check_get_params(self, dto: GetRequestDTO):
         url = dto.url
         payloads_urls = set()
         parsed = urlparse.urlparse(url)
@@ -62,25 +65,23 @@ class SstiManager:
             response = self._request_handler.handle_request(url)
             if response is None:
                 return
-            self.__check_keywords(result, response, url, InjectionType.Ssti_Get)
+            self.__check_keywords(response, url, InjectionType.Ssti_Get)
 
-        return result
-
-    def check_form_requests(self, form_results: List[FormRequestDTO]):
+    def check_form_requests(self, form_dtos: List[FormRequestDTO]):
         cache_manager = CacheManager('SstiManager/Form', self._domain)
-        result = cache_manager.get_saved_result()
+        self._result = cache_manager.get_saved_result()
 
-        if result is None:
-            result: List[InjectionFoundDTO] = []
+        if self._result is None:
+            self._result: List[InjectionFoundDTO] = []
 
-            for item in form_results:
-                self.__check_form_request(item, result)
+            thread_man = ThreadManager()
+            thread_man.run_all(self.__check_form_request, form_dtos)
 
-            cache_manager.save_result(result, has_final_result=True)
+            cache_manager.save_result(self._result, has_final_result=True)
 
-        print("Found FORM SSTI: " + str(len(result)))
+        print("Found FORM SSTI: " + str(len(self._result)))
 
-    def __check_form_request(self, dto: FormRequestDTO, result: List[InjectionFoundDTO]):
+    def __check_form_request(self, dto: FormRequestDTO):
         try:
             for form in dto.form_params:
                 if form.method_type == "POST":
@@ -93,7 +94,7 @@ class SstiManager:
                             if response is None:
                                 continue
 
-                            self.__check_keywords(result, response, dto.url, InjectionType.Ssti_PostForm, payload_params)
+                            self.__check_keywords(response, dto.url, InjectionType.Ssti_PostForm, payload_params)
 
                 elif form.method_type == "GET":
                     url = form.action + '?'
@@ -106,7 +107,7 @@ class SstiManager:
                             if response is None:
                                 continue
 
-                            self.__check_keywords(result, response, url, InjectionType.Ssti_Get, param)
+                            self.__check_keywords(response, url, InjectionType.Ssti_Get, param)
 
                             if response.status_code == 400:
                                 url = prev_url
@@ -116,7 +117,7 @@ class SstiManager:
         except Exception as inst:
             print(f"Exception - ({dto.url}) - {inst}")
 
-    def __check_keywords(self, result, response, url, inj_type: InjectionType, param=None):
+    def __check_keywords(self, response, url, inj_type: InjectionType, param=None):
         web_page = response.text
         if self._expected in web_page:
             double_check_url = url.replace('88*88', self._double_check)
@@ -133,6 +134,6 @@ class SstiManager:
                                  f'URL: {url}' \
                                  f'DETAILS: {web_page[start_index:last_index]};'
                 print(log_header_msg)
-                return result.append(InjectionFoundDTO(inj_type, url, param, web_page, log_header_msg))
+                return self._result.append(InjectionFoundDTO(inj_type, url, param, web_page, log_header_msg))
         if response.status_code == 500:
             print("SstiManager: 500 status - " + url)

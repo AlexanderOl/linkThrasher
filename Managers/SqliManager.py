@@ -5,6 +5,7 @@ from typing import List
 
 from Managers.CacheManager import CacheManager
 from Managers.RequestHandler import RequestHandler
+from Managers.ThreadManager import ThreadManager
 from Models.FormRequestDTO import FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
 from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
@@ -12,6 +13,7 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 class SqliManager:
     def __init__(self, domain, cookies, headers):
+        self._result = None
         self._domain = domain
         self._false_positives = ['malformed request syntax',
                                  'eval|internal|range|reference|syntax|type']
@@ -28,34 +30,35 @@ class SqliManager:
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
         cache_manager = CacheManager('SqliManager', self._domain)
-        result = cache_manager.get_saved_result()
+        self._result = cache_manager.get_saved_result()
 
-        if result is None:
-            result: List[InjectionFoundDTO] = []
-            for dto in dtos:
-                self.__check_url(dto, result)
-                self.__check_get_params(dto, result)
+        if self._result is None:
+            self._result: List[InjectionFoundDTO] = []
 
-            cache_manager.save_result(result, has_final_result=True)
+            thread_man = ThreadManager()
+            thread_man.run_all(self.__check_url, dtos)
+            thread_man.run_all(self.__check_get_params, dtos)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SqliManager GET found {len(result)} items')
+            cache_manager.save_result(self._result, has_final_result=True)
 
-    def check_form_requests(self, form_results: List[FormRequestDTO]):
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SqliManager GET found {len(self._result)} items')
+
+    def check_form_requests(self, form_dtos: List[FormRequestDTO]):
 
         cache_manager = CacheManager('SqliManager/Form', self._domain)
-        result = cache_manager.get_saved_result()
+        self._result = cache_manager.get_saved_result()
 
-        if result is None:
-            result: List[InjectionFoundDTO] = []
+        if self._result is None:
+            self._result: List[InjectionFoundDTO] = []
 
-            for item in form_results:
-                self.__check_form(item, result)
+            thread_man = ThreadManager()
+            thread_man.run_all(self.__check_form, form_dtos)
 
-            cache_manager.save_result(result, has_final_result=True)
+            cache_manager.save_result(self._result, has_final_result=True)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found FORM SQLi: {len(result)}')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found FORM SQLi: {len(self._result)}')
 
-    def __check_form(self, dto: FormRequestDTO, result: List[InjectionFoundDTO]):
+    def __check_form(self, dto: FormRequestDTO):
         for form in dto.form_params:
             if form.method_type == "POST":
                 for param in form.params:
@@ -68,8 +71,7 @@ class SqliManager:
                         if response is None:
                             continue
 
-                        need_to_discard_payload = self.__check_keywords(result,
-                                                                        response,
+                        need_to_discard_payload = self.__check_keywords(response,
                                                                         dto.url,
                                                                         InjectionType.Sqli_PostForm_Error,
                                                                         post_payload=copy_form_params,
@@ -94,8 +96,7 @@ class SqliManager:
                         if response is None:
                             continue
 
-                        self.__check_keywords(result,
-                                              response,
+                        self.__check_keywords(response,
                                               url,
                                               InjectionType.Ssti_Get,
                                               original_url=dto.url)
@@ -106,19 +107,19 @@ class SqliManager:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
 
-    def __check_url(self, dto: GetRequestDTO, result: List[InjectionFoundDTO]):
+    def __check_url(self, dto: GetRequestDTO):
 
         parsed = urlparse.urlparse(dto.url)
         base_url = f'{parsed.scheme}://{parsed.hostname}{parsed.path}/'
 
         for payload in self._error_based_payloads:
-            self.__send_error_based_request(f'{base_url}{payload}', result, dto)
+            self.__send_error_based_request(f'{base_url}{payload}', dto)
 
         for payloads in self._time_based_payloads:
-            self.__send_time_based_request(f'{base_url}{payloads["TruePld"]}', f'{base_url}{payloads["FalsePld"]}',
-                                           result)
+            self.__send_time_based_request(f'{base_url}{payloads["TruePld"]}',
+                                           f'{base_url}{payloads["FalsePld"]}')
 
-    def __check_get_params(self, dto: GetRequestDTO, result: List[InjectionFoundDTO]):
+    def __check_get_params(self, dto: GetRequestDTO):
         error_based_payloads_urls = set()
         time_based_payloads_urls = set()
         parsed = urlparse.urlparse(dto.url)
@@ -136,23 +137,23 @@ class SqliManager:
                 error_based_payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
 
         for payload in error_based_payloads_urls:
-            self.__send_error_based_request(payload, result, dto)
+            self.__send_error_based_request(payload, dto)
 
         for payloads in time_based_payloads_urls:
-            self.__send_time_based_request(payloads[0], payloads[1], result)
+            self.__send_time_based_request(payloads[0], payloads[1])
 
-    def __send_error_based_request(self, url, result: List[InjectionFoundDTO], dto: GetRequestDTO):
+    def __send_error_based_request(self, url, dto: GetRequestDTO):
         try:
             response = self._request_handler.handle_request(url)
             if response is None:
                 return
 
-            self.__check_keywords(result, response, url, InjectionType.Sqli_Get_Error, original_url=dto.url)
+            self.__check_keywords(response, url, InjectionType.Sqli_Get_Error, original_url=dto.url)
 
         except Exception as inst:
             print(f"Exception - ({url}) - {inst}")
 
-    def __send_time_based_request(self, true_payload, false_payload, result: List[InjectionFoundDTO]):
+    def __send_time_based_request(self, true_payload, false_payload):
         response1 = self._request_handler.handle_request(true_payload)
         if response1 is not None and response1.elapsed.total_seconds() >= self._delay_in_seconds:
             response2 = self._request_handler.handle_request(false_payload)
@@ -161,10 +162,10 @@ class SqliManager:
                 if response3 is not None and response3.elapsed.total_seconds() >= self._delay_in_seconds:
                     msg = f"SQLiManager delay FOUND! TRUE:{true_payload} ; FALSE:{false_payload}"
                     print(msg)
-                    return result.append(
+                    return self._result.append(
                         InjectionFoundDTO(InjectionType.Sqli_Get_Time, true_payload, 'TIME_BASED', response1.text, msg))
 
-    def __check_keywords(self, result: List[InjectionFoundDTO], response, url_payload, inj_type: InjectionType,
+    def __check_keywords(self, response, url_payload, inj_type: InjectionType,
                          post_payload=None,
                          original_url: str = None,
                          original_post_params=None):
@@ -190,9 +191,9 @@ class SqliManager:
                 curr_resp_length = len(web_page)
 
                 if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg
-                           for dto in result):
+                           for dto in self._result):
                     print(log_header_msg)
-                    result.append(InjectionFoundDTO(inj_type, url_payload, post_payload, web_page, log_header_msg))
+                    self._result.append(InjectionFoundDTO(inj_type, url_payload, post_payload, web_page, log_header_msg))
                 else:
                     print("Duplicate FORM SQLi: - " + url_payload)
 
