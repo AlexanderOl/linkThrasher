@@ -42,12 +42,12 @@ class Gobuster:
                           f'cmd - gobuster dir -u {base_url} -w {self._app_wordlists_path}ExploitDB.txt --no-error -t 50')
 
                     if 'Error: ' in msg and ' => ' in msg:
-                        cmd_arr.append('-d')
+                        cmd_arr.append('-b')
                         status_code = msg.split(' => ', 1)[1].split(' (', 1)[0]
                         if status_code.isdigit():
-                            cmd_arr.append(status_code)
+                            cmd_arr.append(f'{status_code},404')
                         else:
-                            print(f"Gobuster error - {status_code} is not a astatus code")
+                            print(f"Gobuster error - {status_code} is not a status code")
                         my_timer.cancel()
 
                         proc2 = subprocess.Popen(cmd_arr, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
