@@ -50,7 +50,7 @@ class XssManager:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found FORM XSS: {len(self._result)}')
 
-    def __check_params(self, original_url, result: List[InjectionFoundDTO]):
+    def __check_params(self, original_url):
         payloads_urls = set()
         parsed = urlparse.urlparse(original_url)
         queries = filter(None, parsed.query.split("&"))
@@ -64,10 +64,8 @@ class XssManager:
             response = self._request_handler.handle_request(url)
             if response is None:
                 return
-            self.__check_keywords(result, response, url, InjectionType.Xss_Get, self._expected,
+            self.__check_keywords(response, url, InjectionType.Xss_Get, self._expected,
                                   original_url=original_url)
-
-        return result
 
     def __check_form(self, dto: FormRequestDTO):
         for form in dto.form_params:

@@ -79,7 +79,7 @@ class SstiManager:
 
             cache_manager.save_result(self._result, has_final_result=True)
 
-        print("Found FORM SSTI: " + str(len(self._result)))
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SstiManager FORM SSTI: {len(self._result)}')
 
     def __check_form_request(self, dto: FormRequestDTO):
         try:
