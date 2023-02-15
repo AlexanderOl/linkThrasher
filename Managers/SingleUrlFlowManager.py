@@ -39,6 +39,8 @@ class SingleUrlFlowManager:
         domain = f'{domain_parts.subdomain}.{domain_parts.domain}.{domain_parts.suffix}'
         if domain[0] == '.':
             domain = domain[1:]
+        if domain[len(domain)-1] == '.':
+            domain = domain[:-1]
 
         if self._check_mode == 'U':
             gobuster = Gobuster(domain)

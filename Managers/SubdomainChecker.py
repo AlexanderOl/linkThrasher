@@ -33,7 +33,7 @@ class SubdomainChecker:
                 subdomains.add(f'{self._domain}')
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_subdomain, subdomains)
+            thread_man.run_all(self.__check_subdomain, subdomains, debug_msg=self._tool_name)
 
             if len(self._checked_subdomains) > 2:
                 origin = next((s for s in self._checked_subdomains if f'/{self._domain}/' in s.url), None)

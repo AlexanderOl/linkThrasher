@@ -11,7 +11,7 @@ from Models.GetRequestDTO import GetRequestDTO
 
 class Hakrawler:
     def __init__(self, domain, raw_cookies, headers, cookies):
-        self.__domain = domain
+        self._domain = domain
         self._raw_cookies = raw_cookies
         self._social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "intercom", "atlassian"]
         self._tool_name = self.__class__.__name__
@@ -22,13 +22,13 @@ class Hakrawler:
             re.IGNORECASE)
 
     def get_requests_dtos(self, start_url) -> List[GetRequestDTO]:
-        cache_manager = CacheManager('Hakrawler', self.__domain)
+        cache_manager = CacheManager('Hakrawler', self._domain)
         result = cache_manager.get_saved_result()
         if result is None:
             result = self.__get_urls(start_url)
             cache_manager.save_result(result)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.__domain}) {self._tool_name} found {len(result)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} found {len(result)} items')
         return result
 
     def __get_urls(self, start_url) -> List[GetRequestDTO]:
@@ -49,14 +49,14 @@ class Hakrawler:
                 output = output[:-1]
             if output.startswith('[href] '):
                 output = output.replace('[href] ', '')
-                if not any(word in output for word in self._social_media) and self.__domain in output:
+                if not any(word in output for word in self._social_media) and self._domain in output:
                     href_urls.add(output)
             elif output.startswith('[script] '):
                 output = output.replace('[script] ', '')
-                if not any(word in output for word in self._social_media) and self.__domain in output:
+                if not any(word in output for word in self._social_media) and self._domain in output:
                     script_urls.add(output)
 
-        link_finder = LinkFinder(self.__domain, start_url)
+        link_finder = LinkFinder(self._domain, start_url)
         get_urls_from_js = link_finder.search_urls_in_js(script_urls)
         href_urls.update(get_urls_from_js)
 

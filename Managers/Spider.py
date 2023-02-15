@@ -58,7 +58,7 @@ class Spider:
             f'Spider found {len(self._get_DTOs)} get_dtos and {len(self._form_DTOs)} forms')
         return self._get_DTOs, self._form_DTOs
 
-    def __recursive_search(self, target_url, current_depth):
+    def __recursive_search(self, target_url: str, current_depth: int):
 
         if current_depth >= self._max_depth:
             return
@@ -85,8 +85,12 @@ class Spider:
                    dto.status_code == response.status_code):
                 return
 
-        if response.status_code < 300 and len(response.history) <= 2:
-            web_page = response.text
+        web_page = response.text
+        if 300 <= response.status_code < 400:
+            if 'Location' in response.headers:
+                redirect_url = response.headers['Location']
+                self.__recursive_search(redirect_url, current_depth - 1)
+        elif response.status_code < 300 and len(response.history) <= 2:
             dto = GetRequestDTO(checked_url, response)
             self._get_DTOs.append(dto)
             self.__find_forms(checked_url, web_page, dto)
@@ -172,9 +176,11 @@ class Spider:
         href_urls = self.__get_url_from_html(tag='a', attr='href', web_page=web_page, target_url=target_url)
         data_url = self.__get_url_from_html(tag='div', attr='data-url', web_page=web_page, target_url=target_url)
         form_url = self.__get_url_from_html(tag='form', attr='action', web_page=web_page, target_url=target_url)
+        action_urlsrc_url = self.__get_url_from_html(tag='action', attr='urlsrc', web_page=web_page, target_url=target_url)
 
         href_urls.update(data_url)
         href_urls.update(form_url)
+        href_urls.update(action_urlsrc_url)
         dict_href = {}
         for found_href in href_urls:
             parsed = urlparse(found_href)
