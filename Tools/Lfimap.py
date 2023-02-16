@@ -100,11 +100,14 @@ class Lfimap:
                     self._cache_manager.save_result(result)
                     return
 
+                print(f'[{datetime.now().strftime("%H:%M:%S")}]: '
+                      f'Lfimap starts for {start_url}; will run {len(pwn_payloads)} urls')
+
                 payloads_filepath = self.__create_payloads_file(pwn_payloads)
 
                 filepath = os.path.join(pathlib.Path().resolve(), payloads_filepath)
                 command = f'cd /root/Desktop/TOOLs/lfimap/; ' \
-                          f'python lfimap.py -F {filepath} -a'
+                          f'python lfimap.py -F {filepath} --rfi --trunc --file --use-long'
                 stream = os.popen(command)
                 bash_outputs = stream.readlines()
                 if any('Try specifying parameter --http-ok 404' in line for line in bash_outputs):
@@ -117,16 +120,17 @@ class Lfimap:
                     bash_outputs = stream.readlines()
 
                 os.remove(filepath)
+
+                for line in bash_outputs:
+                    if '[+]' in line and not any(word in line for word in [
+                        'raw.githubusercontent.com/hansmach1ne/lfimap/main/exploits',
+                        '[+] Info disclosure',
+                        '[+] Discovered possible']):
+                        result.add(line)
+
             except Exception as inst:
                 result_msg = f'Lfimap Exception ({inst}) filepath:({filepath})'
                 print(result_msg)
-
-            for line in bash_outputs:
-                if '[+]' in line and not any(word in line for word in [
-                    'raw.githubusercontent.com/hansmach1ne/lfimap/main/exploits',
-                    '[+] Info disclosure',
-                    '[+] Discovered possible']):
-                    result.add(line)
 
             self._cache_manager.save_result(result)
 
