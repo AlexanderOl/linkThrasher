@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from Managers.DomainFlowManager import DomainFlowManager
+from Managers.FastUrlFlowManager import FastUrlFlowManager
 from Managers.MultipleUrlFlowManager import MultipleUrlFlowManager
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Models.GetRequestDTO import GetRequestDTO
@@ -29,6 +30,10 @@ if __name__ == '__main__':
     elif check_mode == 'UL':
         multiple_url_man = MultipleUrlFlowManager(headers)
         multiple_url_man.run()
+
+    elif check_mode == 'FU':
+        fast_man = FastUrlFlowManager(headers)
+        fast_man.run()
 
     elif check_mode == 'DL':
         file_path = 'Targets/domains.txt'

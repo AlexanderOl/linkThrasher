@@ -1,3 +1,4 @@
+import urllib
 from copy import deepcopy
 from datetime import datetime
 import urllib.parse as urlparse
@@ -12,7 +13,7 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
 class SstiManager:
-    def __init__(self, domain, cookies, headers):
+    def __init__(self, domain, cookies='', headers={}):
         self._result = None
         self._domain = domain
         self._payloads = ['{{88*88}}', '{88*88}', '@(88*88)']
@@ -39,11 +40,19 @@ class SstiManager:
 
     def __check_url(self, dto: GetRequestDTO):
 
-        parsed = urlparse.urlparse(dto.url)
-        base_url = f'{parsed.scheme}://{parsed.hostname}{parsed.path}'
+        parsed = urllib.parse.urlparse(dto.url)
+        route_parts = [r for r in parsed.path.split('/') if r.strip()]
+        route_url_payloads = []
 
-        for payload in self._payloads:
-            url = f'{base_url}/{payload}'
+        for index, part in enumerate(route_parts):
+            for payload in self._payloads:
+                payload_part = f'{part}{payload}'
+                new_route_parts = deepcopy(route_parts)
+                new_route_parts[index] = payload_part
+                new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
+                route_url_payloads.append(new_url)
+
+        for url in route_url_payloads:
             response = self._request_handler.handle_request(url)
             if response is None:
                 return

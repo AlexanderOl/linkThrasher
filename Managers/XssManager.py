@@ -1,3 +1,4 @@
+import urllib
 from copy import deepcopy
 import urllib.parse as urlparse
 from datetime import datetime
@@ -11,7 +12,7 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
 class XssManager:
-    def __init__(self, domain, cookies, headers):
+    def __init__(self, domain, cookies='', headers={}):
         self._result = None
         self._domain = domain
         self._expected = '<poc>'
@@ -149,10 +150,22 @@ class XssManager:
         return need_to_discard_payload
 
     def __check_route_params(self, dto: GetRequestDTO):
-        url = f'{dto.url}/{self._expected}'
-        response = self._request_handler.handle_request(url)
-        if response is None:
-            return
-        self.__check_keywords(response, url, InjectionType.Xss_Get, self._expected,
-                              original_url=dto.url)
+        parsed = urllib.parse.urlparse(dto.url)
+        route_parts = [r for r in parsed.path.split('/') if r.strip()]
+        route_url_payloads = []
+
+        for index, part in enumerate(route_parts):
+            payload_part = f'{part}{self._expected}'
+            new_route_parts = deepcopy(route_parts)
+            new_route_parts[index] = payload_part
+            new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
+            route_url_payloads.append(new_url)
+
+        for url in route_url_payloads:
+            response = self._request_handler.handle_request(url)
+            if response is None:
+                return
+            self.__check_keywords(response, url, InjectionType.Xss_Get, self._expected,
+                                  original_url=dto.url)
+
         self.__check_params(dto.url)

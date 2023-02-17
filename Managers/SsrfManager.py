@@ -14,7 +14,7 @@ from Models.InjectionFoundDTO import InjectionFoundDTO, InjectionType
 
 class SsrfManager:
 
-    def __init__(self, domain, cookies, headers):
+    def __init__(self, domain, cookies='', headers={}):
         self._domain = domain
         self._ngrok_url = os.environ.get('ngrok_url')
         self._ngrok_url_safe = urllib.parse.quote(self._ngrok_url, safe='')
