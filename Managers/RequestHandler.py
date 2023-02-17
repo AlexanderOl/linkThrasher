@@ -38,7 +38,6 @@ class RequestHandler:
         except requests.exceptions.Timeout:
             response = Response()
             response.elapsed = timedelta(seconds=timeout)
-            print(f'Url ({url}) - Timeout occurred')
             return response
         except Exception as inst:
             print(f'Url ({url}) - Exception: {inst}')

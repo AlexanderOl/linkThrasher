@@ -136,6 +136,7 @@ class XssManager:
                 start_index = substr_index - 50 if substr_index - 50 > 0 else 0
                 last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
                 log_header_msg = f'injFOUND: {keyword};' \
+                                 f'MIME-TYPE: {response.headers["Content-Type"]};' \
                                  f'URL: {url};' \
                                  f'DETAILS: {web_page[start_index:last_index]};'
                 curr_resp_length = len(web_page)
