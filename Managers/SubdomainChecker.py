@@ -27,7 +27,8 @@ class SubdomainChecker:
         out_of_scope = self._out_of_scope_domains.split(';')
         if not checked_subdomains:
 
-            subdomains = set([subdomain for subdomain in all_subdomains if all(oos not in subdomain for oos in out_of_scope)])
+            subdomains = set(
+                [subdomain for subdomain in all_subdomains if all(oos not in subdomain for oos in out_of_scope)])
 
             if len(subdomains) == 0:
                 subdomains.add(f'{self._domain}')
