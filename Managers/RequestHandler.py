@@ -1,6 +1,7 @@
-from urllib.parse import urlparse
+from datetime import timedelta
 
 import requests
+from requests import Response
 
 
 class RequestHandler:
@@ -34,6 +35,11 @@ class RequestHandler:
                 return except_ssl_action(except_ssl_action_args)
         except requests.exceptions.ConnectionError:
             return
+        except requests.exceptions.Timeout:
+            response = Response()
+            response.elapsed = timedelta(seconds=timeout)
+            print(f'Url ({url}) - Timeout occurred')
+            return response
         except Exception as inst:
             print(f'Url ({url}) - Exception: {inst}')
             return

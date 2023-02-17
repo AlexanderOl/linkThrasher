@@ -5,12 +5,13 @@ class InjectionType(Enum):
     Sqli_Get_Error = 0,
     Sqli_Get_Time = 1,
     Sqli_PostForm_Error = 2,
-    Ssti_Get = 3,
-    Ssti_PostForm = 4,
-    Xss_Get = 5,
-    Xss_PostForm = 6,
-    Open_Redirect_PostForm = 7,
-    Open_Redirect_Get = 8
+    Sqli_PostForm_Time = 3,
+    Ssti_Get = 4,
+    Ssti_PostForm = 5,
+    Xss_Get = 6,
+    Xss_PostForm = 7,
+    Open_Redirect_PostForm = 8,
+    Open_Redirect_Get = 9
 
 
 class InjectionFoundDTO:
