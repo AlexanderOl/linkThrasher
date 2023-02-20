@@ -138,7 +138,7 @@ class XssManager:
                 log_header_msg = f'injFOUND: {keyword};' \
                                  f'MIME-TYPE: {response.headers["Content-Type"]};' \
                                  f'URL: {url};' \
-                                 f'DETAILS: {web_page[start_index:last_index]};'
+                                 f'DETAILS: {web_page[start_index:last_index].strip()};'
                 curr_resp_length = len(web_page)
                 if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg
                            for dto in self._result):

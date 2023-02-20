@@ -225,7 +225,7 @@ class SqliManager:
                 last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
                 log_header_msg = f'injFOUND: {keyword}; ' \
                                  f'URL: {url_payload}; ' \
-                                 f'DETAILS: {web_page[start_index:last_index]};'
+                                 f'DETAILS: {web_page[start_index:last_index].strip()};'
                 curr_resp_length = len(web_page)
 
                 if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg
@@ -239,7 +239,7 @@ class SqliManager:
                 need_to_discard_payload = True
 
             if response.status_code == 500:
-                print(f"SqliManager: 500 status - {url_payload}; DETAILS: {response.text[0:200]}")
+                print(f"SqliManager: 500 status - {url_payload}; DETAILS: {response.text[0:200].strip()}")
                 need_to_discard_payload = True
                 self.errors_for_eyewitness.append({'url': url_payload, 'response': response})
 
