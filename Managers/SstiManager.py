@@ -16,10 +16,10 @@ class SstiManager:
     def __init__(self, domain, cookies='', headers={}):
         self._result = None
         self._domain = domain
-        self._payloads = ['{{88*88}}', '{88*88}', '@(88*88)']
-        self._double_check = '77*77'
-        self._expected = '7744'
-        self._double_check_expected = '5929'
+        self._payloads = ['{{888*888}}', '{888*888}', '@(888*888)']
+        self._double_check = '777*777'
+        self._expected = '788544'
+        self._double_check_expected = '603729'
         self._request_handler = RequestHandler(cookies, headers)
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
@@ -145,4 +145,5 @@ class SstiManager:
                 print(log_header_msg)
                 return self._result.append(InjectionFoundDTO(inj_type, url, param, web_page, log_header_msg))
         if response.status_code == 500:
-            print("SstiManager: 500 status - " + url)
+            print(f"SqliManager: 500 status - {url}; DETAILS: {response.text[0:200]}")
+

@@ -238,7 +238,7 @@ class SqliManager:
                 need_to_discard_payload = True
 
             if response.status_code == 500:
-                print("SqliManager: 500 status - " + url_payload)
+                print(f"SqliManager: 500 status - {url_payload}; DETAILS: {response.text[0:200]}")
                 need_to_discard_payload = True
 
         return need_to_discard_payload
