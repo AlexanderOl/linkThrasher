@@ -2,13 +2,15 @@ import os
 import pathlib
 import re
 from datetime import datetime
+from urllib.parse import urlparse
+
 from Managers.CacheManager import CacheManager
 
 
 class EyeWitness:
-    def __init__(self, domain):
+    def __init__(self, cache_key):
         self._tool_name = self.__class__.__name__
-        self._domain = domain
+        self._cache_key = cache_key
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._chunk_size = 30
         self._tool_dir = f"Results/{self._tool_name}"
@@ -17,14 +19,14 @@ class EyeWitness:
     def visit_urls(self, urls: set):
         if len(urls) == 0:
             return
-        cache_manager = CacheManager(self._tool_name, self._domain)
+        cache_manager = CacheManager(self._tool_name, self._cache_key)
         result = cache_manager.get_saved_result()
         if not result:
 
             if not os.path.exists(self._tool_dir):
                 os.makedirs(self._tool_dir)
 
-            domain_dir = f'{self._tool_dir}/{self._domain}'
+            domain_dir = f'{self._tool_dir}/{self._cache_key}'
             if not os.path.exists(domain_dir):
                 os.makedirs(domain_dir)
 
@@ -40,7 +42,7 @@ class EyeWitness:
             self.__cleanup()
 
             duration = datetime.now() - start
-            result = f'Eyewitness ({self._domain})  finished in {duration.total_seconds()} seconds'
+            result = f'Eyewitness ({self._cache_key})  finished in {duration.total_seconds()} seconds'
             cache_manager.save_result([result])
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: {result}')
@@ -52,11 +54,11 @@ class EyeWitness:
 
     def __make_screens(self, urls_batch, counter: int):
 
-        counter_directory_path = f'{self._tool_result_dir}/{self._domain}/{counter}'
+        counter_directory_path = f'{self._tool_result_dir}/{self._cache_key}/{counter}'
         if os.path.exists(counter_directory_path):
             return f"{counter_directory_path} exits"
 
-        txt_filepath = f"{self._tool_dir}/{self._domain}_raw.txt"
+        txt_filepath = f"{self._tool_dir}/{self._cache_key}_raw.txt"
         txt_file = open(txt_filepath, 'w')
         for subdomain in urls_batch:
             txt_file.write("%s\n" % str(subdomain))
@@ -83,13 +85,29 @@ class EyeWitness:
         return result_msg
 
     def __cleanup(self):
-        copy_all_cmd = f"cd {self._tool_result_dir}/{self._domain}; " + \
+        copy_all_cmd = f"cd {self._tool_result_dir}/{self._cache_key}; " + \
                        "mkdir all -p && find . -name '*.png' -exec cp {} " + \
-                       f'{self._tool_result_dir}/{self._domain}/all/ \; 2>>/dev/null'
+                       f'{self._tool_result_dir}/{self._cache_key}/all/ \; 2>>/dev/null'
         stream = os.popen(copy_all_cmd)
         stream.read()
 
-        clean_up_cmd = f"cd {self._tool_result_dir}/{self._domain}; " + \
+        clean_up_cmd = f"cd {self._tool_result_dir}/{self._cache_key}; " + \
                        "find . ! -name 'all' -type d -exec rm -r {} + 2>>/dev/null"
         stream = os.popen(clean_up_cmd)
         stream.read()
+
+    def visit_errors(self, errors):
+        keys_to_check = set()
+        checked_urls = set()
+        for error in errors:
+            url = error['url']
+            netloc = urlparse(url).netloc
+            response_length = len(error['response'].text)
+            key = f'{netloc};{response_length}'
+            if key in keys_to_check:
+                continue
+            else:
+                keys_to_check.add(key)
+            checked_urls.add(url)
+
+        self.visit_urls(checked_urls)

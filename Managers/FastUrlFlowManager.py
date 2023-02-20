@@ -14,6 +14,7 @@ from Managers.ThreadManager import ThreadManager
 from Managers.XssManager import XssManager
 from Models.FormRequestDTO import FormDetailsDTO, FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
+from Tools.EyeWitness import EyeWitness
 
 
 class FastUrlFlowManager:
@@ -51,6 +52,11 @@ class FastUrlFlowManager:
             ssti_manager = SstiManager(domain=cache_key, headers=self._headers)
             ssti_manager.check_get_requests(get_dtos)
             ssti_manager.check_form_requests(form_dtos)
+
+            errors = sqli_manager.errors_for_eyewitness + ssti_manager.errors_for_eyewitness
+            eyewitness = EyeWitness(f'500_{cache_key}')
+            eyewitness.visit_errors(errors)
+
 
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
