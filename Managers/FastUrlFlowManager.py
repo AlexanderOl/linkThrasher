@@ -121,5 +121,5 @@ class FastUrlFlowManager:
                         if default_value is None:
                             default_value = ''
                         params[param_name] = default_value
-                form_details.append(FormDetailsDTO(action_tag, params, method))
+                form_details.append(FormDetailsDTO(action_tag.strip(), params, method))
             return FormRequestDTO(target_url, form_details, dto.status_code, dto.response_length)

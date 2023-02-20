@@ -107,7 +107,15 @@ class SstiManager:
                             self.__check_keywords(response, dto.url, InjectionType.Ssti_PostForm, payload_params)
 
                 elif form.method_type == "GET":
-                    url = form.action + '?'
+                    parsed = urlparse.urlparse(dto.url)
+                    url_ending = len(form.action) * -1
+                    if form.action.startswith('http'):
+                        url = f'{form.action}?'
+                    elif len(parsed.path) >= len(form.action) and str(parsed.path)[url_ending:] == form.action:
+                        url = f'{parsed.scheme}://{parsed.netloc}{parsed.path}?'
+                    else:
+                        url = f'{parsed.scheme}://{parsed.netloc}/{form.action}?'
+
                     for param in form.params:
                         for payload in self._payloads:
                             prev_url = url

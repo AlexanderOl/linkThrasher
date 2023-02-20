@@ -92,10 +92,13 @@ class SqliManager:
             elif form.method_type == "GET":
                 parsed = urlparse.urlparse(dto.url)
                 url_ending = len(form.action) * -1
-                if len(parsed[2]) >= len(form.action) and str(parsed[2])[url_ending:] == form.action:
-                    url = f'{parsed[0]}://{parsed[1]}{parsed[2]}?'
+                if form.action.startswith('http'):
+                    url = f'{form.action}?'
+                elif len(parsed.path) >= len(form.action) and str(parsed.path)[url_ending:] == form.action:
+                    url = f'{parsed.scheme}://{parsed.netloc}{parsed.path}?'
                 else:
-                    url = form.action + '?'
+                    url = f'{parsed.scheme}://{parsed.netloc}/{form.action}?'
+
                 for param in form.params:
                     for payload in self._error_based_payloads:
                         prev_url = url

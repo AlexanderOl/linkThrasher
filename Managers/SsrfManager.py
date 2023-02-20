@@ -100,7 +100,15 @@ class SsrfManager:
                                 results.append(InjectionFoundDTO(InjectionType.Open_Redirect_PostForm, dto.url, param, response.text, msg))
 
                 elif form.method_type == "GET":
-                    url = form.action + '?'
+                    parsed = urlparse.urlparse(dto.url)
+                    url_ending = len(form.action) * -1
+                    if form.action.startswith('http'):
+                        url = f'{form.action}?'
+                    elif len(parsed.path) >= len(form.action) and str(parsed.path)[url_ending:] == form.action:
+                        url = f'{parsed.scheme}://{parsed.netloc}{parsed.path}?'
+                    else:
+                        url = f'{parsed.scheme}://{parsed.netloc}/{form.action}?'
+
                     for param in form.params:
                         if any(s in str(param).lower() for s in self._url_params):
                             payload = self.__get_param_ngrok_payload(dto.url, param, "POST")
