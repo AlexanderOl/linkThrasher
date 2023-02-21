@@ -74,7 +74,7 @@ class SqliManager:
                         copy_form_params[param] = payload
 
                         response = self._request_handler.handle_request(dto.url, post_data=copy_form_params)
-                        if response is None:
+                        if response is None or response.status_code is None:
                             copy_form_params[param] = prev_param
                             continue
 
