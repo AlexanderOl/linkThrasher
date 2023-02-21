@@ -119,12 +119,15 @@ class Spider:
             form_details: List[FormDetailsDTO] = []
             for form in forms:
                 action_tag = BeautifulSoup(str(form), "html.parser").find('form').get('action')
-                if not action_tag:
+                if not action_tag or len(action_tag) == 0:
                     action_tag = target_url
                 elif action_tag.startswith('http'):
                     action_tag = action_tag
                 elif action_tag.startswith('/'):
                     action_tag = target_url + action_tag
+
+                if any(dto for dto in self._form_DTOs if any(param for param in dto.form_params if param.action == action_tag)):
+                    continue
 
                 method = BeautifulSoup(str(form), "html.parser").find('form').get('method')
                 method = method if method else "post"
@@ -219,3 +222,9 @@ class Spider:
                 print(inst)
 
         return html_urls
+
+    def __check_already_added_form(self, action_tag):
+        for dto in self._form_DTOs:
+            for form in dto.form_params:
+                if form.action == action_tag:
+                    return True
