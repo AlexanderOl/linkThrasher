@@ -110,6 +110,9 @@ class FastUrlFlowManager:
                 elif action_tag.startswith('/'):
                     action_tag = target_url + action_tag
 
+                if any(dto for dto in self._form_dtos if any(param for param in dto.form_params if param.action == action_tag)):
+                    continue
+
                 method = BeautifulSoup(str(form), "html.parser").find('form').get('method')
                 method = method if method else "post"
                 input_tags = BeautifulSoup(str(form), "html.parser").findAll('input')
