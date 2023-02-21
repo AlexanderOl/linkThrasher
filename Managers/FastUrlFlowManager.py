@@ -103,16 +103,18 @@ class FastUrlFlowManager:
             form_details: List[FormDetailsDTO] = []
             for form in forms:
                 action_tag = BeautifulSoup(str(form), "html.parser").find('form').get('action')
+                parsed_parts = urlparse(target_url)
                 if not action_tag:
                     action_tag = target_url
                 elif action_tag.startswith('http'):
+                    if parsed_parts.netloc not in action_tag:
+                        continue
                     action_tag = action_tag
                 elif action_tag.startswith('/'):
-                    parsed_parts = urlparse(target_url)
                     base_url = f'{parsed_parts.scheme}://{parsed_parts.netloc}'
                     action_tag = base_url + action_tag
 
-                if any(dto for dto in self._form_dtos if any(param for param in dto.form_params if param.action == action_tag)):
+                if any(form_dto for form_dto in self._form_dtos if any(param for param in form_dto.form_params if param.action == action_tag)):
                     continue
 
                 method = BeautifulSoup(str(form), "html.parser").find('form').get('method')
