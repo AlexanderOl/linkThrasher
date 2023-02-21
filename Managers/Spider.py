@@ -124,7 +124,9 @@ class Spider:
                 elif action_tag.startswith('http'):
                     action_tag = action_tag
                 elif action_tag.startswith('/'):
-                    action_tag = target_url + action_tag
+                    parsed_parts = urlparse(target_url)
+                    base_url = f'{parsed_parts.scheme}://{parsed_parts.netloc}'
+                    action_tag = base_url + action_tag
 
                 if any(dto for dto in self._form_DTOs if any(param for param in dto.form_params if param.action == action_tag)):
                     continue
