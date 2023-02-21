@@ -198,10 +198,14 @@ class SqliManager:
             if response2 is not None and response2.elapsed.total_seconds() < self._delay_in_seconds:
                 response3 = self._request_handler.handle_request(true_2payload)
                 if response3 is not None and response3.elapsed.total_seconds() >= self._delay_in_seconds:
-                    msg = f"SQLiManager delay FOUND! TRUE:{true_payload} ; FALSE:{false_payload}"
-                    print(msg)
-                    return self._result.append(
-                        InjectionFoundDTO(InjectionType.Sqli_Get_Time, true_payload, 'TIME_BASED', response1.text, msg))
+                    response4 = self._request_handler.handle_request(false_payload)
+                    if response4 is not None and response4.elapsed.total_seconds() < self._delay_in_seconds:
+                        response5 = self._request_handler.handle_request(true_payload)
+                        if response5 is not None and response5.elapsed.total_seconds() >= self._delay_in_seconds:
+                            msg = f"SQLiManager delay FOUND! TRUE:{true_payload} ; FALSE:{false_payload}"
+                            print(msg)
+                            return self._result.append(
+                                InjectionFoundDTO(InjectionType.Sqli_Get_Time, true_payload, 'TIME_BASED', response5.text, msg))
 
     def __check_keywords(self, response, url_payload, inj_type: InjectionType,
                          post_payload=None,
@@ -247,7 +251,6 @@ class SqliManager:
 
     def __send_form_time_based(self, payloads, form_params, param, url):
         copy_form_params = deepcopy(form_params)
-        prev_param = copy_form_params[param]
         copy_form_params[param] = payloads["TruePld"]
         response1 = self._request_handler.handle_request(url, post_data=copy_form_params)
         if response1 is not None and response1.elapsed.total_seconds() >= self._delay_in_seconds:
@@ -261,9 +264,20 @@ class SqliManager:
                 copy_form_params[param] = payloads["True2Pld"]
                 response3 = self._request_handler.handle_request(url, post_data=copy_form_params)
                 if response3 is not None and response3.elapsed.total_seconds() >= self._delay_in_seconds:
-                    msg = f"SQLiManager FORM delay FOUND! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
-                    print(msg)
-                    self._result.append(
-                        InjectionFoundDTO(InjectionType.Sqli_PostForm_Time, url, copy_form_params,
-                                          response1.text, msg))
+
+                    copy_form_params = deepcopy(form_params)
+                    copy_form_params[param] = payloads["FalsePld"]
+                    response4 = self._request_handler.handle_request(url, post_data=copy_form_params)
+                    if response4 is not None and response4.elapsed.total_seconds() < self._delay_in_seconds:
+
+                        copy_form_params = deepcopy(form_params)
+                        copy_form_params[param] = payloads["TruePld"]
+                        response5 = self._request_handler.handle_request(url, post_data=copy_form_params)
+                        if response5 is not None and response5.elapsed.total_seconds() >= self._delay_in_seconds:
+
+                            msg = f"SQLiManager FORM delay FOUND! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
+                            print(msg)
+                            self._result.append(
+                                InjectionFoundDTO(InjectionType.Sqli_PostForm_Time, url, copy_form_params,
+                                                  response5.text, msg))
 
