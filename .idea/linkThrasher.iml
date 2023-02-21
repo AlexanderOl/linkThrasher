@@ -5,7 +5,6 @@
       <excludeFolder url="file://$MODULE_DIR$/Targets" />
       <excludeFolder url="file://$MODULE_DIR$/Results" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
-      <excludeFolder url="file://$MODULE_DIR$/Wordlists" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.10 (linkThrasher)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

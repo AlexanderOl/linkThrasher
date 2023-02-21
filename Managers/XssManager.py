@@ -91,10 +91,12 @@ class XssManager:
             elif form.method_type == "GET":
                 parsed = urlparse.urlparse(dto.url)
                 url_ending = len(form.action) * -1
-                if len(parsed[2]) >= len(form.action) and str(parsed[2])[url_ending:] == form.action:
-                    url = f'{parsed[0]}://{parsed[1]}{parsed[2]}?'
+                if form.action.startswith('http'):
+                    url = f'{form.action}?'
+                elif len(parsed.path) >= len(form.action) and str(parsed.path)[url_ending:] == form.action:
+                    url = f'{parsed.scheme}://{parsed.netloc}{parsed.path}?'
                 else:
-                    url = form.action + '?'
+                    url = f'{parsed.scheme}://{parsed.netloc}/{form.action}?'
                 for param in form.params:
                     prev_url = url
                     url += f'{param}={self._expected}&'
@@ -135,8 +137,11 @@ class XssManager:
                 substr_index = web_page.find(keyword)
                 start_index = substr_index - 50 if substr_index - 50 > 0 else 0
                 last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
+                mime_type = ''
+                if "Content-Type" in response.headers:
+                    mime_type = response.headers["Content-Type"]
                 log_header_msg = f'injFOUND: {keyword};' \
-                                 f'MIME-TYPE: {response.headers["Content-Type"]};' \
+                                 f'MIME-TYPE: {mime_type};' \
                                  f'URL: {url};' \
                                  f'DETAILS: {web_page[start_index:last_index].strip()};'
                 curr_resp_length = len(web_page)
