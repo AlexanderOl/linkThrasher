@@ -33,7 +33,7 @@ class FastUrlFlowManager:
             if len(raw_urls) == 0:
                 print(f'No fast urls found - {file_path}')
                 return
-            parsed_parts = urlparse(raw_urls[len(raw_urls)-1])
+            parsed_parts = urlparse(raw_urls[len(raw_urls) - 1])
             cache_key = parsed_parts.netloc
             get_dtos, form_dtos = self.__get_cached_dtos(raw_urls, cache_key)
 
@@ -83,7 +83,8 @@ class FastUrlFlowManager:
         else:
             out_of_scope = self._out_of_scope_urls.split(';')
             self._get_dtos = list([dto for dto in dtos['get_dtos'] if all(oos not in dto.url for oos in out_of_scope)])
-            self._form_dtos = list([dto for dto in dtos['form_dtos'] if all(oos not in dto.url for oos in out_of_scope)])
+            self._form_dtos = list(
+                [dto for dto in dtos['form_dtos'] if all(oos not in dto.url for oos in out_of_scope)])
         return self._get_dtos, self._form_dtos
 
     def __check_url(self, url):
@@ -95,6 +96,7 @@ class FastUrlFlowManager:
         form_dto = self.__find_forms(url, response.text, get_dto)
         if form_dto:
             self._form_dtos.append(form_dto)
+
     def __find_forms(self, target_url, web_page, dto: GetRequestDTO):
         if '<form' not in web_page:
             return
@@ -107,14 +109,16 @@ class FastUrlFlowManager:
                 if not action_tag:
                     action_tag = target_url
                 elif action_tag.startswith('http'):
-                    if parsed_parts.netloc not in action_tag:
+                    main_domain = '.'.join(parsed_parts.netloc.split('.')[-2:])
+                    if main_domain not in action_tag:
                         continue
                     action_tag = action_tag
                 elif action_tag.startswith('/'):
                     base_url = f'{parsed_parts.scheme}://{parsed_parts.netloc}'
                     action_tag = base_url + action_tag
 
-                if any(form_dto for form_dto in self._form_dtos if any(param for param in form_dto.form_params if param.action == action_tag)):
+                if any(form_dto for form_dto in self._form_dtos if
+                       any(param for param in form_dto.form_params if param.action == action_tag)):
                     continue
 
                 method = BeautifulSoup(str(form), "html.parser").find('form').get('method')
