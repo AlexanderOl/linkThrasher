@@ -119,12 +119,15 @@ class Spider:
             form_details: List[FormDetailsDTO] = []
             for form in forms:
                 action_tag = BeautifulSoup(str(form), "html.parser").find('form').get('action')
-                if not action_tag or len(action_tag) == 0:
+                parsed_parts = urlparse(target_url)
+                if not action_tag:
                     action_tag = target_url
                 elif action_tag.startswith('http'):
+                    main_domain = '.'.join(parsed_parts.netloc.split('.')[-2:])
+                    if main_domain not in action_tag:
+                        continue
                     action_tag = action_tag
                 elif action_tag.startswith('/'):
-                    parsed_parts = urlparse(target_url)
                     base_url = f'{parsed_parts.scheme}://{parsed_parts.netloc}'
                     action_tag = base_url + action_tag
 

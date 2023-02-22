@@ -17,6 +17,8 @@ class EyeWitness:
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
     def visit_urls(self, urls: set):
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]:({self._cache_key}) Eyewitness will visit {len(urls)} urls')
+
         if len(urls) == 0:
             return
         cache_manager = CacheManager(self._tool_name, self._cache_key)

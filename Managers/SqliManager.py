@@ -66,9 +66,11 @@ class SqliManager:
 
     def __check_form(self, dto: FormRequestDTO):
         for form in dto.form_params:
+
+            if any('csrf' in param.lower() for param in form.params):
+                continue
+
             if form.method_type == "POST":
-                if any('csrf' in param.lower() for param in form.params):
-                    continue
                 for param in form.params:
                     copy_form_params = deepcopy(form.params)
                     prev_param = copy_form_params[param]

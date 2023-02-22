@@ -57,7 +57,6 @@ class FastUrlFlowManager:
             eyewitness = EyeWitness(f'500_{cache_key}')
             eyewitness.visit_errors(errors)
 
-
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{file_path} is missing')

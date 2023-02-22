@@ -94,6 +94,10 @@ class SstiManager:
     def __check_form_request(self, dto: FormRequestDTO):
         try:
             for form in dto.form_params:
+
+                if any('csrf' in param.lower() for param in form.params):
+                    continue
+
                 if form.method_type == "POST":
                     for param in form.params:
                         for payload in self._payloads:
