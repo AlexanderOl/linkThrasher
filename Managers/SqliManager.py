@@ -67,6 +67,8 @@ class SqliManager:
     def __check_form(self, dto: FormRequestDTO):
         for form in dto.form_params:
             if form.method_type == "POST":
+                if any('csrf' in param.lower() for param in form.params):
+                    continue
                 for param in form.params:
                     copy_form_params = deepcopy(form.params)
                     prev_param = copy_form_params[param]
@@ -76,7 +78,7 @@ class SqliManager:
                         response = self._request_handler.handle_request(dto.url, post_data=copy_form_params)
                         if response is None or response.status_code is None:
                             copy_form_params[param] = prev_param
-                            continue
+                            break
 
                         need_to_discard_payload = self.__check_keywords(response,
                                                                         dto.url,
