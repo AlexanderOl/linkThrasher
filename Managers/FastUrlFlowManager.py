@@ -54,7 +54,7 @@ class FastUrlFlowManager:
             ssti_manager.check_form_requests(form_dtos)
 
             errors = sqli_manager.errors_for_eyewitness + ssti_manager.errors_for_eyewitness
-            eyewitness = EyeWitness(f'500_{cache_key}')
+            eyewitness = EyeWitness(f'500_{cache_key}', self._headers)
             eyewitness.visit_errors(errors)
 
         else:

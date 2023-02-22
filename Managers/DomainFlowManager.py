@@ -43,10 +43,8 @@ class DomainFlowManager:
         else:
             print(f'Found {len(start_urls_dtos)} start urls')
 
-        live_urls = set(line.url for line in start_urls_dtos)
-
-        eyewitness = EyeWitness(domain)
-        eyewitness.visit_urls(live_urls)
+        eyewitness = EyeWitness(domain, self._headers)
+        eyewitness.visit_dtos(start_urls_dtos)
 
         nuclei = Nuclei(domain)
         nuclei.check_multiple_uls(start_urls_dtos)

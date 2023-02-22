@@ -2,24 +2,37 @@ import os
 import pathlib
 import re
 from datetime import datetime
+from typing import List
 from urllib.parse import urlparse
 
 from Managers.CacheManager import CacheManager
+from Managers.RequestHandler import RequestHandler
+from Models.GetRequestDTO import GetRequestDTO
 
 
 class EyeWitness:
-    def __init__(self, cache_key):
+    def __init__(self, cache_key, headers):
         self._tool_name = self.__class__.__name__
         self._cache_key = cache_key
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._chunk_size = 30
         self._tool_dir = f"Results/{self._tool_name}"
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        self._request_handler = RequestHandler('', headers)
 
     def visit_urls(self, urls: set):
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]:({self._cache_key}) Eyewitness will visit {len(urls)} urls')
+        dtos: List[GetRequestDTO] = []
+        for url in urls:
+            response = self._request_handler.handle_request(url)
+            if response is not None and response.status_code is not None:
+                dtos.append(GetRequestDTO(url,response))
+                break
+        self.visit_dtos(dtos)
 
-        if len(urls) == 0:
+    def visit_dtos(self, dtos: List[GetRequestDTO]):
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]:({self._cache_key}) Eyewitness will visit {len(dtos)} urls')
+
+        if len(dtos) == 0:
             return
         cache_manager = CacheManager(self._tool_name, self._cache_key)
         result = cache_manager.get_saved_result()
@@ -33,7 +46,7 @@ class EyeWitness:
                 os.makedirs(domain_dir)
 
             start = datetime.now()
-            batches_list = list(self.__divide_chunks(urls))
+            batches_list = list(self.__divide_chunks(dtos))
             counter = len(batches_list)
             for urls_batch in batches_list:
                 msg = self.__make_screens(urls_batch, counter)
@@ -54,7 +67,7 @@ class EyeWitness:
         for i in range(0, len(items_to_split), self._chunk_size):
             yield items_to_split[i:i + self._chunk_size]
 
-    def __make_screens(self, urls_batch, counter: int):
+    def __make_screens(self, dtos_batch: List[GetRequestDTO], counter: int):
 
         counter_directory_path = f'{self._tool_result_dir}/{self._cache_key}/{counter}'
         if os.path.exists(counter_directory_path):
@@ -62,8 +75,8 @@ class EyeWitness:
 
         txt_filepath = f"{self._tool_dir}/{self._cache_key}_raw.txt"
         txt_file = open(txt_filepath, 'w')
-        for subdomain in urls_batch:
-            txt_file.write("%s\n" % str(subdomain))
+        for dto in dtos_batch:
+            txt_file.write("%s\n" % str(dto.url))
         txt_file.close()
         result_msg = ''
         try:
@@ -79,7 +92,7 @@ class EyeWitness:
                     result_msg = encoded_line.replace('\n', '')
                     break
         except Exception as inst:
-            result_msg = f'EyeWitness Exception ({inst}) Urls:({" ".join(urls_batch)})'
+            result_msg = f'EyeWitness Exception ({inst}) Cache Key:({self._cache_key})'
             print(result_msg)
 
         os.remove(txt_filepath)

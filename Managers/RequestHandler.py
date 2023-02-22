@@ -5,7 +5,7 @@ from requests import Response
 
 
 class RequestHandler:
-    def __init__(self, cookies, headers):
+    def __init__(self, cookies='', headers={}):
         self._cookies = cookies
         self._headers = headers
 
