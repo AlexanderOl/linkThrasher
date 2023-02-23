@@ -158,6 +158,6 @@ class SstiManager:
                 print(log_header_msg)
                 return self._result.append(InjectionFoundDTO(inj_type, url, param, web_page, log_header_msg))
         if response.status_code == 500:
-            print(f"SqliManager: 500 status - {url}; DETAILS: {response.text[0:200].strip()}")
+            print(f"SstiManager: 500 status - {url}; DETAILS: {response.text[0:200].strip()}")
             self.errors_for_eyewitness.append({'url': url, 'response': response})
 

@@ -1,8 +1,11 @@
 import os
 import pathlib
 import time
+from typing import List
+from urllib.parse import urlparse
 
 from Managers.CacheManager import CacheManager
+from Models.GetRequestDTO import GetRequestDTO
 
 
 class Nmap:
@@ -10,8 +13,8 @@ class Nmap:
         self.__tool_name = self.__class__.__name__
         self.__domain = domain
 
-    def check_ports(self, subdomains):
-
+    def check_ports(self, get_dtos: List[GetRequestDTO]):
+        subdomains = list((urlparse(dto.url).netloc for dto in get_dtos))
         cache_manager = CacheManager(self.__tool_name, self.__domain)
         report_lines = cache_manager.get_saved_result()
         if not report_lines:

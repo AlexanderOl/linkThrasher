@@ -117,8 +117,7 @@ class SqliManager:
                                               InjectionType.Ssti_Get,
                                               original_url=dto.url)
 
-                        if response.status_code == 400:
-                            url = prev_url
+                        url = prev_url
             else:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
@@ -282,7 +281,7 @@ class SqliManager:
                         response5 = self._request_handler.handle_request(url, post_data=copy_form_params)
                         if response5 is not None and response5.elapsed.total_seconds() >= self._delay_in_seconds:
 
-                            msg = f"SQLiManager FORM delay FOUND! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
+                            msg = f"SqliManager FORM delay FOUND! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
                             print(msg)
                             self._result.append(
                                 InjectionFoundDTO(InjectionType.Sqli_PostForm_Time, url, copy_form_params,

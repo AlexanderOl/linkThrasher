@@ -7,6 +7,7 @@ from Managers.ThreadManager import ThreadManager
 from Tools.Amass import Amass
 from Tools.EyeWitness import EyeWitness
 from Tools.MassDns import MassDns
+from Tools.Nmap import Nmap
 from Tools.Nuclei import Nuclei
 from Tools.SubFinder import SubFinder
 
@@ -49,8 +50,8 @@ class DomainFlowManager:
         nuclei = Nuclei(domain)
         nuclei.check_multiple_uls(start_urls_dtos)
 
-        # nmap = Nmap(domain)
-        # nmap.check_ports(all_subdomains)
+        nmap = Nmap(domain)
+        nmap.check_ports(start_urls_dtos)
 
         single_url_man = SingleUrlFlowManager(self._headers)
         thread_man = ThreadManager()
