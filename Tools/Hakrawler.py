@@ -37,7 +37,7 @@ class Hakrawler:
         if self._raw_cookies:
             cookie_param = f"-h 'Cookie: {self._raw_cookies}'"
 
-        command = f"echo '{start_url}' | hakrawler - d 5 {cookie_param} "
+        command = f"echo '{start_url}' | hakrawler - d 5 {cookie_param} -t 20"
         stream = os.popen(command)
         bash_outputs = stream.readlines()
         href_urls = set()

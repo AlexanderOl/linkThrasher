@@ -42,8 +42,8 @@ class SingleUrlFlowManager:
         if domain[len(domain)-1] == '.':
             domain = domain[:-1]
 
-        if self._check_mode == 'U':
-            gobuster = Gobuster(domain)
+        if self._check_mode != 'UF':
+            gobuster = Gobuster(domain, self._headers)
             gobuster.check_single_url(start_url)
 
         if self._check_mode == 'U':
@@ -70,7 +70,7 @@ class SingleUrlFlowManager:
         manual_testing = ManualTesting(domain)
         get_dtos = manual_testing.save_urls_for_manual_testing(get_hakrawler_dtos, form_dtos)
 
-        lfimap = Lfimap(domain)
+        lfimap = Lfimap(domain, self._headers)
         lfimap.check_dtos(get_dtos, start_url)
 
         if len(get_dtos) == 0:

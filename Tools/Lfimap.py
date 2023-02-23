@@ -9,11 +9,12 @@ from Models.GetRequestDTO import GetRequestDTO
 
 
 class Lfimap:
-    def __init__(self, domain):
+    def __init__(self, domain, headers):
         tool_name = self.__class__.__name__
         self._domain = domain
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{tool_name}'
         self._cache_manager = CacheManager(tool_name, domain)
+        self._headers = headers
         self._target_url_params = ['cat',
                                    'dir',
                                    'doc',
@@ -107,7 +108,9 @@ class Lfimap:
 
                 filepath = os.path.join(pathlib.Path().resolve(), payloads_filepath)
                 command = f'cd /root/Desktop/TOOLs/lfimap/; ' \
-                          f'python lfimap.py -F {filepath} --rfi --trunc --file --use-long'
+                          f'python lfimap.py ' \
+                          f'-F {filepath} --rfi --trunc --file --use-long ' \
+                          f'-H "User-Agent:{self._headers["User-Agent"]}"'
                 stream = os.popen(command)
                 bash_outputs = stream.readlines()
                 if any('Try specifying parameter --http-ok 404' in line for line in bash_outputs):

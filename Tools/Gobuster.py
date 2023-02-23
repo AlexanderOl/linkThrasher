@@ -7,9 +7,10 @@ from Managers.CacheManager import CacheManager
 
 
 class Gobuster:
-    def __init__(self, domain):
+    def __init__(self, domain, headers):
         self._tool_name = self.__class__.__name__
         self._domain = domain
+        self._headers = headers
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
         self._cache_manager = CacheManager(self._tool_name, domain)
@@ -27,9 +28,10 @@ class Gobuster:
 
                 output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
                 cmd_arr = ["gobuster", "dir",
-                                         "-u", base_url,
-                                         "-w", f"{self._app_wordlists_path}ExploitDB.txt",
-                                         "--no-error", "-t", "50", "-o", output_file]
+                           "-u", base_url,
+                           "-w", f"{self._app_wordlists_path}ExploitDB.txt",
+                           "-H", f"User-Agent:{self._headers['User-Agent']}"
+                           "--no-error", "-t", "50", "-o", output_file]
                 proc = subprocess.Popen(cmd_arr, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 kill_action = lambda process: process.kill()
                 my_timer = Timer(1200, kill_action, [proc])
