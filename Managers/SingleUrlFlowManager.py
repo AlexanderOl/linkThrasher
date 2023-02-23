@@ -10,6 +10,7 @@ from Managers.Spider import Spider
 from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
 from Managers.SstiManager import SstiManager
+from Tools.Ferxobuster import Feroxbuster
 from Tools.Gobuster import Gobuster
 from Tools.Hakrawler import Hakrawler
 from Managers.XssManager import XssManager
@@ -42,9 +43,8 @@ class SingleUrlFlowManager:
         if domain[len(domain)-1] == '.':
             domain = domain[:-1]
 
-        if self._check_mode != 'UF':
-            gobuster = Gobuster(domain, self._headers)
-            gobuster.check_single_url(start_url)
+        gobuster = Gobuster(domain, self._headers)
+        gobuster.check_single_url(start_url)
 
         if self._check_mode == 'U':
             nuclei = Nuclei(domain, self._headers)
@@ -67,8 +67,11 @@ class SingleUrlFlowManager:
 
         get_hakrawler_dtos.extend(get_spider_dtos)
 
+        feroxbuster = Feroxbuster(domain, cookies, self._headers)
+        all_get_dtos, all_form_dtos = feroxbuster.check_single_url(start_url, get_hakrawler_dtos, form_dtos)
+
         manual_testing = ManualTesting(domain)
-        get_dtos = manual_testing.save_urls_for_manual_testing(get_hakrawler_dtos, form_dtos)
+        get_dtos = manual_testing.save_urls_for_manual_testing(all_get_dtos, all_form_dtos)
 
         lfimap = Lfimap(domain, self._headers)
         lfimap.check_dtos(get_dtos, start_url)
