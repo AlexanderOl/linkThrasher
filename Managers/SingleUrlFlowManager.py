@@ -47,7 +47,7 @@ class SingleUrlFlowManager:
             gobuster.check_single_url(start_url)
 
         if self._check_mode == 'U':
-            nuclei = Nuclei(domain)
+            nuclei = Nuclei(domain, self._headers)
             nuclei.check_single_url(start_url)
 
         cookie_manager = CookieManager(self._main_domain, self._download_path)

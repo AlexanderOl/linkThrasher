@@ -9,9 +9,10 @@ from Models.GetRequestDTO import GetRequestDTO
 
 
 class Nuclei:
-    def __init__(self, cache_key):
+    def __init__(self, cache_key, headers):
         self._tool_name = self.__class__.__name__
         self._cache_key = cache_key
+        self._headers = headers
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._cache_manager = CacheManager(self._tool_name, cache_key)
         self._expected = ['[medium]', '[high]', '[critical]', '[unknown]', '[network]']
@@ -46,7 +47,7 @@ class Nuclei:
     def check_single_url(self, url):
         report_lines = self._cache_manager.get_saved_result()
         if not report_lines and not isinstance(report_lines, set):
-            command = f"nuclei -u {url} " \
+            command = f"nuclei -u {url} -H User-Agent:{self._headers['User-Agent']})" \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing/ " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/cves " \

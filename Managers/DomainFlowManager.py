@@ -47,7 +47,7 @@ class DomainFlowManager:
         eyewitness = EyeWitness(domain, self._headers)
         eyewitness.visit_dtos(start_urls_dtos)
 
-        nuclei = Nuclei(domain)
+        nuclei = Nuclei(domain, self._headers)
         nuclei.check_multiple_uls(start_urls_dtos)
 
         nmap = Nmap(domain)
