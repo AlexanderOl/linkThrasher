@@ -1,7 +1,5 @@
-from datetime import timedelta
-
 import requests
-from requests import Response
+from requests.exceptions import SSLError, Timeout, ConnectionError
 
 
 class RequestHandler:
@@ -30,15 +28,11 @@ class RequestHandler:
                                         timeout=timeout)
             return response
 
-        except requests.exceptions.SSLError:
+        except SSLError:
             if except_ssl_action_args:
                 return except_ssl_action(except_ssl_action_args)
-        except requests.exceptions.ConnectionError:
+        except (ConnectionError, Timeout):
             return
-        except requests.exceptions.Timeout:
-            response = Response()
-            response.elapsed = timedelta(seconds=timeout)
-            return response
         except Exception as inst:
             print(f'Url ({url}) - Exception: {inst}')
             return
