@@ -12,7 +12,7 @@ class MassDns:
         self._massdns_out_of_scope_domains = os.environ.get("massdns_out_of_scope_domains")
 
     def get_subdomains(self) -> set:
-        out_of_scope = self._massdns_out_of_scope_domains.split(';')
+        out_of_scope = [x for x in self._massdns_out_of_scope_domains.split(';') if x]
 
         if any(oos in self._domain for oos in out_of_scope):
             print(f'{self._domain} out of scope massdns')

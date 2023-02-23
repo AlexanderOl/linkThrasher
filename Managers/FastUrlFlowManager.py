@@ -65,7 +65,7 @@ class FastUrlFlowManager:
 
         cache_manager = CacheManager(self._tool_name, cache_key)
         dtos = cache_manager.get_saved_result()
-        out_of_scope = self._out_of_scope_urls.split(';')
+        out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
         self._get_dtos: List[GetRequestDTO] = []
         self._form_dtos: List[FormRequestDTO] = []
 
@@ -80,7 +80,7 @@ class FastUrlFlowManager:
                 {'get_dtos': self._get_dtos, 'form_dtos': self._form_dtos},
                 cleanup_prev_results=True)
         else:
-            out_of_scope = self._out_of_scope_urls.split(';')
+            out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
             self._get_dtos = list([dto for dto in dtos['get_dtos'] if all(oos not in dto.url for oos in out_of_scope)])
             self._form_dtos = list(
                 [dto for dto in dtos['form_dtos'] if all(oos not in dto.url for oos in out_of_scope)])
