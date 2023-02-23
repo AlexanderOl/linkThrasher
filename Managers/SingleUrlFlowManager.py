@@ -10,7 +10,7 @@ from Managers.Spider import Spider
 from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
 from Managers.SstiManager import SstiManager
-from Tools.Ferxobuster import Feroxbuster
+from Tools.Feroxbuster import Feroxbuster
 from Tools.Gobuster import Gobuster
 from Tools.Hakrawler import Hakrawler
 from Managers.XssManager import XssManager

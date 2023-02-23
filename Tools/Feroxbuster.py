@@ -100,9 +100,8 @@ class Feroxbuster:
         output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
         proc = subprocess.Popen(["feroxbuster", "--url", url, "--silent",
                                  "-w", f"{self._app_wordlists_path}directories.txt",
-                                 "-o", output_file,
-                                 "-H", f'-H "User-Agent:{self._headers["User-Agent"]}"'],
-                                stdout=subprocess.PIPE,
+                                 "-o", output_file, "--insecure",
+                                 "-H", f'User-Agent:{self._headers["User-Agent"]}'],
                                 stderr=subprocess.PIPE)
         kill_action = lambda process: process.kill()
         my_timer = Timer(1200, kill_action, [proc])
