@@ -113,7 +113,8 @@ class Feroxbuster:
 
             main_txt_file = open(output_file, 'r')
             report_lines = main_txt_file.readlines()
-            # os.remove(output_file)
+            if os.path.getsize(output_file) == 0:
+                os.remove(output_file)
 
         finally:
             if my_timer.is_alive():
