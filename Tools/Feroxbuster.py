@@ -98,7 +98,7 @@ class Feroxbuster:
     def __run_tool_cmd(self, url) -> [str]:
 
         output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
-        proc = subprocess.Popen(["feroxbuster", "--url", url, "--quiet",
+        proc = subprocess.Popen(["feroxbuster", "--url", url, "--silent",
                                  "-w", f"{self._app_wordlists_path}directories.txt",
                                  "-o", output_file, "--insecure"],
                                 stderr=subprocess.PIPE)
