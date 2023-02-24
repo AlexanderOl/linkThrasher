@@ -30,7 +30,7 @@ class Gobuster:
                 cmd_arr = ["gobuster", "dir",
                            "-u", base_url,
                            "-w", f"{self._app_wordlists_path}ExploitDB.txt",
-                           "-H", f"User-Agent:{self._headers['User-Agent']}"
+                           "-H", f"User-Agent:{self._headers['User-Agent']}",
                            "--no-error", "-t", "50", "-o", output_file]
                 proc = subprocess.Popen(cmd_arr, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 kill_action = lambda process: process.kill()

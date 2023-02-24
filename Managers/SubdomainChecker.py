@@ -61,7 +61,7 @@ class SubdomainChecker:
             return filtered_subdomains
 
     def __check_subdomain(self, subdomain):
-        url = f'http://{subdomain}/'
+        url = f'https://{subdomain}/'
         response = self._request_handler.handle_request(url=url,
                                                         except_ssl_action=self.__except_ssl_action,
                                                         except_ssl_action_args=[url],
@@ -72,7 +72,7 @@ class SubdomainChecker:
 
     def __except_ssl_action(self, args):
         url = args[0]
-        url = url.replace('http:', 'https:')
+        url = url.replace('https:', 'http:')
         if validators.url(url):
             response = self._request_handler.handle_request(url, timeout=5)
             if response is not None:

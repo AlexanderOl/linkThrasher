@@ -98,10 +98,9 @@ class Feroxbuster:
     def __run_tool_cmd(self, url) -> [str]:
 
         output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
-        proc = subprocess.Popen(["feroxbuster", "--url", url, "--silent",
+        proc = subprocess.Popen(["feroxbuster", "--url", url, "--quiet",
                                  "-w", f"{self._app_wordlists_path}directories.txt",
-                                 "-o", output_file, "--insecure",
-                                 "-H", f'User-Agent:{self._headers["User-Agent"]}'],
+                                 "-o", output_file, "--insecure"],
                                 stderr=subprocess.PIPE)
         kill_action = lambda process: process.kill()
         my_timer = Timer(1200, kill_action, [proc])
@@ -114,7 +113,7 @@ class Feroxbuster:
 
             main_txt_file = open(output_file, 'r')
             report_lines = main_txt_file.readlines()
-            os.remove(output_file)
+            # os.remove(output_file)
 
         finally:
             if my_timer.is_alive():
