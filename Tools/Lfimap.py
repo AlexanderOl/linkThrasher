@@ -109,7 +109,7 @@ class Lfimap:
                 filepath = os.path.join(pathlib.Path().resolve(), payloads_filepath)
                 command = f'cd /root/Desktop/TOOLs/lfimap/; ' \
                           f'python lfimap.py ' \
-                          f'-F {filepath} --rfi --trunc --file --use-long ' \
+                          f'-F {filepath} --rfi --trunc --file ' \
                           f'-H "User-Agent:{self._headers["User-Agent"]}"'
                 stream = os.popen(command)
                 bash_outputs = stream.readlines()
@@ -137,7 +137,7 @@ class Lfimap:
 
             self._cache_manager.save_result(result)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Lfimap found {len(result)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({start_url})Lfimap found {len(result)} items')
 
     def __create_pwn_payloads(self, get_dtos: List[GetRequestDTO], start_url: str) -> set:
         checked_urls = set()

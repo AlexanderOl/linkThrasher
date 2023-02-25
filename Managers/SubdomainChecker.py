@@ -10,12 +10,12 @@ from Models.GetRequestDTO import GetRequestDTO
 
 
 class SubdomainChecker:
-    def __init__(self, domain, headers, download_path):
+    def __init__(self, domain, headers):
         self._checked_subdomains: List[GetRequestDTO] = []
         self._domain = domain
         self._tool_name = self.__class__.__name__
         self._last_10_resp_size_attempt = {}
-        cookie_manager = CookieManager(self._domain, download_path)
+        cookie_manager = CookieManager(domain)
         raw_cookies = cookie_manager.get_raw_cookies()
         cookies = cookie_manager.get_cookies_dict(raw_cookies)
         self._request_handler = RequestHandler(cookies, headers)

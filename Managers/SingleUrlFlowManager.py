@@ -24,8 +24,6 @@ class SingleUrlFlowManager:
         self._headers = headers
         self._ngrok_url = os.environ.get('ngrok_url')
         self._max_depth = os.environ.get('max_depth')
-        self._download_path = os.environ.get('download_path')
-        self._raw_cookies = os.environ.get('raw_cookies')
         self._main_domain = os.environ.get('domain')
         self._check_mode = os.environ.get('check_mode')
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -40,23 +38,22 @@ class SingleUrlFlowManager:
         domain = f'{domain_parts.subdomain}.{domain_parts.domain}.{domain_parts.suffix}'
         if domain[0] == '.':
             domain = domain[1:]
-        if domain[len(domain)-1] == '.':
+        if domain[len(domain) - 1] == '.':
             domain = domain[:-1]
 
-        gobuster = Gobuster(domain, self._headers)
+        cookies = ''
+        raw_cookies = ''
+        if self._check_mode == 'U' or self._check_mode == 'D':
+            cookie_manager = CookieManager(self._main_domain)
+            raw_cookies = cookie_manager.get_raw_cookies()
+            cookies = cookie_manager.get_cookies_dict(raw_cookies)
+
+        gobuster = Gobuster(domain, self._headers, raw_cookies)
         gobuster.check_single_url(start_url)
 
         if self._check_mode == 'U':
-            nuclei = Nuclei(domain, self._headers)
+            nuclei = Nuclei(domain, self._headers, raw_cookies)
             nuclei.check_single_url(start_url)
-
-        cookie_manager = CookieManager(self._main_domain, self._download_path)
-        if self._raw_cookies:
-            cookies = self._raw_cookies
-            raw_cookies = self._raw_cookies
-        else:
-            raw_cookies = cookie_manager.get_raw_cookies()
-            cookies = cookie_manager.get_cookies_dict(raw_cookies)
 
         hakrawler = Hakrawler(domain, raw_cookies, self._headers, cookies)
         get_hakrawler_dtos = hakrawler.get_requests_dtos(start_url)
@@ -67,7 +64,7 @@ class SingleUrlFlowManager:
 
         get_hakrawler_dtos.extend(get_spider_dtos)
 
-        feroxbuster = Feroxbuster(domain, cookies, self._headers)
+        feroxbuster = Feroxbuster(domain, cookies, self._headers, raw_cookies)
         all_get_dtos, all_form_dtos = feroxbuster.check_single_url(start_url, get_hakrawler_dtos, form_dtos)
 
         manual_testing = ManualTesting(domain)

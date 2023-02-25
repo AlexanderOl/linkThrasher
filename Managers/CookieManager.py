@@ -4,10 +4,10 @@ from http.cookies import SimpleCookie
 
 
 class CookieManager:
-    def __init__(self, domain, download_path):
-        self.domain = domain
-        self.download_path = download_path
-        self.cookie_file = f'{download_path}{domain}-cookies.txt'
+    def __init__(self, domain: str):
+        main_domain = '.'.join(domain.split('.')[-2:])
+        download_path = os.environ.get('download_path')
+        self.cookie_file = f"{download_path}cookies-{main_domain.replace('.','-')}.txt"
 
     def get_raw_cookies(self):
         result = ''
@@ -23,6 +23,7 @@ class CookieManager:
         return result
 
     def get_cookies_dict(self, raw_cookies):
+        # cookies = requests.utils.cookiejar_from_dict(json.load(f))
         cookie = SimpleCookie()
         cookie.load(raw_cookies)
         cookies = {}

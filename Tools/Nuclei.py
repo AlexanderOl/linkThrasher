@@ -9,10 +9,11 @@ from Models.GetRequestDTO import GetRequestDTO
 
 
 class Nuclei:
-    def __init__(self, cache_key, headers):
+    def __init__(self, cache_key, headers, raw_cookies):
         self._tool_name = self.__class__.__name__
         self._cache_key = cache_key
         self._headers = headers
+        self._raw_cookies = raw_cookies
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._cache_manager = CacheManager(self._tool_name, cache_key)
         self._expected = ['[medium]', '[high]', '[critical]', '[unknown]', '[network]']
@@ -47,12 +48,17 @@ class Nuclei:
     def check_single_url(self, url):
         report_lines = self._cache_manager.get_saved_result()
         if not report_lines and not isinstance(report_lines, set):
-            command = f"nuclei -u {url} -H User-Agent:{self._headers['User-Agent']})" \
+
+            agent = self._headers['User-Agent']
+            header_args = f'-H "User-Agent:{agent})"'
+            if len(self._raw_cookies) > 0:
+                header_args += f' -H "Cookies:{self._raw_cookies}"'
+
+            command = f"nuclei -u {url} {header_args} " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing/ " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/cves " \
-                      f"-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
-                      f"-t /root/Desktop/TOOLs/nuclei-templates/misconfiguration"
+                      f"-t /root/Desktop/TOOLs/nuclei-templates/cnvd "
             stream = os.popen(command)
             bash_outputs = stream.readlines()
 

@@ -1,5 +1,6 @@
 import os
 import subprocess
+from datetime import datetime
 from threading import Timer
 from typing import List
 from urllib.parse import urlparse
@@ -13,7 +14,7 @@ from Models.GetRequestDTO import GetRequestDTO
 
 
 class Feroxbuster:
-    def __init__(self, domain, cookies, headers):
+    def __init__(self, domain, cookies, headers, raw_cookies):
         self._headers = headers
         self._form_dtos: List[FormRequestDTO] = []
         self._get_dtos: List[GetRequestDTO] = []
@@ -23,6 +24,7 @@ class Feroxbuster:
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
         self._request_handler = RequestHandler(cookies, headers)
+        self._raw_cookies = raw_cookies
 
     def check_single_url(self, url,
                          already_exist__get_dtos: List[GetRequestDTO],
@@ -97,7 +99,18 @@ class Feroxbuster:
 
     def __run_tool_cmd(self, url) -> [str]:
 
+        agent = self._headers['User-Agent']
+        header_args = f'"User-Agent:{agent})"'
         output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
+        cmd = ["feroxbuster", "--url", url, "--silent",
+               "-w", f"{self._app_wordlists_path}directories.txt",
+               "-H", header_args,
+               "-o", output_file, "--insecure"]
+        if len(self._raw_cookies) > 0:
+            cmd.append("-b")
+            cmd.append(self._raw_cookies)
+
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) Feroxbuster starts...')
         proc = subprocess.Popen(["feroxbuster", "--url", url, "--silent",
                                  "-w", f"{self._app_wordlists_path}directories.txt",
                                  "-o", output_file, "--insecure"],
@@ -110,16 +123,17 @@ class Feroxbuster:
             my_timer.start()
             proc.wait()
             proc.stderr.read()
-
-            main_txt_file = open(output_file, 'r')
-            report_lines = main_txt_file.readlines()
-            if os.path.getsize(output_file) == 0:
-                os.remove(output_file)
+            if os.path.exists(output_file):
+                main_txt_file = open(output_file, 'r')
+                report_lines = main_txt_file.readlines()
+                if os.path.getsize(output_file) == 0:
+                    os.remove(output_file)
 
         finally:
             if my_timer.is_alive():
                 my_timer.cancel()
 
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) Feroxbuster finished!')
         return report_lines
 
     def __get_ready_urls(self, report_lines: [], already_exist_dtos: List[GetRequestDTO]) -> set():
