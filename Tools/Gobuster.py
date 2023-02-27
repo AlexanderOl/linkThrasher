@@ -50,10 +50,19 @@ class Gobuster:
                           f'cmd - gobuster dir -u {base_url} -w {self._app_wordlists_path}ExploitDB.txt --no-error -t 50')
 
                     if 'Error: ' in msg and ' => ' in msg:
-                        cmd_arr.append('-b')
+
                         status_code = msg.split(' => ', 1)[1].split(' (', 1)[0]
-                        if status_code.isdigit():
+                        length_to_exclude = msg.split('Length: ', 1)[1].split(')', 1)[0]
+                        if status_code.isdigit() and status_code != '200':
+                            print(f'Status will be excluded: {status_code}')
+                            cmd_arr.append('-b')
                             cmd_arr.append(f'{status_code},404')
+                        elif length_to_exclude.isdigit():
+                            print(f'Length will be excluded: {length_to_exclude}')
+                            cmd_arr.append('-b')
+                            cmd_arr.append('404')
+                            cmd_arr.append('--exclude-length')
+                            cmd_arr.append(length_to_exclude)
                         else:
                             print(f"Gobuster error - {status_code} is not a status code")
                         my_timer.cancel()
