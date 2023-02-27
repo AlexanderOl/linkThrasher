@@ -9,7 +9,7 @@ from Models.GetRequestDTO import GetRequestDTO
 
 
 class Nuclei:
-    def __init__(self, cache_key, headers, raw_cookies):
+    def __init__(self, cache_key, headers, raw_cookies=''):
         self._tool_name = self.__class__.__name__
         self._cache_key = cache_key
         self._headers = headers

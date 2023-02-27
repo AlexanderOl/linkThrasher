@@ -36,7 +36,7 @@ class DomainFlowManager:
             .union(subfinder_subdomains) \
             .union(massdns_subdomains)
 
-        subdomain_checker = SubdomainChecker(domain, self._headers, self._download_path)
+        subdomain_checker = SubdomainChecker(domain, self._headers)
         start_urls_dtos = subdomain_checker.check_all_subdomains(all_subdomains)
         if len(start_urls_dtos) == 0:
             print('No live subdomains found')
