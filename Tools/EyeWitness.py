@@ -26,7 +26,6 @@ class EyeWitness:
             response = self._request_handler.handle_request(url)
             if response is not None:
                 dtos.append(GetRequestDTO(url, response))
-                break
         self.visit_dtos(dtos)
 
     def visit_dtos(self, dtos: List[GetRequestDTO]):
