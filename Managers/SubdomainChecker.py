@@ -65,10 +65,19 @@ class SubdomainChecker:
         response = self._request_handler.handle_request(url=url,
                                                         except_ssl_action=self.__except_ssl_action,
                                                         except_ssl_action_args=[url],
-                                                        timeout=5)
+                                                        timeout=10)
 
         if response is not None:
-            self._checked_subdomains.append(GetRequestDTO(url, response))
+            if str(response.status_code).startswith('3') and 'Location' in response.headers:
+                redirect_url = response.headers['Location']
+                response2 = self._request_handler.handle_request(url=redirect_url,
+                                                                except_ssl_action=self.__except_ssl_action,
+                                                                except_ssl_action_args=[url],
+                                                                timeout=5)
+                if response2 is not None and all(dto.url != redirect_url for dto in self._checked_subdomains):
+                    self._checked_subdomains.append(GetRequestDTO(redirect_url, response2))
+            else:
+                self._checked_subdomains.append(GetRequestDTO(url, response))
 
     def __except_ssl_action(self, args):
         url = args[0]
