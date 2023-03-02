@@ -5,41 +5,80 @@ from typing import List
 from urllib.parse import urlparse
 
 from Managers.CacheManager import CacheManager
+from Managers.RequestHandler import RequestHandler
 from Models.GetRequestDTO import GetRequestDTO
 
 
 class Nmap:
-    def __init__(self, domain):
-        self.__tool_name = self.__class__.__name__
-        self.__domain = domain
+    def __init__(self, domain, headers, cookies=''):
+        self._tool_name = self.__class__.__name__
+        self._domain = domain
+        self._cache_manager = CacheManager(self._tool_name, self._domain)
+        self._request_handler = RequestHandler(headers, cookies)
 
     def check_ports(self, get_dtos: List[GetRequestDTO]):
         subdomains = list((urlparse(dto.url).netloc for dto in get_dtos))
-        cache_manager = CacheManager(self.__tool_name, self.__domain)
-        report_lines = cache_manager.get_saved_result()
+
+        report_lines = self._cache_manager.get_saved_result()
         if not report_lines:
+
             start = time.time()
-            nmap_directory = f"Results/{self.__tool_name}"
-            if not os.path.exists(nmap_directory):
-                os.makedirs(nmap_directory)
-            txt_filepath = f"{nmap_directory}/{self.__domain}.txt"
-            txt_file = open(txt_filepath, 'a')
-            for subdomain in subdomains:
-                txt_file.write("%s\n" % str(subdomain))
-            txt_file.close()
 
-            subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
-            command = f'nmap -sT -T4 -iL {subdomains_filepath} --top-ports 10000'
-            stream = os.popen(command)
-            bash_outputs = stream.readlines()
-            report_lines = []
+            bash_outputs = self.__run_nmap_command(subdomains)
+            url_with_ports = self.__get_url_with_ports(bash_outputs)
 
-            os.remove(txt_filepath)
+            self.__check_urls_with_ports(url_with_ports)
 
-            for line in bash_outputs:
-                if line.startswith('Nmap scan report') or ' open ' in line:
-                    report_lines.append(line.replace('\n', ''))
             end = time.time()
-            cache_manager.save_result(report_lines)
-
             print(f'Nmap finished in {(end - start)/60} minutes')
+
+    def __get_url_with_ports(self, bash_outputs) -> set:
+
+        report_lines = []
+        url_with_ports = set()
+        current_domain = ''
+        for line in bash_outputs:
+
+            if line.startswith('Nmap scan report for '):
+                current_domain = line.split('Nmap scan report for ', 1)[1].split(' ', 1)[0]
+                report_lines.append(line.replace('\n', ''))
+            elif ' open ' in line:
+                port = line.split('/', 1)[0]
+                url_with_ports.add(f'https://{current_domain}:{port}/')
+                report_lines.append(line.replace('\n', ''))
+
+        self._cache_manager.save_result(report_lines)
+
+        return url_with_ports
+
+    def __run_nmap_command(self, subdomains) -> List[str]:
+        nmap_directory = f"Results/{self._tool_name}"
+        if not os.path.exists(nmap_directory):
+            os.makedirs(nmap_directory)
+        txt_filepath = f"{nmap_directory}/{self._domain}.txt"
+        txt_file = open(txt_filepath, 'a')
+        for subdomain in subdomains:
+            txt_file.write("%s\n" % str(subdomain))
+        txt_file.close()
+
+        subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
+        command = f'nmap -sT -T4 -iL {subdomains_filepath} --top-ports 10000'
+        stream = os.popen(command)
+        bash_outputs = stream.readlines()
+        os.remove(txt_filepath)
+
+        return bash_outputs
+
+    def __check_urls_with_ports(self, url_with_ports, get_dtos: List[GetRequestDTO]):
+        for url in url_with_ports:
+            response = self._request_handler.handle_request(url)
+            if response is not None:
+                resp_length = len(response.text)
+                netloc = urlparse(url).netloc
+                if not any(dto for dto in get_dtos if netloc in dto.url and dto.response_length != resp_length):
+                    get_dtos.append(GetRequestDTO(url, response))
+
+
+
+
+

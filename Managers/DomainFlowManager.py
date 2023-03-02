@@ -50,7 +50,7 @@ class DomainFlowManager:
         nuclei = Nuclei(domain, self._headers)
         nuclei.check_multiple_uls(start_urls_dtos)
 
-        nmap = Nmap(domain)
+        nmap = Nmap(domain, self._headers)
         nmap.check_ports(start_urls_dtos)
 
         single_url_man = SingleUrlFlowManager(self._headers)

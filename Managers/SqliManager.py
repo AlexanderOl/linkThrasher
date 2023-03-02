@@ -34,7 +34,7 @@ class SqliManager:
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
-        cache_manager = CacheManager('SqliManager', self._domain)
+        cache_manager = CacheManager('SqliManager/Get', self._domain)
         self._result = cache_manager.get_saved_result()
 
         if self._result is None:
@@ -114,7 +114,7 @@ class SqliManager:
 
                         self.__check_keywords(response,
                                               url,
-                                              InjectionType.Ssti_Get,
+                                              InjectionType.Sqli_Get_Error,
                                               original_url=dto.url)
 
                         url = prev_url

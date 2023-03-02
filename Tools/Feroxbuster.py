@@ -136,7 +136,7 @@ class Feroxbuster:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) Feroxbuster finished!')
         return report_lines
 
-    def __get_ready_urls(self, report_lines: [], already_exist_dtos: List[GetRequestDTO]) -> set():
+    def __get_ready_urls(self, report_lines: [], already_exist_dtos: List[GetRequestDTO]) -> set:
         filtered_output = set()
         for line in report_lines:
             if '=>' in line:
