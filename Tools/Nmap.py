@@ -21,7 +21,6 @@ class Nmap:
 
         report_lines = self._cache_manager.get_saved_result()
         if not report_lines:
-
             start = time.time()
 
             bash_outputs = self.__run_nmap_command(subdomains)
@@ -30,7 +29,7 @@ class Nmap:
             self.__check_urls_with_ports(url_with_ports)
 
             end = time.time()
-            print(f'Nmap finished in {(end - start)/60} minutes')
+            print(f'Nmap finished in {(end - start) / 60} minutes')
 
     def __get_url_with_ports(self, bash_outputs) -> set:
 
@@ -71,14 +70,18 @@ class Nmap:
 
     def __check_urls_with_ports(self, url_with_ports, get_dtos: List[GetRequestDTO]):
         for url in url_with_ports:
-            response = self._request_handler.handle_request(url)
+            response = self._request_handler.handle_request(url,
+                                                            except_ssl_action=self.__except_ssl_action,
+                                                            except_ssl_action_args=[url])
             if response is not None:
                 resp_length = len(response.text)
                 netloc = urlparse(url).netloc
                 if not any(dto for dto in get_dtos if netloc in dto.url and dto.response_length != resp_length):
                     get_dtos.append(GetRequestDTO(url, response))
 
-
-
-
-
+    def __except_ssl_action(self, args: []):
+        target_url = args[0]
+        if target_url.startswith('http:'):
+            return
+        target_url = target_url.replace('https:', 'http:')
+        return self._request_handler.handle_request(target_url)
