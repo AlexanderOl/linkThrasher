@@ -26,7 +26,7 @@ class Nmap:
             bash_outputs = self.__run_nmap_command(subdomains)
             url_with_ports = self.__get_url_with_ports(bash_outputs)
 
-            self.__check_urls_with_ports(url_with_ports)
+            self.__check_urls_with_ports(url_with_ports, get_dtos)
 
             end = time.time()
             print(f'Nmap finished in {(end - start) / 60} minutes')
