@@ -44,14 +44,15 @@ class DomainFlowManager:
         else:
             print(f'Found {len(start_urls_dtos)} start urls')
 
+        nmap = Nmap(domain, self._headers)
+        nmap_get_dtos = nmap.check_ports(start_urls_dtos)
+        start_urls_dtos += nmap_get_dtos
+
         eyewitness = EyeWitness(domain, self._headers)
         eyewitness.visit_dtos(start_urls_dtos)
 
         nuclei = Nuclei(domain, self._headers)
         nuclei.check_multiple_uls(start_urls_dtos)
-
-        nmap = Nmap(domain, self._headers)
-        nmap.check_ports(start_urls_dtos)
 
         single_url_man = SingleUrlFlowManager(self._headers)
         thread_man = ThreadManager()

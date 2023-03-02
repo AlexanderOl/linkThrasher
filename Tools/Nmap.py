@@ -19,34 +19,33 @@ class Nmap:
     def check_ports(self, get_dtos: List[GetRequestDTO]):
         subdomains = list((urlparse(dto.url).netloc for dto in get_dtos))
 
-        report_lines = self._cache_manager.get_saved_result()
-        if not report_lines:
+        port_get_dtos = self._cache_manager.get_saved_result()
+        if not port_get_dtos:
             start = time.time()
 
             bash_outputs = self.__run_nmap_command(subdomains)
             url_with_ports = self.__get_url_with_ports(bash_outputs)
 
-            self.__check_urls_with_ports(url_with_ports, get_dtos)
+            port_get_dtos = self.__check_urls_with_ports(url_with_ports, get_dtos)
+
+            self._cache_manager.save_result(port_get_dtos)
 
             end = time.time()
             print(f'Nmap finished in {(end - start) / 60} minutes')
 
-    def __get_url_with_ports(self, bash_outputs) -> set:
+        return port_get_dtos
 
-        report_lines = []
+    def __get_url_with_ports(self, bash_outputs: List[str]) -> set:
+
         url_with_ports = set()
         current_domain = ''
         for line in bash_outputs:
 
             if line.startswith('Nmap scan report for '):
                 current_domain = line.split('Nmap scan report for ', 1)[1].split(' ', 1)[0]
-                report_lines.append(line.replace('\n', ''))
             elif ' open ' in line:
                 port = line.split('/', 1)[0]
                 url_with_ports.add(f'https://{current_domain}:{port}/')
-                report_lines.append(line.replace('\n', ''))
-
-        self._cache_manager.save_result(report_lines)
 
         return url_with_ports
 
@@ -68,7 +67,8 @@ class Nmap:
 
         return bash_outputs
 
-    def __check_urls_with_ports(self, url_with_ports, get_dtos: List[GetRequestDTO]):
+    def __check_urls_with_ports(self, url_with_ports, get_dtos: List[GetRequestDTO]) -> List[GetRequestDTO]:
+        result: List[GetRequestDTO] = []
         for url in url_with_ports:
             response = self._request_handler.handle_request(url,
                                                             except_ssl_action=self.__except_ssl_action,
@@ -76,8 +76,11 @@ class Nmap:
             if response is not None:
                 resp_length = len(response.text)
                 netloc = urlparse(url).netloc
-                if not any(dto for dto in get_dtos if netloc in dto.url and dto.response_length != resp_length):
-                    get_dtos.append(GetRequestDTO(url, response))
+                if not any(dto for dto in get_dtos if netloc in dto.url and dto.response_length != resp_length) and \
+                        not any(dto for dto in result if netloc in dto.url and dto.response_length != resp_length):
+                    result.append(GetRequestDTO(url, response))
+
+        return result
 
     def __except_ssl_action(self, args: []):
         target_url = args[0]
