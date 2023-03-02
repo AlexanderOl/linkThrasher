@@ -51,8 +51,8 @@ class SsrfManager:
         queries = [s for s in parsed.query.split("&") if any(xs in str(s).lower() for xs in self._url_params)]
 
         for query in queries:
-            csrf_payload = self.__get_url_ngrok_payload(url, str(query))
-            payloads_urls.add(csrf_payload)
+            payload = self.__get_url_ngrok_payload(url, str(query))
+            payloads_urls.add(payload)
 
         for url in payloads_urls:
             response = self._request_handler.handle_request(url)
@@ -86,7 +86,9 @@ class SsrfManager:
             for form in dto.form_params:
                 if form.method_type == "POST":
                     for param in form.params:
-                        if any(s in str(param).lower() for s in self._url_params):
+                        if any(s in str(param).lower() for s in self._url_params) or \
+                                str(form.params[param]).startswith('/') or \
+                                str(form.params[param]).startswith('http'):
                             payload = deepcopy(form.params)
                             payload[param] = self.__get_param_ngrok_payload(dto.url, param, "POST")
 
@@ -110,7 +112,9 @@ class SsrfManager:
                         url = f'{parsed.scheme}://{parsed.netloc}/{form.action}?'
 
                     for param in form.params:
-                        if any(s in str(param).lower() for s in self._url_params):
+                        if any(s in str(param).lower() for s in self._url_params) or \
+                                str(form.params[param]).startswith('/') or \
+                                str(form.params[param]).startswith('http'):
                             payload = self.__get_param_ngrok_payload(dto.url, param, "POST")
                             prev_url = url
                             url += (param + f'={payload}&')

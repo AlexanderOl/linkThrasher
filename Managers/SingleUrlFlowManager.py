@@ -24,7 +24,6 @@ class SingleUrlFlowManager:
         self._headers = headers
         self._ngrok_url = os.environ.get('ngrok_url')
         self._max_depth = os.environ.get('max_depth')
-        self._main_domain = os.environ.get('domain')
         self._check_mode = os.environ.get('check_mode')
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -41,12 +40,11 @@ class SingleUrlFlowManager:
         if domain[len(domain) - 1] == '.':
             domain = domain[:-1]
 
-        cookies = ''
-        raw_cookies = ''
-        if self._check_mode == 'U' or self._check_mode == 'D':
-            cookie_manager = CookieManager(self._main_domain)
-            raw_cookies = cookie_manager.get_raw_cookies()
-            cookies = cookie_manager.get_cookies_dict(raw_cookies)
+        main_domain = '.'.join(domain.split('.')[-2:])
+
+        cookie_manager = CookieManager(main_domain)
+        raw_cookies = cookie_manager.get_raw_cookies()
+        cookies = cookie_manager.get_cookies_dict(raw_cookies)
 
         gobuster = Gobuster(domain, self._headers, raw_cookies)
         gobuster.check_single_url(start_url)
@@ -59,7 +57,7 @@ class SingleUrlFlowManager:
         get_hakrawler_dtos = hakrawler.get_requests_dtos(start_url)
         # get_hakrawler_dtos = []
 
-        spider = Spider(domain, cookies, self._headers, self._max_depth, self._main_domain)
+        spider = Spider(domain, cookies, self._headers, self._max_depth, main_domain)
         get_spider_dtos, form_dtos = spider.get_all_links(start_url)
 
         get_hakrawler_dtos.extend(get_spider_dtos)

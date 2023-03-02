@@ -31,7 +31,7 @@ class MultipleUrlFlowManager:
 
             single_url_man = SingleUrlFlowManager(self._headers)
             thread_man = ThreadManager()
-            thread_man.run_all(single_url_man.run, get_dtos, debug=True)
+            thread_man.run_all(single_url_man.run, get_dtos, debug_msg=True)
 
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
