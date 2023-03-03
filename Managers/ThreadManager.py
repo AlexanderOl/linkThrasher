@@ -15,8 +15,8 @@ class ThreadManager:
             if debug_msg:
                 print(f'---===TM msg: {debug_msg}; counter: {count_left} left ===---')
             threads = []
-            for start_url in batch:
-                t = threading.Thread(target=action, args=(start_url,))
+            for item in batch:
+                t = threading.Thread(target=action, args=(item,))
                 t.daemon = True
                 threads.append(t)
 
