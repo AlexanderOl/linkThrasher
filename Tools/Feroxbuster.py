@@ -53,8 +53,11 @@ class Feroxbuster:
         response = self._request_handler.handle_request(url)
         if response is None:
             return
-        if response.status_code != 200:
+
+        if any(dto for dto in self._get_dtos
+               if dto.status_code == response.status_code and dto.response_length != len(response.text)):
             return
+
         get_dto = GetRequestDTO(url, response)
         self._get_dtos.append(get_dto)
         form_dto = self.__find_forms(url, response.text, get_dto)
