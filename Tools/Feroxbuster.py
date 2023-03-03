@@ -39,7 +39,7 @@ class Feroxbuster:
             ready_urls = self.__get_ready_urls(report_lines, already_exist__get_dtos)
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_url, ready_urls)
+            thread_man.run_all(self.__check_url, ready_urls, debug_msg=self._tool_name)
             already_exist__get_dtos.extend(self._get_dtos)
             self._cache_manager.save_result({'get_dtos': self._get_dtos, 'form_dtos': self._form_dtos})
 
@@ -52,6 +52,8 @@ class Feroxbuster:
     def __check_url(self, url):
         response = self._request_handler.handle_request(url)
         if response is None:
+            return
+        if response.status_code != 200:
             return
         get_dto = GetRequestDTO(url, response)
         self._get_dtos.append(get_dto)
