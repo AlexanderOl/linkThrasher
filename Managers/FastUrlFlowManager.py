@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from typing import List, Tuple
 from urllib.parse import urlparse
 
@@ -24,14 +25,43 @@ class FastUrlFlowManager:
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
         self._request_handler = RequestHandler(cookies='', headers=headers)
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        self._target_file_path = 'Targets/fast_urls.txt'
 
     def run(self):
-        file_path = 'Targets/fast_urls.txt'
-        if os.path.exists(file_path):
+        while True:
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: FU starts...')
+            result = self.__process_targets()
+            if not result:
+                print(f'[{datetime.now().strftime("%H:%M:%S")}]: FU finished...')
+                break
+            all_file_path = 'Targets/all_fast_urls.txt'
+            if os.path.exists(all_file_path):
+                target_urls = []
+                can_add_targets = False
+                with open(all_file_path) as infile:
+                    for line in infile:
+                        if can_add_targets:
+                            target_urls.append(line.strip())
+                        if len(target_urls) > 100:
+                            break
+                        if result == line.strip():
+                            can_add_targets = True
+                infile.close()
 
-            raw_urls = list(line.strip() for line in open(file_path))
+                with open(self._target_file_path, "w") as txt_file:
+                    for line in target_urls:
+                        txt_file.write(f"{line}\n")
+                txt_file.close()
+            else:
+                print(f'FU stopped. {all_file_path} is missing')
+                break
+
+    def __process_targets(self):
+
+        if os.path.exists(self._target_file_path):
+            raw_urls = list(line.strip() for line in open(self._target_file_path))
             if len(raw_urls) == 0:
-                print(f'No fast urls found - {file_path}')
+                print(f'No fast urls found - {self._target_file_path}')
                 return
             parsed_parts = urlparse(raw_urls[len(raw_urls) - 1])
             cache_key = parsed_parts.netloc
@@ -57,9 +87,11 @@ class FastUrlFlowManager:
             eyewitness = EyeWitness(f'500_{cache_key}', self._headers)
             eyewitness.visit_errors(errors)
 
+            return raw_urls[len(raw_urls) - 1]
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
-            print(f'{file_path} is missing')
+            print(f'{self._target_file_path} is missing')
+            return
 
     def __get_cached_dtos(self, raw_urls: List[str], cache_key) -> Tuple[List[GetRequestDTO], List[FormRequestDTO]]:
 
