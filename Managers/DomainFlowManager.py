@@ -17,6 +17,7 @@ class DomainFlowManager:
         self._download_path = os.environ.get('download_path')
         self._headers = headers
         self._check_mode = os.environ.get('check_mode')
+        self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def check_domain(self, domain):
@@ -38,11 +39,17 @@ class DomainFlowManager:
 
         subdomain_checker = SubdomainChecker(domain, self._headers)
         start_urls_dtos = subdomain_checker.check_all_subdomains(all_subdomains)
+
+        out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
+        start_urls_dtos = [dto for dto in start_urls_dtos if all(oos not in dto.url for oos in out_of_scope)]
+
         if len(start_urls_dtos) == 0:
             print('No live subdomains found')
             return
         else:
             print(f'Found {len(start_urls_dtos)} start urls')
+
+
 
         nmap = Nmap(domain, self._headers)
         nmap_get_dtos = nmap.check_ports(start_urls_dtos)

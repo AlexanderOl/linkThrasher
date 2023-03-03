@@ -122,6 +122,11 @@ class FastUrlFlowManager:
         response = self._request_handler.handle_request(url)
         if response is None:
             return
+        if any(dto.response_length == len(response.text) and
+               dto.status_code == response.status_code and
+               urlparse(dto.url).netloc == urlparse(url).netloc
+               for dto in self._get_dtos):
+            return
         get_dto = GetRequestDTO(url, response)
         self._get_dtos.append(get_dto)
         form_dto = self.__find_forms(url, response.text, get_dto)
