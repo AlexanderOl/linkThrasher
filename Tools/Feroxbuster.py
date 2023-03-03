@@ -25,6 +25,7 @@ class Feroxbuster:
         self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
         self._request_handler = RequestHandler(cookies, headers)
         self._raw_cookies = raw_cookies
+        self._had_found_too_many_urls = False
 
     def check_single_url(self, url,
                          already_exist__get_dtos: List[GetRequestDTO],
@@ -37,7 +38,7 @@ class Feroxbuster:
             report_lines = self.__run_tool_cmd(url)
 
             ready_urls = self.__get_ready_urls(report_lines, already_exist__get_dtos)
-
+            self._had_found_too_many_urls = len(ready_urls) > 1000
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_url, ready_urls, debug_msg=self._tool_name)
             already_exist__get_dtos.extend(self._get_dtos)
@@ -54,8 +55,13 @@ class Feroxbuster:
         if response is None:
             return
 
-        if any(dto for dto in self._get_dtos
-               if dto.status_code == response.status_code and dto.response_length != len(response.text)):
+        if not self._had_found_too_many_urls and any(dto for dto in self._get_dtos if
+                                                     dto.status_code == response.status_code and
+                                                     dto.response_length != len(response.text)):
+            return
+
+        if self._had_found_too_many_urls and \
+                (str(response.status_code).startswith('2') or str(response.status_code).startswith('5')):
             return
 
         get_dto = GetRequestDTO(url, response)
