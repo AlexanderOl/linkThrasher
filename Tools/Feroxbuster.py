@@ -6,6 +6,8 @@ from typing import List
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
+
+from Common import ProcessKiller
 from Managers.CacheManager import CacheManager
 from Managers.RequestHandler import RequestHandler
 from Managers.ThreadManager import ThreadManager
@@ -122,27 +124,15 @@ class Feroxbuster:
             cmd.append(self._raw_cookies)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) Feroxbuster starts...')
-        proc = subprocess.Popen(["feroxbuster", "--url", url, "--silent",
-                                 "-w", f"{self._app_wordlists_path}directories.txt",
-                                 "-o", output_file, "--insecure"],
-                                stderr=subprocess.PIPE)
-        kill_action = lambda process: process.kill()
-        my_timer = Timer(1200, kill_action, [proc])
+
+        ProcessKiller.run_temp_process(cmd, url)
         report_lines = []
 
-        try:
-            my_timer.start()
-            proc.wait()
-            proc.stderr.read()
-            if os.path.exists(output_file):
-                main_txt_file = open(output_file, 'r')
-                report_lines = main_txt_file.readlines()
-                if os.path.getsize(output_file) == 0:
-                    os.remove(output_file)
-
-        finally:
-            if my_timer.is_alive():
-                my_timer.cancel()
+        if os.path.exists(output_file):
+            main_txt_file = open(output_file, 'r')
+            report_lines = main_txt_file.readlines()
+            if os.path.getsize(output_file) == 0:
+                os.remove(output_file)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) Feroxbuster finished!')
         return report_lines

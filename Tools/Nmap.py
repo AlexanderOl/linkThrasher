@@ -85,6 +85,11 @@ class Nmap:
                                                         except_ssl_action=self.__except_ssl_action,
                                                         except_ssl_action_args=ssl_action_args)
         if response is not None:
+            if str(response.status_code).startswith('3') and 'Location' in response.headers:
+                redirect_url = response.headers['Location']
+                response = self._request_handler.handle_request(redirect_url,
+                                                                except_ssl_action=self.__except_ssl_action,
+                                                                except_ssl_action_args=ssl_action_args)
             resp_length = len(response.text)
             netloc = urlparse(url).netloc
             if not any(dto for dto in self._existing_get_dtos if netloc in dto.url and dto.response_length != resp_length) and \

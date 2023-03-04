@@ -1,8 +1,8 @@
 import os
-import subprocess
 from datetime import datetime
-from threading import Timer
 from urllib.parse import urlparse
+
+from Common import ProcessKiller
 from Managers.CacheManager import CacheManager
 
 
@@ -38,45 +38,28 @@ class Gobuster:
                     cmd_arr.append("-c")
                     cmd_arr.append(self._raw_cookies)
 
-                proc = subprocess.Popen(cmd_arr, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                kill_action = lambda process: process.kill()
-                my_timer = Timer(1200, kill_action, [proc])
-                try:
-                    my_timer.start()
-                    proc.wait()
-                    msg = proc.stderr.read().decode()
-                    print(f'({base_url}); '
-                          f'msg - {msg}; '
-                          f'cmd - gobuster dir -u {base_url} -w {self._app_wordlists_path}ExploitDB.txt --no-error -t 50')
+                proc_msg = ProcessKiller.run_temp_process(cmd_arr, url)
 
-                    if 'Error: ' in msg and ' => ' in msg:
+                if 'Error: ' in proc_msg and ' => ' in proc_msg:
 
-                        status_code = msg.split(' => ', 1)[1].split(' (', 1)[0]
-                        length_to_exclude = msg.split('Length: ', 1)[1].split(')', 1)[0]
-                        if status_code.isdigit() and status_code != '200':
-                            print(f'Status will be excluded: {status_code}')
-                            cmd_arr.append('-b')
-                            cmd_arr.append(f'{status_code},404')
-                        elif length_to_exclude.isdigit():
-                            print(f'Length will be excluded: {length_to_exclude}')
-                            cmd_arr.append('-b')
-                            cmd_arr.append('404')
-                            cmd_arr.append('--exclude-length')
-                            cmd_arr.append(length_to_exclude)
-                        else:
-                            print(f"Gobuster error - {status_code} is not a status code")
-                        my_timer.cancel()
+                    status_code = proc_msg.split(' => ', 1)[1].split(' (', 1)[0]
+                    length_to_exclude = proc_msg.split('Length: ', 1)[1].split(')', 1)[0]
+                    if status_code.isdigit() and status_code != '200':
+                        print(f'Status will be excluded: {status_code}')
+                        cmd_arr.append('-b')
+                        cmd_arr.append(f'{status_code},404')
+                    elif length_to_exclude.isdigit():
+                        print(f'Length will be excluded: {length_to_exclude}')
+                        cmd_arr.append('-b')
+                        cmd_arr.append('404')
+                        cmd_arr.append('--exclude-length')
+                        cmd_arr.append(length_to_exclude)
+                    else:
+                        print(f"Gobuster error - {status_code} is not a status code")
 
-                        proc2 = subprocess.Popen(cmd_arr, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                        kill_action2 = lambda process: process.kill()
-                        my_timer = Timer(600, kill_action2, [proc2])
-                        my_timer.start()
-                        proc2.wait()
-                        final_msg = proc2.stderr.read().decode()
-                        print(f'({base_url}); Final message: {final_msg}; ')
+                    final_msg = ProcessKiller.run_temp_process(cmd_arr, base_url)
 
-                finally:
-                    my_timer.cancel()
+                    print(f'({base_url}); Final message: {final_msg}; ')
 
                 if os.path.exists(output_file) and os.path.getsize(output_file) == 0:
                     os.remove(output_file)

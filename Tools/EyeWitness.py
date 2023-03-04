@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
 
+from Common import ProcessKiller
 from Managers.CacheManager import CacheManager
 from Managers.RequestHandler import RequestHandler
 from Models.GetRequestDTO import GetRequestDTO
@@ -88,10 +89,12 @@ class EyeWitness:
         result_msg = ''
         try:
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
-            command = f'cd /root/Desktop/TOOLs/EyeWitness/Python/; ' \
-                      f'./EyeWitness.py -f {subdomains_filepath} --thread 1 --web -d {counter_directory_path} --timeout 15 --no-prompt'
-            stream = os.popen(command)
-            bash_outputs = stream.readlines()
+
+            cmd_arr = ['cd', '/root/Desktop/TOOLs/EyeWitness/Python/;',
+                       './EyeWitness.py', '-f', subdomains_filepath, '--thread','1', '--web',
+                       '-d', counter_directory_path, '--timeout', '15', '--no-prompt']
+
+            bash_outputs = ProcessKiller.run_temp_process(cmd_arr, self._cache_key)
 
             for line in bash_outputs:
                 encoded_line = self._ansi_escape.sub('', line)
