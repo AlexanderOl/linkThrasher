@@ -17,7 +17,7 @@ def run_temp_process(cmd_arr, cache_key) -> List[str]:
         for line in lines:
             bash_output.append(line.decode().strip())
 
-        print(f'({cache_key}); msg - {msg}; cmd - {" ".join(cmd_arr)}')
+        print(f'({cache_key}); cmd - {" ".join(cmd_arr)}')
         return bash_output
     finally:
         my_timer.cancel()
