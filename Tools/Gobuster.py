@@ -38,8 +38,8 @@ class Gobuster:
                     cmd_arr.append("-c")
                     cmd_arr.append(self._raw_cookies)
 
-                proc_msg = ProcessKiller.run_temp_process(cmd_arr, url)
-
+                bash_output = ProcessKiller.run_temp_process(cmd_arr, url)
+                proc_msg = bash_output[0]
                 if 'Error: ' in proc_msg and ' => ' in proc_msg:
 
                     status_code = proc_msg.split(' => ', 1)[1].split(' (', 1)[0]
@@ -57,9 +57,9 @@ class Gobuster:
                     else:
                         print(f"Gobuster error - {status_code} is not a status code")
 
-                    final_msg = ProcessKiller.run_temp_process(cmd_arr, base_url)
+                    bash_output = ProcessKiller.run_temp_process(cmd_arr, base_url)
 
-                    print(f'({base_url}); Final message: {final_msg}; ')
+                    print(f'({base_url}); Final message: {bash_output[0]}; ')
 
                 if os.path.exists(output_file) and os.path.getsize(output_file) == 0:
                     os.remove(output_file)

@@ -1,9 +1,10 @@
 import subprocess
 from threading import Timer
+from typing import List
 from urllib.parse import urlparse
 
 
-def run_temp_process(cmd_arr, cache_key):
+def run_temp_process(cmd_arr, cache_key) -> List[str]:
 
     proc = subprocess.Popen(cmd_arr, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     kill_action = lambda process: process.kill()
@@ -11,10 +12,13 @@ def run_temp_process(cmd_arr, cache_key):
     try:
         my_timer.start()
         proc.wait()
-        msg = proc.stderr.read().decode()
+        lines = proc.stderr.readlines()
+        bash_output = []
+        for line in lines:
+            bash_output.append(line.decode().strip())
 
         print(f'({cache_key}); msg - {msg}; cmd - {" ".join(cmd_arr)}')
-        return msg
+        return bash_output
     finally:
         my_timer.cancel()
 

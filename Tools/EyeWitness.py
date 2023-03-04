@@ -90,8 +90,8 @@ class EyeWitness:
         try:
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
 
-            cmd_arr = ['cd', '/root/Desktop/TOOLs/EyeWitness/Python/;',
-                       './EyeWitness.py', '-f', subdomains_filepath, '--thread','1', '--web',
+            cmd_arr = ['python', '/root/Desktop/TOOLs/EyeWitness/Python/EyeWitness.py',
+                       '-f', subdomains_filepath, '--thread','1', '--web',
                        '-d', counter_directory_path, '--timeout', '15', '--no-prompt']
 
             bash_outputs = ProcessKiller.run_temp_process(cmd_arr, self._cache_key)
@@ -101,6 +101,7 @@ class EyeWitness:
                 if 'Finished in' in encoded_line:
                     result_msg = encoded_line.replace('\n', '')
                     break
+
         except Exception as inst:
             result_msg = f'EyeWitness Exception ({inst}) Cache Key:({self._cache_key})'
             print(result_msg)
