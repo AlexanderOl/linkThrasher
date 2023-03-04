@@ -55,6 +55,14 @@ class EyeWitness:
 
             self.__cleanup()
 
+            output_file = f'{self._tool_result_dir}/RAW_{self._cache_key}.txt'
+            urls = [f.url for f in dtos]
+
+            txt_file = open(output_file, 'w')
+            for line in urls:
+                    txt_file.write(f"{line}\n")
+            txt_file.close()
+
             duration = datetime.now() - start
             result = f'Eyewitness ({self._cache_key})  finished in {duration.total_seconds()} seconds'
             cache_manager.save_result([result])

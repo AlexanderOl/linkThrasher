@@ -23,8 +23,9 @@ class Nmap:
     def check_ports(self, get_dtos: List[GetRequestDTO]):
         subdomains = list((urlparse(dto.url).netloc for dto in get_dtos))
 
-        port_get_dtos = self._cache_manager.get_saved_result()
-        if not port_get_dtos:
+        self._port_get_dtos = self._cache_manager.get_saved_result()
+        if not self._port_get_dtos:
+            self._port_get_dtos: List[GetRequestDTO] = []
             start = time.time()
 
             bash_outputs = self.__run_nmap_command(subdomains)
@@ -34,12 +35,12 @@ class Nmap:
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_url_with_port, url_with_ports)
 
-            self._cache_manager.save_result(port_get_dtos)
+            self._cache_manager.save_result(self._port_get_dtos)
 
             end = time.time()
             print(f'Nmap finished in {(end - start) / 60} minutes')
 
-        return port_get_dtos
+        return self._port_get_dtos
 
     def __get_url_with_ports(self, bash_outputs: List[str]) -> set:
 
