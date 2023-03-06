@@ -51,10 +51,10 @@ class Nmap:
         for line in bash_outputs:
 
             if line.startswith('Nmap scan report for '):
-                txt_file.write(f"{line}\n")
+                txt_file.write(f"{line}")
                 current_domain = line.split('Nmap scan report for ', 1)[1].split(' ', 1)[0]
             elif ' open ' in line:
-                txt_file.write(f"{line}\n")
+                txt_file.write(f"{line}")
                 port = line.split('/', 1)[0]
                 url_with_ports.add(f'https://{current_domain}:{port}/')
 

@@ -1,6 +1,6 @@
 import os
-from datetime import datetime, date
-import urllib3
+from datetime import datetime
+from urllib3 import exceptions, disable_warnings
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Managers.SubdomainChecker import SubdomainChecker
 from Managers.ThreadManager import ThreadManager
@@ -18,7 +18,7 @@ class DomainFlowManager:
         self._headers = headers
         self._check_mode = os.environ.get('check_mode')
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        disable_warnings(exceptions.InsecureRequestWarning)
 
     def check_domain(self, domain):
         amass = Amass(domain)

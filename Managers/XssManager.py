@@ -15,8 +15,8 @@ class XssManager:
     def __init__(self, domain, cookies='', headers={}):
         self._result = None
         self._domain = domain
-        self._expected = '<poc>'
-        self._injections_to_check = ['syntax', 'xpath', '<poc>', 'internalerror', 'warning: ', 'exception: ']
+        self._expected = ['<poc>', '""poc\'\'']
+        self._injections_to_check = ['syntax', 'xpath', '<poc>', '""poc\'\'', 'internalerror', 'warning: ', 'exception: ']
         self._false_positives = ['malformed request syntax',
                                  'eval|internal|range|reference|syntax|type']
         self._request_handler = RequestHandler(cookies, headers)
@@ -59,14 +59,15 @@ class XssManager:
         for query in queries:
             param_split = query.split('=')
             main_url_split = original_url.split(query)
-            payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={self._expected}{main_url_split[1]}')
+            for exp in self._expected:
+                payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={exp}{main_url_split[1]}')
 
         for url in payloads_urls:
             response = self._request_handler.handle_request(url)
             if response is None:
                 return
-            self.__check_keywords(response, url, InjectionType.Xss_Get, self._expected,
-                                  original_url=original_url)
+
+            self.__check_keywords(response, url, InjectionType.Xss_Get, original_url=original_url)
 
     def __check_form(self, dto: FormRequestDTO):
         for form in dto.form_params:
@@ -76,19 +77,20 @@ class XssManager:
                 for param in form.params:
                     payload = deepcopy(form.params)
                     prev_param = payload[param]
-                    payload[param] = self._expected
+                    for exp in self._expected:
+                        payload[param] = exp
 
-                    response = self._request_handler.handle_request(dto.url, post_data=payload)
-                    if response is None:
-                        continue
+                        response = self._request_handler.handle_request(dto.url, post_data=payload)
+                        if response is None:
+                            continue
 
-                    need_to_discard_payload = self.__check_keywords(response, dto.url,
-                                                                    InjectionType.Xss_PostForm,
-                                                                    post_payload=payload,
-                                                                    original_post_params=form.params)
+                        need_to_discard_payload = self.__check_keywords(response, dto.url,
+                                                                        InjectionType.Xss_PostForm,
+                                                                        post_payload=payload,
+                                                                        original_post_params=form.params)
 
-                    if need_to_discard_payload:
-                        payload[param] = prev_param
+                        if need_to_discard_payload:
+                            payload[param] = prev_param
 
             elif form.method_type == "GET":
                 parsed = urlparse.urlparse(dto.url)
@@ -101,17 +103,18 @@ class XssManager:
                     url = f'{parsed.scheme}://{parsed.netloc}/{form.action}?'
                 for param in form.params:
                     prev_url = url
-                    url += f'{param}={self._expected}&'
+                    for exp in self._expected:
+                        url += f'{param}={exp}&'
 
-                    response = self._request_handler.handle_request(url)
-                    if response is None:
-                        continue
+                        response = self._request_handler.handle_request(url)
+                        if response is None:
+                            continue
 
-                    need_to_discard_payload = self.__check_keywords(response, url, InjectionType.Xss_Get,
-                                                                    original_url=dto.url)
+                        need_to_discard_payload = self.__check_keywords(response, url, InjectionType.Xss_Get,
+                                                                        original_url=dto.url)
 
-                    if response.status_code == 400 or need_to_discard_payload:
-                        url = prev_url
+                        if response.status_code == 400 or need_to_discard_payload:
+                            url = prev_url
             else:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
@@ -142,6 +145,10 @@ class XssManager:
                 mime_type = ''
                 if "Content-Type" in response.headers:
                     mime_type = response.headers["Content-Type"]
+
+                if mime_type != 'text/html':
+                    return
+
                 log_header_msg = f'injFOUND: {keyword};' \
                                  f'MIME-TYPE: {mime_type};' \
                                  f'URL: {url};' \
@@ -163,17 +170,17 @@ class XssManager:
         route_url_payloads = []
 
         for index, part in enumerate(route_parts):
-            payload_part = f'{part}{self._expected}'
-            new_route_parts = deepcopy(route_parts)
-            new_route_parts[index] = payload_part
-            new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
-            route_url_payloads.append(new_url)
+            for exp in self._expected:
+                payload_part = f'{part}{exp}'
+                new_route_parts = deepcopy(route_parts)
+                new_route_parts[index] = payload_part
+                new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
+                route_url_payloads.append(new_url)
 
         for url in route_url_payloads:
             response = self._request_handler.handle_request(url)
             if response is None:
                 return
-            self.__check_keywords(response, url, InjectionType.Xss_Get, self._expected,
-                                  original_url=dto.url)
+            self.__check_keywords(response, url, InjectionType.Xss_Get, original_url=dto.url)
 
         self.__check_params(dto.url)
