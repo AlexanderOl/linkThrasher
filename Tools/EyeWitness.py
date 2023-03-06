@@ -81,7 +81,7 @@ class EyeWitness:
         if os.path.exists(counter_directory_path):
             return f"{counter_directory_path} exits"
 
-        txt_filepath = f"{self._tool_dir}/{self._cache_key}_raw.txt"
+        txt_filepath = f"{self._tool_dir}/{self._cache_key}_temp.txt"
         txt_file = open(txt_filepath, 'w')
         for dto in dtos_batch:
             txt_file.write("%s\n" % str(dto.url))

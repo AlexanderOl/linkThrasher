@@ -142,7 +142,7 @@ class SstiManager:
     def __check_keywords(self, response, url, inj_type: InjectionType, param=None):
         web_page = response.text
         if self._expected in web_page:
-            double_check_url = url.replace('88*88', self._double_check)
+            double_check_url = url.replace('888*888', self._double_check)
             response2 = self._request_handler.handle_request(double_check_url)
             if response2 is None:
                 return
@@ -158,6 +158,7 @@ class SstiManager:
                 print(log_header_msg)
                 return self._result.append(InjectionFoundDTO(inj_type, url, param, web_page, log_header_msg))
         if response.status_code == 500:
-            print(f"SstiManager: 500 status - {url}; DETAILS: {response.text[0:200].strip()}")
+            details = response.text[0:200].replace('\n', '').replace('\r', '').strip()
+            print(f"SstiManager: 500 status - {url}; DETAILS: {details}")
             self.errors_for_eyewitness.append({'url': url, 'response': response})
 
