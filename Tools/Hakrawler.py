@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 from datetime import datetime
 from typing import List
 from Managers.CacheManager import CacheManager
-from Managers.RequestHandler import RequestHandler
+from Common.RequestHandler import RequestHandler
 from Tools.LinkFinder import LinkFinder
 from Models.GetRequestDTO import GetRequestDTO
 

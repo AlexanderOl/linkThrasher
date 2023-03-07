@@ -7,8 +7,8 @@ from bs4 import BeautifulSoup
 
 from Common.ProcessKiller import ProcessKiller
 from Managers.CacheManager import CacheManager
-from Managers.RequestHandler import RequestHandler
-from Managers.ThreadManager import ThreadManager
+from Common.RequestHandler import RequestHandler
+from Common.ThreadManager import ThreadManager
 from Models.FormRequestDTO import FormDetailsDTO, FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
 

@@ -3,15 +3,15 @@ from datetime import datetime
 from typing import List, Tuple
 from urllib.parse import urlparse
 
-import urllib3
+from urllib3 import exceptions, disable_warnings
 from bs4 import BeautifulSoup
 
 from Managers.CacheManager import CacheManager
-from Managers.RequestHandler import RequestHandler
+from Common.RequestHandler import RequestHandler
 from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
 from Managers.SstiManager import SstiManager
-from Managers.ThreadManager import ThreadManager
+from Common.ThreadManager import ThreadManager
 from Managers.XssManager import XssManager
 from Models.FormRequestDTO import FormDetailsDTO, FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
@@ -24,7 +24,7 @@ class FastUrlFlowManager:
         self._tool_name = self.__class__.__name__
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
         self._request_handler = RequestHandler(cookies='', headers=headers)
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        disable_warnings(exceptions.InsecureRequestWarning)
         self._target_file_path = 'Targets/fast_urls.txt'
 
     def run(self):

@@ -4,8 +4,8 @@ from typing import List
 import validators
 from Managers.CacheManager import CacheManager
 from Managers.CookieManager import CookieManager
-from Managers.RequestHandler import RequestHandler
-from Managers.ThreadManager import ThreadManager
+from Common.RequestHandler import RequestHandler
+from Common.ThreadManager import ThreadManager
 from Models.GetRequestDTO import GetRequestDTO
 
 

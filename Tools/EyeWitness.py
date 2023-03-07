@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 from Common.ProcessKiller import ProcessKiller
 from Managers.CacheManager import CacheManager
-from Managers.RequestHandler import RequestHandler
+from Common.RequestHandler import RequestHandler
 from Models.GetRequestDTO import GetRequestDTO
 
 
@@ -81,8 +81,7 @@ class EyeWitness:
         try:
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
 
-            cmd_arr = ['python', '/root/Desktop/TOOLs/EyeWitness/Python/EyeWitness.py',
-                       '-f', subdomains_filepath, '--thread','1', '--web',
+            cmd_arr = ['eyewitness', '-f', subdomains_filepath, '--thread', '1', '--web',
                        '-d', counter_directory_path, '--timeout', '15', '--no-prompt']
 
             pk = ProcessKiller()

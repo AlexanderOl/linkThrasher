@@ -6,3 +6,6 @@ validators
 bs4
 jsbeautifier
 netaddr
+selenium
+fuzzywuzzy
+pyvirtualdisplay

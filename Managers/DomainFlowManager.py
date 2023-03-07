@@ -3,7 +3,7 @@ from datetime import datetime
 from urllib3 import exceptions, disable_warnings
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Managers.SubdomainChecker import SubdomainChecker
-from Managers.ThreadManager import ThreadManager
+from Common.ThreadManager import ThreadManager
 from Tools.Amass import Amass
 from Tools.EyeWitness import EyeWitness
 from Tools.MassDns import MassDns

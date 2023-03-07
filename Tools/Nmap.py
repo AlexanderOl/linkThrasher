@@ -5,8 +5,8 @@ from typing import List
 from urllib.parse import urlparse
 
 from Managers.CacheManager import CacheManager
-from Managers.RequestHandler import RequestHandler
-from Managers.ThreadManager import ThreadManager
+from Common.RequestHandler import RequestHandler
+from Common.ThreadManager import ThreadManager
 from Models.GetRequestDTO import GetRequestDTO
 
 

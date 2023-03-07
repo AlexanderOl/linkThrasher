@@ -4,7 +4,7 @@ from typing import List, Tuple
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from Managers.CacheManager import CacheManager
-from Managers.RequestHandler import RequestHandler
+from Common.RequestHandler import RequestHandler
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO, FormDetailsDTO
 

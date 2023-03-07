@@ -5,8 +5,8 @@ import urllib.parse as urlparse
 from typing import List
 
 from Managers.CacheManager import CacheManager
-from Managers.RequestHandler import RequestHandler
-from Managers.ThreadManager import ThreadManager
+from Common.RequestHandler import RequestHandler
+from Common.ThreadManager import ThreadManager
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO
 from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
@@ -152,9 +152,10 @@ class SstiManager:
                 substr_index = web_page.find(self._expected)
                 start_index = substr_index - 50 if substr_index - 50 > 0 else 0
                 last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
+                details = web_page[start_index:last_index].replace('/n','').replace('/r','').strip()
                 log_header_msg = f'injFOUND: {self._expected};' \
                                  f'URL: {url}' \
-                                 f'DETAILS: {web_page[start_index:last_index].strip()};'
+                                 f'DETAILS: {details};'
                 print(log_header_msg)
                 return self._result.append(InjectionFoundDTO(inj_type, url, param, web_page, log_header_msg))
         if response.status_code == 500:

@@ -6,7 +6,7 @@ from copy import deepcopy
 from typing import List
 
 from Managers.CacheManager import CacheManager
-from Managers.RequestHandler import RequestHandler
+from Common.RequestHandler import RequestHandler
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO
 from Models.InjectionFoundDTO import InjectionFoundDTO, InjectionType

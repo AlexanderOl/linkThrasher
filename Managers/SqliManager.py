@@ -5,8 +5,8 @@ from datetime import datetime
 from typing import List
 
 from Managers.CacheManager import CacheManager
-from Managers.RequestHandler import RequestHandler
-from Managers.ThreadManager import ThreadManager
+from Common.RequestHandler import RequestHandler
+from Common.ThreadManager import ThreadManager
 from Models.FormRequestDTO import FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
 from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
@@ -243,9 +243,10 @@ class SqliManager:
                 substr_index = web_page.find(keyword)
                 start_index = substr_index - 50 if substr_index - 50 > 0 else 0
                 last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
+                details = web_page[start_index:last_index].replace('/n','').replace('/r','').strip()
                 log_header_msg = f'injFOUND: {keyword}; ' \
                                  f'URL: {url_payload}; ' \
-                                 f'DETAILS: {web_page[start_index:last_index].strip()};'
+                                 f'DETAILS: {details};'
                 curr_resp_length = len(web_page)
 
                 if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg

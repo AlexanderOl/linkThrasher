@@ -4,9 +4,9 @@ from datetime import date
 from typing import List
 from urllib.parse import urlparse
 from Managers.CacheManager import CacheManager
-from Managers.RequestHandler import RequestHandler
+from Common.RequestHandler import RequestHandler
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
-from Managers.ThreadManager import ThreadManager
+from Common.ThreadManager import ThreadManager
 from Models.GetRequestDTO import GetRequestDTO
 from Tools.Nuclei import Nuclei
 

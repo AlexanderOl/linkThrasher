@@ -1,9 +1,8 @@
 import os
 from datetime import datetime
 
-import urllib3
 from tldextract import tldextract
-
+from urllib3 import exceptions, disable_warnings
 from Managers.CookieManager import CookieManager
 from Managers.ManualTesting import ManualTesting
 from Managers.Spider import Spider
@@ -25,7 +24,7 @@ class SingleUrlFlowManager:
         self._ngrok_url = os.environ.get('ngrok_url')
         self._max_depth = os.environ.get('max_depth')
         self._check_mode = os.environ.get('check_mode')
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        disable_warnings(exceptions.InsecureRequestWarning)
 
     def run(self, get_dto: GetRequestDTO):
 

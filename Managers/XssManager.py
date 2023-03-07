@@ -4,8 +4,8 @@ import urllib.parse as urlparse
 from datetime import datetime
 from typing import List
 from Managers.CacheManager import CacheManager
-from Managers.RequestHandler import RequestHandler
-from Managers.ThreadManager import ThreadManager
+from Common.RequestHandler import RequestHandler
+from Common.ThreadManager import ThreadManager
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO
 from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
@@ -148,11 +148,11 @@ class XssManager:
 
                 if mime_type != 'text/html':
                     return
-
+                details = web_page[start_index:last_index].replace('/n', '').replace('/r', '').strip()
                 log_header_msg = f'injFOUND: {keyword};' \
                                  f'MIME-TYPE: {mime_type};' \
                                  f'URL: {url};' \
-                                 f'DETAILS: {web_page[start_index:last_index].strip()};'
+                                 f'DETAILS: {details};'
                 curr_resp_length = len(web_page)
                 if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg
                            for dto in self._result):
