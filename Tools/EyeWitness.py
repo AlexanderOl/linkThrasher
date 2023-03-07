@@ -1,11 +1,10 @@
 import os
 import pathlib
-import re
 from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
 
-from Common import ProcessKiller
+from Common.ProcessKiller import ProcessKiller
 from Managers.CacheManager import CacheManager
 from Managers.RequestHandler import RequestHandler
 from Models.GetRequestDTO import GetRequestDTO
@@ -18,7 +17,6 @@ class EyeWitness:
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._chunk_size = 30
         self._tool_dir = f"Results/{self._tool_name}"
-        self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         self._request_handler = RequestHandler('', headers)
 
     def visit_urls(self, urls: set):
@@ -56,17 +54,10 @@ class EyeWitness:
 
             self.__cleanup()
 
-            output_file = f'{self._tool_result_dir}/RAW_{self._cache_key}.txt'
             urls = [f.url for f in dtos]
-
-            txt_file = open(output_file, 'w')
-            for line in urls:
-                    txt_file.write(f"{line}\n")
-            txt_file.close()
-
             duration = datetime.now() - start
             result = f'Eyewitness ({self._cache_key})  finished in {duration.total_seconds()} seconds'
-            cache_manager.save_result([result])
+            cache_manager.save_result(urls)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: {result}')
 
@@ -94,13 +85,10 @@ class EyeWitness:
                        '-f', subdomains_filepath, '--thread','1', '--web',
                        '-d', counter_directory_path, '--timeout', '15', '--no-prompt']
 
-            bash_outputs = ProcessKiller.run_temp_process(cmd_arr, self._cache_key)
-
-            for line in bash_outputs:
-                encoded_line = self._ansi_escape.sub('', line)
-                if 'Finished in' in encoded_line:
-                    result_msg = encoded_line.replace('\n', '')
-                    break
+            pk = ProcessKiller()
+            result_msg = pk.run_temp_process(cmd_arr, self._cache_key)
+            if 'Finished in' in result_msg:
+                result_msg = result_msg.replace('\n', '')
 
         except Exception as inst:
             result_msg = f'EyeWitness Exception ({inst}) Cache Key:({self._cache_key})'

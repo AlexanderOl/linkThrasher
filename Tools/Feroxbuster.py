@@ -1,13 +1,11 @@
 import os
-import subprocess
 from datetime import datetime
-from threading import Timer
 from typing import List
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 
-from Common import ProcessKiller
+from Common.ProcessKiller import ProcessKiller
 from Managers.CacheManager import CacheManager
 from Managers.RequestHandler import RequestHandler
 from Managers.ThreadManager import ThreadManager
@@ -125,7 +123,8 @@ class Feroxbuster:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) Feroxbuster starts...')
 
-        ProcessKiller.run_temp_process(cmd, url)
+        pk = ProcessKiller()
+        pk.run_temp_process(cmd, url)
         report_lines = []
 
         if os.path.exists(output_file):
