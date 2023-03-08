@@ -9,3 +9,4 @@ netaddr
 selenium
 fuzzywuzzy
 pyvirtualdisplay
+python-Levenshtein

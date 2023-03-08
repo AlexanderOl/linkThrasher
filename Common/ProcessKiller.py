@@ -1,3 +1,4 @@
+from datetime import datetime
 import subprocess
 import re
 from threading import Timer
@@ -13,11 +14,13 @@ class ProcessKiller:
         kill_action = lambda process: process.kill()
         my_timer = Timer(1200, kill_action, [proc])
         try:
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({cache_key}); Process started cmd - {" ".join(cmd_arr)}')
+
             my_timer.start()
             proc.wait()
             msg = proc.stderr.read().decode()
 
-            print(f'({cache_key}); msg - {msg}; code - {proc.returncode}; cmd - {" ".join(cmd_arr)}')
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({cache_key}); msg - {msg}; code - {proc.returncode}')
 
             return self._ansi_escape.sub('', msg)
         finally:
