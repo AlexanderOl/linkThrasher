@@ -56,7 +56,7 @@ class EyeWitness:
 
             urls = [f.url for f in dtos]
             duration = datetime.now() - start
-            result = f'Eyewitness ({self._cache_key})  finished in {duration.total_seconds()} seconds'
+            result = f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._cache_key}) Eyewitness finished in {duration.total_seconds()} seconds'
             cache_manager.save_result(urls)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: {result}')
