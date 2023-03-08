@@ -2,26 +2,30 @@ from datetime import datetime
 import subprocess
 import re
 from threading import Timer
+from typing import List
 
 
 class ProcessKiller:
     def __init__(self):
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
-    def run_temp_process(self, cmd_arr, cache_key) -> str:
+    def run_temp_process(self, cmd_arr, cache_key) -> List[str]:
 
         proc = subprocess.Popen(cmd_arr, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        kill_action = lambda process: process.kill()
-        my_timer = Timer(1200, kill_action, [proc])
         try:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({cache_key}); Process started cmd - {" ".join(cmd_arr)}')
 
-            my_timer.start()
-            proc.wait()
-            msg = proc.stderr.read().decode()
+            outs, errs = proc.communicate(timeout=1200)
+            lines = outs.decode().strip().split('\n')
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({cache_key}); code - {proc.returncode}')
 
-            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({cache_key}); msg - {msg}; code - {proc.returncode}')
+            escaped = list([self._ansi_escape.sub('', line) for line in lines])
 
-            return self._ansi_escape.sub('', msg)
-        finally:
-            my_timer.cancel()
+            return escaped
+
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.terminate()
+
+        except Exception as inst:
+            print(f'ProccessKillerException: {inst}')

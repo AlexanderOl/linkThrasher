@@ -28,7 +28,7 @@ class EyeWitness:
         self.visit_dtos(dtos)
 
     def visit_dtos(self, dtos: List[GetRequestDTO]):
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]:({self._cache_key}) Eyewitness will visit {len(dtos)} urls')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._cache_key}) Eyewitness will visit {len(dtos)} urls')
 
         if len(dtos) == 0:
             return
@@ -85,9 +85,10 @@ class EyeWitness:
                        '-d', counter_directory_path, '--timeout', '15', '--no-prompt']
 
             pk = ProcessKiller()
-            result_msg = pk.run_temp_process(cmd_arr, self._cache_key)
-            if 'Finished in' in result_msg:
-                result_msg = result_msg.replace('\n', '')
+            lines = pk.run_temp_process(cmd_arr, self._cache_key)
+            for line in lines:
+                if 'Finished in' in line:
+                    result_msg = line.replace('\n', '')
 
         except Exception as inst:
             result_msg = f'EyeWitness Exception ({inst}) Cache Key:({self._cache_key})'

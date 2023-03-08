@@ -39,27 +39,29 @@ class Gobuster:
                     cmd_arr.append(self._raw_cookies)
 
                 pk = ProcessKiller()
-                proc_msg = pk.run_temp_process(cmd_arr, url)
-                if 'Error: ' in proc_msg and ' => ' in proc_msg:
+                lines = pk.run_temp_process(cmd_arr, url)
+                for proc_msg in lines:
+                    if 'Error: ' in proc_msg and ' => ' in proc_msg:
 
-                    status_code = proc_msg.split(' => ', 1)[1].split(' (', 1)[0]
-                    length_to_exclude = proc_msg.split('Length: ', 1)[1].split(')', 1)[0]
-                    if status_code.isdigit() and status_code != '200':
-                        print(f'Status will be excluded: {status_code}')
-                        cmd_arr.append('-b')
-                        cmd_arr.append(f'{status_code},404')
-                    elif length_to_exclude.isdigit():
-                        print(f'Length will be excluded: {length_to_exclude}')
-                        cmd_arr.append('-b')
-                        cmd_arr.append('404')
-                        cmd_arr.append('--exclude-length')
-                        cmd_arr.append(length_to_exclude)
-                    else:
-                        print(f"Gobuster error - {status_code} is not a status code")
+                        status_code = proc_msg.split(' => ', 1)[1].split(' (', 1)[0]
+                        length_to_exclude = proc_msg.split('Length: ', 1)[1].split(')', 1)[0]
+                        if status_code.isdigit() and status_code != '200':
+                            print(f'Status will be excluded: {status_code}')
+                            cmd_arr.append('-b')
+                            cmd_arr.append(f'{status_code},404')
+                        elif length_to_exclude.isdigit():
+                            print(f'Length will be excluded: {length_to_exclude}')
+                            cmd_arr.append('-b')
+                            cmd_arr.append('404')
+                            cmd_arr.append('--exclude-length')
+                            cmd_arr.append(length_to_exclude)
+                        else:
+                            print(f"Gobuster error - {status_code} is not a status code")
 
-                    proc_msg = pk.run_temp_process(cmd_arr, url)
+                        proc_msgs = pk.run_temp_process(cmd_arr, url)
 
-                    print(f'({base_url}); Final message: {proc_msg}; ')
+                        print(f'({base_url}); Final message: {proc_msgs[0]}; ')
+                        break
 
                 if os.path.exists(output_file) and os.path.getsize(output_file) == 0:
                     os.remove(output_file)
