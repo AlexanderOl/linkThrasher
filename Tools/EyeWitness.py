@@ -77,7 +77,7 @@ class EyeWitness:
         for dto in dtos_batch:
             txt_file.write("%s\n" % str(dto.url))
         txt_file.close()
-
+        result_msg = '<empty>'
         try:
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
 

@@ -30,6 +30,7 @@ class ProcessKiller:
         except subprocess.TimeoutExpired:
             proc.kill()
             proc.terminate()
+            return ['timeout']
 
         except Exception as inst:
             print(f'ProccessKillerException: {inst}')

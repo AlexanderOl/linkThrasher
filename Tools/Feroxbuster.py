@@ -110,12 +110,9 @@ class Feroxbuster:
 
     def __run_tool_cmd(self, url) -> [str]:
 
-        agent = self._headers['User-Agent']
-        header_args = f'"User-Agent:{agent})"'
         output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
         cmd = ["feroxbuster", "--url", url, "--silent",
                "-w", f"{self._app_wordlists_path}directories.txt",
-               "-H", header_args,
                "-o", output_file, "--insecure"]
         if len(self._raw_cookies) > 0:
             cmd.append("-b")
