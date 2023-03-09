@@ -88,7 +88,11 @@ class Spider:
         web_page = response.text
         if 300 <= response.status_code < 400:
             if 'Location' in response.headers:
-                redirect_url = response.headers['Location']
+                redirect = response.headers['Location']
+                if redirect[0] == '/':
+                    redirect_url = f"{url}{redirect}"
+                else:
+                    redirect_url = redirect
                 self.__recursive_search(redirect_url, current_depth - 1)
         elif response.status_code < 300 and len(response.history) <= 2:
             dto = GetRequestDTO(checked_url, response)

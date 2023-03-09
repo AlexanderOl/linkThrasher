@@ -61,7 +61,7 @@ class SubdomainChecker:
             return filtered_subdomains
 
     def __check_subdomain(self, subdomain):
-        url = f'https://{subdomain}/'
+        url = f'https://{subdomain}'
         response = self._request_handler.handle_request(url=url,
                                                         except_ssl_action=self.__except_ssl_action,
                                                         except_ssl_action_args=[url],
@@ -69,7 +69,11 @@ class SubdomainChecker:
 
         if response is not None:
             if str(response.status_code).startswith('3') and 'Location' in response.headers:
-                redirect_url = response.headers['Location']
+                redirect = response.headers['Location']
+                if redirect[0] == '/':
+                    redirect_url = f"{url}{redirect}"
+                else:
+                    redirect_url = redirect
                 response2 = self._request_handler.handle_request(url=redirect_url,
                                                                 except_ssl_action=self.__except_ssl_action,
                                                                 except_ssl_action_args=[url],

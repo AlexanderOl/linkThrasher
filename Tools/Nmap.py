@@ -1,6 +1,7 @@
 import os
 import pathlib
 import time
+from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
 
@@ -38,7 +39,7 @@ class Nmap:
             self._cache_manager.save_result(self._port_get_dtos)
 
             end = time.time()
-            print(f'Nmap finished in {(end - start) / 60} minutes')
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: Nmap finished in {(end - start) / 60} minutes')
 
         return self._port_get_dtos
 
@@ -56,6 +57,8 @@ class Nmap:
             elif ' open ' in line:
                 txt_file.write(f"{line}")
                 port = line.split('/', 1)[0]
+                if port in ['80', '443']:
+                    continue
                 url_with_ports.add(f'https://{current_domain}:{port}/')
 
         txt_file.close()
@@ -86,7 +89,11 @@ class Nmap:
                                                         except_ssl_action_args=ssl_action_args)
         if response is not None:
             if str(response.status_code).startswith('3') and 'Location' in response.headers:
-                redirect_url = response.headers['Location']
+                redirect = response.headers['Location']
+                if redirect[0] == '/':
+                    redirect_url = f"{url}{redirect}"
+                else:
+                    redirect_url = redirect
                 response = self._request_handler.handle_request(redirect_url,
                                                                 except_ssl_action=self.__except_ssl_action,
                                                                 except_ssl_action_args=ssl_action_args)

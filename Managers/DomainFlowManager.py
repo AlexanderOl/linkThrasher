@@ -44,10 +44,10 @@ class DomainFlowManager:
         start_urls_dtos = [dto for dto in start_urls_dtos if all(oos not in dto.url for oos in out_of_scope)]
 
         if len(start_urls_dtos) == 0:
-            print('No live subdomains found')
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) No live urls found')
             return
         else:
-            print(f'Found {len(start_urls_dtos)} start urls')
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) Found {len(start_urls_dtos)} start urls')
 
         nmap = Nmap(domain, self._headers)
         nmap_get_dtos = nmap.check_ports(start_urls_dtos)
