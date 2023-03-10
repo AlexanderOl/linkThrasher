@@ -30,7 +30,7 @@ class Nmap:
             start = time.time()
 
             bash_outputs = self.__run_nmap_command(subdomains)
-            url_with_ports = self.__get_url_with_ports(bash_outputs)
+            url_with_ports = self.__parse_cmd_output(bash_outputs)
 
             self._existing_get_dtos = get_dtos
             thread_man = ThreadManager()
@@ -39,22 +39,29 @@ class Nmap:
             self._cache_manager.save_result(self._port_get_dtos)
 
             end = time.time()
-            print(f'[{datetime.now().strftime("%H:%M:%S")}]: Nmap finished in {(end - start) / 60} minutes')
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: Nmap finished in {(end - start) / 60} minutes. '
+                  f'Found new {len(self._port_get_dtos)} dtos')
 
         return self._port_get_dtos
 
-    def __get_url_with_ports(self, bash_outputs: List[str]) -> set:
+    def __parse_cmd_output(self, bash_outputs: List[str]) -> set:
 
         url_with_ports = set()
         output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
         txt_file = open(output_file, 'w')
         current_domain = ''
+        ips = set()
+        ip_already_added = False
         for line in bash_outputs:
 
             if line.startswith('Nmap scan report for '):
                 txt_file.write(f"{line}")
                 current_domain = line.split('Nmap scan report for ', 1)[1].split(' ', 1)[0]
-            elif ' open ' in line:
+                ip = line.split('(')[0].split(')')[0]
+                ip_already_added = ip in ips
+                if not ip_already_added:
+                    ips.add(ip)
+            elif ' open ' in line and not ip_already_added:
                 txt_file.write(f"{line}")
                 port = line.split('/', 1)[0]
                 if port in ['80', '443']:

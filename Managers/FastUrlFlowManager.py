@@ -70,22 +70,22 @@ class FastUrlFlowManager:
             xss_manager = XssManager(domain=cache_key, headers=self._headers)
             xss_manager.check_get_requests(get_dtos)
             xss_manager.check_form_requests(form_dtos)
-
-            ssrf_manager = SsrfManager(domain=cache_key, headers=self._headers)
-            ssrf_manager.check_get_requests(get_dtos)
-            ssrf_manager.check_form_requests(form_dtos)
-
-            sqli_manager = SqliManager(domain=cache_key, headers=self._headers)
-            sqli_manager.check_get_requests(get_dtos)
-            sqli_manager.check_form_requests(form_dtos)
-
-            ssti_manager = SstiManager(domain=cache_key, headers=self._headers)
-            ssti_manager.check_get_requests(get_dtos)
-            ssti_manager.check_form_requests(form_dtos)
-
-            errors = sqli_manager.errors_for_eyewitness + ssti_manager.errors_for_eyewitness
-            eyewitness = EyeWitness(f'500_{cache_key}', self._headers)
-            eyewitness.visit_errors(errors)
+            #
+            # ssrf_manager = SsrfManager(domain=cache_key, headers=self._headers)
+            # ssrf_manager.check_get_requests(get_dtos)
+            # ssrf_manager.check_form_requests(form_dtos)
+            #
+            # sqli_manager = SqliManager(domain=cache_key, headers=self._headers)
+            # sqli_manager.check_get_requests(get_dtos)
+            # sqli_manager.check_form_requests(form_dtos)
+            #
+            # ssti_manager = SstiManager(domain=cache_key, headers=self._headers)
+            # ssti_manager.check_get_requests(get_dtos)
+            # ssti_manager.check_form_requests(form_dtos)
+            #
+            # errors = sqli_manager.errors_for_eyewitness + ssti_manager.errors_for_eyewitness
+            # eyewitness = EyeWitness(f'500_{cache_key}', self._headers)
+            # eyewitness.visit_errors(errors)
 
             return raw_urls[len(raw_urls) - 1]
         else:

@@ -1,7 +1,6 @@
 requests
 python-dotenv
 urllib3
-tldextract
 validators
 bs4
 jsbeautifier

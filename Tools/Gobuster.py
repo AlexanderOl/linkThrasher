@@ -59,8 +59,8 @@ class Gobuster:
                             print(f"Gobuster error - {status_code} is not a status code")
 
                         proc_msgs = pk.run_temp_process(cmd_arr, url)
-
-                        print(f'({base_url}); Final message: {proc_msgs[0]}; ')
+                        msg = next((s for s in proc_msgs if f'Finished' in s), '<empty>')
+                        print(f'({base_url}); Final message: {msg}; ')
                         break
 
                 if os.path.exists(output_file) and os.path.getsize(output_file) == 0:

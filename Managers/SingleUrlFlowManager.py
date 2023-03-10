@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from tldextract import tldextract
+from urllib.parse import urlparse
 from urllib3 import exceptions, disable_warnings
 from Managers.CookieManager import CookieManager
 from Managers.ManualTesting import ManualTesting
@@ -32,12 +32,7 @@ class SingleUrlFlowManager:
             return
 
         start_url = get_dto.url
-        domain_parts = tldextract.extract(start_url)
-        domain = f'{domain_parts.subdomain}.{domain_parts.domain}.{domain_parts.suffix}'
-        if domain[0] == '.':
-            domain = domain[1:]
-        if domain[len(domain) - 1] == '.':
-            domain = domain[:-1]
+        domain = urlparse(start_url).netloc
 
         main_domain = '.'.join(domain.split('.')[-2:])
 
