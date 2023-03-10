@@ -87,6 +87,8 @@ class FastUrlFlowManager:
             # eyewitness = EyeWitness(f'500_{cache_key}', self._headers)
             # eyewitness.visit_errors(errors)
 
+            last_url = raw_urls[len(raw_urls) - 1]
+            print(f'Last URL was processed - {last_url}')
             return raw_urls[len(raw_urls) - 1]
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
