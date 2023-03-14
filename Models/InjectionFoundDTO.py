@@ -3,6 +3,7 @@ from enum import Enum
 
 class InjectionType(Enum):
     Sqli_Get_Error = 0,
+    Sqli_GetForm_Error = 10,
     Sqli_Get_Time = 1,
     Sqli_PostForm_Error = 2,
     Sqli_PostForm_Time = 3,

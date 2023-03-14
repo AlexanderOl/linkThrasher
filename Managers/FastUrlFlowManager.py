@@ -26,6 +26,8 @@ class FastUrlFlowManager:
         self._request_handler = RequestHandler(cookies='', headers=headers)
         disable_warnings(exceptions.InsecureRequestWarning)
         self._target_file_path = 'Targets/fast_urls.txt'
+        self._res_500_error_key_path = 'Results/500_error_keys.json'
+        self._res_500_error_urls_path = 'Results/500_error_urls.txt'
 
     def run(self):
         while True:
@@ -42,7 +44,7 @@ class FastUrlFlowManager:
                     for line in infile:
                         if can_add_targets:
                             target_urls.append(line.strip())
-                        if len(target_urls) > 100:
+                        if len(target_urls) > 500:
                             break
                         if result == line.strip():
                             can_add_targets = True
@@ -70,20 +72,21 @@ class FastUrlFlowManager:
             xss_manager = XssManager(domain=cache_key, headers=self._headers)
             xss_manager.check_get_requests(get_dtos)
             xss_manager.check_form_requests(form_dtos)
-            #
-            # ssrf_manager = SsrfManager(domain=cache_key, headers=self._headers)
-            # ssrf_manager.check_get_requests(get_dtos)
-            # ssrf_manager.check_form_requests(form_dtos)
-            #
-            # sqli_manager = SqliManager(domain=cache_key, headers=self._headers)
-            # sqli_manager.check_get_requests(get_dtos)
-            # sqli_manager.check_form_requests(form_dtos)
-            #
-            # ssti_manager = SstiManager(domain=cache_key, headers=self._headers)
-            # ssti_manager.check_get_requests(get_dtos)
-            # ssti_manager.check_form_requests(form_dtos)
-            #
-            # errors = sqli_manager.errors_for_eyewitness + ssti_manager.errors_for_eyewitness
+
+            ssrf_manager = SsrfManager(domain=cache_key, headers=self._headers)
+            ssrf_manager.check_get_requests(get_dtos)
+            ssrf_manager.check_form_requests(form_dtos)
+
+            sqli_manager = SqliManager(domain=cache_key, headers=self._headers)
+            sqli_manager.check_get_requests(get_dtos)
+            sqli_manager.check_form_requests(form_dtos)
+
+            ssti_manager = SstiManager(domain=cache_key, headers=self._headers)
+            ssti_manager.check_get_requests(get_dtos)
+            ssti_manager.check_form_requests(form_dtos)
+
+            errors = sqli_manager.errors_for_eyewitness + ssti_manager.errors_for_eyewitness
+            self.__store_errors(errors)
             # eyewitness = EyeWitness(f'500_{cache_key}', self._headers)
             # eyewitness.visit_errors(errors)
 
@@ -94,6 +97,43 @@ class FastUrlFlowManager:
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{self._target_file_path} is missing')
             return
+
+    def __store_errors(self, errors):
+
+        checked_key_urls = {}
+        for error in errors:
+            url = error['url']
+            netloc = urlparse(url).netloc
+            response_length = len(error['response'].text)
+            key = f'{netloc};{response_length}'
+            if key in checked_key_urls:
+                continue
+            else:
+                checked_key_urls[key] = url
+
+        if not os.path.exists(self._res_500_error_key_path):
+            json_file = open(self._res_500_error_key_path, 'w')
+            for key in checked_key_urls.keys():
+                json_file.write(f"{key}\n")
+            json_file.close()
+            txt_file = open(self._res_500_error_urls_path, 'w')
+            for url in checked_key_urls.values():
+                txt_file.write(f"{url}\n")
+            txt_file.close()
+        else:
+            json_file = open(self._res_500_error_key_path, 'r')
+            stored_keys = json_file.readlines()
+            json_file.close()
+            filtered_keys = list([k_v for k_v in checked_key_urls if not k_v in stored_keys])
+            if len(filtered_keys) > 0:
+                json_file = open(self._res_500_error_key_path, 'a')
+                txt_file = open(self._res_500_error_urls_path, 'a')
+                for key in filtered_keys:
+                    json_file.write(f"{key}\n")
+                    txt_file.write(f"{checked_key_urls[key]}\n")
+                json_file.close()
+                txt_file.close()
+
 
     def __get_cached_dtos(self, raw_urls: List[str], cache_key) -> Tuple[List[GetRequestDTO], List[FormRequestDTO]]:
 

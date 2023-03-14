@@ -22,8 +22,8 @@ class SqliManager:
         self._time_based_payloads = [
             {'TruePld': '\'OR(if(1=1,sleep(5),0))OR\'', 'FalsePld': '\'OR(if(1=2,sleep(5),0))OR\'',
              'True2Pld': '\'OR(if(2=2,sleep(5),0))OR\''},
-            {'TruePld': '\'OR(if(1=1,sleep(5),0))--%20-', 'FalsePld': '\'OR(if(1=2,sleep(5),0))--%20-',
-             'True2Pld': 'OR(if(2=2,sleep(5),0))--%20-'},
+            {'TruePld': '"OR(if(1=1,sleep(5),0))OR"', 'FalsePld': '"OR(if(1=2,sleep(5),0))OR"',
+             'True2Pld': '"OR(if(2=2,sleep(5),0))OR"'},
             {'TruePld': '1; WAIT FOR DELAY \'00:00:05', 'FalsePld': '1; WAIT FOR DELAY \'00:00:01',
              'True2Pld': '1; WAIT FOR DELAY \'00:00:08'},
         ]
@@ -114,7 +114,7 @@ class SqliManager:
 
                         self.__check_keywords(response,
                                               url,
-                                              InjectionType.Sqli_Get_Error,
+                                              InjectionType.Sqli_GetForm_Error,
                                               original_url=dto.url)
 
                         url = prev_url
