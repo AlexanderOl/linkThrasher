@@ -85,10 +85,9 @@ class FastUrlFlowManager:
             ssti_manager.check_get_requests(get_dtos)
             ssti_manager.check_form_requests(form_dtos)
 
-            errors = sqli_manager.errors_for_eyewitness + ssti_manager.errors_for_eyewitness
-            self.__store_errors(errors)
-            # eyewitness = EyeWitness(f'500_{cache_key}', self._headers)
-            # eyewitness.visit_errors(errors)
+            errors = sqli_manager.errors_500 + ssti_manager.errors_500
+            err_count = self.__store_errors(errors)
+            print(f'Added {err_count} unique errors')
 
             last_url = raw_urls[len(raw_urls) - 1]
             print(f'Last URL was processed - {last_url}')
@@ -99,6 +98,8 @@ class FastUrlFlowManager:
             return
 
     def __store_errors(self, errors):
+        if len(errors) == 0:
+            return 0
 
         checked_key_urls = {}
         for error in errors:
@@ -120,11 +121,12 @@ class FastUrlFlowManager:
             for url in checked_key_urls.values():
                 txt_file.write(f"{url}\n")
             txt_file.close()
+            return len(checked_key_urls)
         else:
             json_file = open(self._res_500_error_key_path, 'r')
             stored_keys = json_file.readlines()
             json_file.close()
-            filtered_keys = list([k_v for k_v in checked_key_urls if not k_v in stored_keys])
+            filtered_keys = list([k_v for k_v in checked_key_urls if not f'{k_v}\n' in stored_keys])
             if len(filtered_keys) > 0:
                 json_file = open(self._res_500_error_key_path, 'a')
                 txt_file = open(self._res_500_error_urls_path, 'a')
@@ -133,7 +135,7 @@ class FastUrlFlowManager:
                     txt_file.write(f"{checked_key_urls[key]}\n")
                 json_file.close()
                 txt_file.close()
-
+            return len(filtered_keys)
 
     def __get_cached_dtos(self, raw_urls: List[str], cache_key) -> Tuple[List[GetRequestDTO], List[FormRequestDTO]]:
 

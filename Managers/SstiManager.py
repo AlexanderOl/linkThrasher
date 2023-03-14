@@ -14,7 +14,7 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 class SstiManager:
     def __init__(self, domain, cookies='', headers={}):
-        self.errors_for_eyewitness = []
+        self.errors_500 = []
         self._result = None
         self._domain = domain
         self._payloads = ['{{888*888}}', '{888*888}', '@(888*888)']
@@ -161,5 +161,5 @@ class SstiManager:
         if response.status_code == 500:
             details = response.text[0:200].replace('\n', '').replace('\r', '').strip()
             print(f"SstiManager: 500 status - {url}; DETAILS: {details}")
-            self.errors_for_eyewitness.append({'url': url, 'response': response})
+            self.errors_500.append({'url': url, 'response': response})
 

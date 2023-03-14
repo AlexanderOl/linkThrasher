@@ -30,7 +30,7 @@ class SqliManager:
         self._delay_in_seconds = 5
         self._request_handler = RequestHandler(cookies, headers)
         self._injections_to_check = [' syntax', 'xpath', 'internalerror', 'warning: ', 'exception: ']
-        self.errors_for_eyewitness = []
+        self.errors_500 = []
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
@@ -263,7 +263,7 @@ class SqliManager:
                 details = response.text[0:200].replace('\n', '').replace('\r', '').strip()
                 print(f"SqliManager: 500 status - {url_payload}; DETAILS: {details}")
                 need_to_discard_payload = True
-                self.errors_for_eyewitness.append({'url': url_payload, 'response': response})
+                self.errors_500.append({'url': url_payload, 'response': response})
 
         return need_to_discard_payload
 
