@@ -67,8 +67,11 @@ class Nmap:
                 if port in ['80', '443']:
                     continue
                 url_with_ports.add(f'https://{current_domain}:{port}/')
-
         txt_file.close()
+
+        if len(url_with_ports) == 0 and os.path.exists(output_file):
+            os.remove(output_file)
+
         return url_with_ports
 
     def __run_nmap_command(self, subdomains) -> List[str]:
