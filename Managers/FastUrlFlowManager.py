@@ -81,11 +81,12 @@ class FastUrlFlowManager:
             sqli_manager.check_get_requests(get_dtos)
             sqli_manager.check_form_requests(form_dtos)
 
-            ssti_manager = SstiManager(domain=cache_key, headers=self._headers)
-            ssti_manager.check_get_requests(get_dtos)
-            ssti_manager.check_form_requests(form_dtos)
+            # ssti_manager = SstiManager(domain=cache_key, headers=self._headers)
+            # ssti_manager.check_get_requests(get_dtos)
+            # ssti_manager.check_form_requests(form_dtos)
 
-            errors = sqli_manager.errors_500 + ssti_manager.errors_500
+            errors = sqli_manager.errors_500
+            # errors = sqli_manager.errors_500 + ssti_manager.errors_500
             err_count = self.__store_errors(errors)
             print(f'Added {err_count} unique errors')
 

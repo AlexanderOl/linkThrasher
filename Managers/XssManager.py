@@ -58,6 +58,9 @@ class XssManager:
         queries = filter(None, parsed.query.split("&"))
 
         for query in queries:
+            if '=' not in query:
+                print(f'Url: {original_url} query param without "=" {query}')
+                continue
             param_split = query.split('=')
             main_url_split = original_url.split(query)
             for exp in self._expected:

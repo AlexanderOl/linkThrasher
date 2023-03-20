@@ -18,7 +18,8 @@ class SqliManager:
         self._domain = domain
         self._false_positives = ['malformed request syntax',
                                  'eval|internal|range|reference|syntax|type']
-        self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
+        # self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
+        self._error_based_payloads = []
         self._time_based_payloads = [
             {'TruePld': '\'OR(if(1=1,sleep(5),0))OR\'', 'FalsePld': '\'OR(if(1=2,sleep(5),0))OR\'',
              'True2Pld': '\'OR(if(2=2,sleep(5),0))OR\''},
