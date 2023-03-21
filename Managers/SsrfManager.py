@@ -128,7 +128,7 @@ class SsrfManager:
                                 print(msg)
                                 results.append(
                                     InjectionFoundDTO(InjectionType.Open_Redirect_Get, dto.url, param, response.text, msg))
-                            if response.status_code == 400:
+                            if response is not None and response.status_code == 400:
                                 url = prev_url
                 else:
                     print("METHOD TYPE NOT FOUND: " + form.method_type)

