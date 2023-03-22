@@ -123,6 +123,13 @@ class XssManager:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
 
+        if any(form for form in dto.form_params if form.method_type == "POST"):
+            response = self._request_handler.handle_request(dto.parent_url)
+            if response is None:
+                return
+
+            self.__check_keywords(response, dto.parent_url, InjectionType.Xss_Stored)
+
     def __check_keywords(self,
                          response,
                          url,
@@ -137,11 +144,12 @@ class XssManager:
 
                 if original_url is not None:
                     check_response = self._request_handler.handle_request(original_url)
-                else:
+                    if check_response is None or keyword in check_response.text.lower():
+                        return
+                elif original_post_params is not None:
                     check_response = self._request_handler.handle_request(url, post_data=original_post_params)
-
-                if check_response is None or keyword in check_response.text.lower():
-                    return
+                    if check_response is None or keyword in check_response.text.lower():
+                        return
 
                 substr_index = web_page.find(keyword)
                 start_index = substr_index - 50 if substr_index - 50 > 0 else 0

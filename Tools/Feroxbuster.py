@@ -106,7 +106,7 @@ class Feroxbuster:
                             default_value = ''
                         params[param_name] = default_value
                 form_details.append(FormDetailsDTO(action_tag.strip(), params, method))
-            return FormRequestDTO(target_url, form_details, dto.status_code, dto.response_length)
+            return FormRequestDTO(target_url, form_details, dto)
 
     def __run_tool_cmd(self, url) -> [str]:
 

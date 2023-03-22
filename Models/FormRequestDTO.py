@@ -1,5 +1,7 @@
 from typing import List
 
+from Models import GetRequestDTO
+
 
 class FormDetailsDTO:
     def __init__(self, action: str, params: {}, method_type: str):
@@ -24,11 +26,12 @@ class FormDetailsDTO:
 
 
 class FormRequestDTO:
-    def __init__(self, url: str, form_params: List[FormDetailsDTO], status_code: int, response_length: int):
+    def __init__(self, url: str, form_params: List[FormDetailsDTO], parent_get_dto: GetRequestDTO):
         self._url = url
         self._form_params = form_params
-        self._status_code = status_code
-        self._response_length = response_length
+        self._status_code = parent_get_dto.status_code
+        self._response_length = parent_get_dto.response_length
+        self._parent_url = parent_get_dto.url
 
     @property
     def url(self):
@@ -45,6 +48,10 @@ class FormRequestDTO:
     @property
     def form_params(self) -> List[FormDetailsDTO]:
         return self._form_params
+
+    @property
+    def parent_url(self) -> str:
+        return self._parent_url
 
     def __str__(self):
         details = ''

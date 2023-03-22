@@ -11,6 +11,7 @@ class InjectionType(Enum):
     Ssti_PostForm = 5,
     Xss_Get = 6,
     Xss_PostForm = 7,
+    Xss_Stored = 11,
     Open_Redirect_PostForm = 8,
     Open_Redirect_Get = 9
 

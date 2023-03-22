@@ -90,7 +90,7 @@ class Spider:
             if 'Location' in response.headers:
                 redirect = response.headers['Location']
                 if redirect[0] == '/':
-                    redirect_url = f"{url}{redirect}"
+                    redirect_url = f"{target_url}{redirect}"
                 else:
                     redirect_url = redirect
                 self.__recursive_search(redirect_url, current_depth - 1)
@@ -150,7 +150,7 @@ class Spider:
                             default_value = ''
                         params[param_name] = default_value
                 form_details.append(FormDetailsDTO(action_tag, params, method))
-            self._form_DTOs.append(FormRequestDTO(target_url, form_details, dto.status_code, dto.response_length))
+            self._form_DTOs.append(FormRequestDTO(target_url, form_details, dto))
 
     def __check_href(self, href, target_url):
         result = False
