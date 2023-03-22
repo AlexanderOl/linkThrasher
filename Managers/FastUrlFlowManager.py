@@ -167,6 +167,9 @@ class FastUrlFlowManager:
         response = self._request_handler.handle_request(url)
         if response is None:
             return
+        if len(response.text) > 1000000:
+            print(f'Url: ({url}) response too long')
+            return
         if any(dto.response_length == len(response.text) and
                dto.status_code == response.status_code and
                urlparse(dto.url).netloc == urlparse(url).netloc
