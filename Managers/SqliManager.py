@@ -172,6 +172,9 @@ class SqliManager:
         queries = filter(None, parsed.query.split("&"))
 
         for query in queries:
+            if '=' not in query:
+                print(f'Url: {dto.url} query param without "=" {query}')
+                continue
             param_split = query.split('=')
             main_url_split = dto.url.split(query)
             for payloads in self._time_based_payloads:

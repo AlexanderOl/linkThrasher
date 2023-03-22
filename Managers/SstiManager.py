@@ -66,6 +66,9 @@ class SstiManager:
         queries = filter(None, parsed.query.split("&"))
 
         for query in queries:
+            if '=' not in query:
+                print(f'Url: {url} query param without "=" {query}')
+                continue
             param_split = query.split('=')
             main_url_split = url.split(query)
             for payload in self._payloads:
