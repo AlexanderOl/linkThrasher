@@ -72,6 +72,8 @@ class SubdomainChecker:
                 redirect = response.headers['Location']
                 if redirect[0] == '/':
                     redirect_url = f"{url}{redirect}"
+                elif self._domain not in redirect:
+                    return
                 else:
                     redirect_url = redirect
                 response2 = self._request_handler.handle_request(url=redirect_url,
