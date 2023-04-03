@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 from typing import List, Tuple
 from urllib.parse import urlparse
-
 from urllib3 import exceptions, disable_warnings
 from bs4 import BeautifulSoup
 
@@ -80,7 +79,7 @@ class FastUrlFlowManager:
             sqli_manager = SqliManager(domain=cache_key, headers=self._headers)
             sqli_manager.check_get_requests(get_dtos)
             sqli_manager.check_form_requests(form_dtos)
-
+            #
             # ssti_manager = SstiManager(domain=cache_key, headers=self._headers)
             # ssti_manager.check_get_requests(get_dtos)
             # ssti_manager.check_form_requests(form_dtos)

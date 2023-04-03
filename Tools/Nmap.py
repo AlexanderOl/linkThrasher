@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
 
+from Common.ProcessKiller import ProcessKiller
 from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
@@ -20,6 +21,7 @@ class Nmap:
         self._request_handler = RequestHandler(headers, cookies)
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._existing_get_dtos: List[GetRequestDTO] = []
+        self._batch_size = 5
 
     def check_ports(self, get_dtos: List[GetRequestDTO]):
         subdomains = list((urlparse(dto.url).netloc for dto in get_dtos))
@@ -79,19 +81,16 @@ class Nmap:
         if not os.path.exists(nmap_directory):
             os.makedirs(nmap_directory)
         txt_filepath = f"{nmap_directory}/{self._domain}.txt"
-        txt_file = open(txt_filepath, 'a')
+        txt_file = open(txt_filepath, 'w')
         for subdomain in subdomains:
             txt_file.write("%s\n" % str(subdomain))
         txt_file.close()
-
         subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
-        command = f'nmap -sT -T4 -iL {subdomains_filepath} --top-ports 10000'
-        stream = os.popen(command)
-        bash_outputs = stream.readlines()
+        cmd_arr = ['nmap', '-sT', '-T4', '-iL', subdomains_filepath, '--top-ports', '10000']
+        pk = ProcessKiller()
+        bash_outputs = pk.run_temp_process(cmd_arr, f'NMAP runs for - {len(subdomains)} subs')
         os.remove(txt_filepath)
-
         return bash_outputs
-
     def __check_url_with_port(self, url):
         ssl_action_args = [url, False]
         response = self._request_handler.handle_request(url,

