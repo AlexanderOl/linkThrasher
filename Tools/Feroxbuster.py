@@ -142,9 +142,12 @@ class Feroxbuster:
             else:
                 filtered_output.add(line.strip())
 
-        already_exist_urls = (dto.url for dto in already_exist_dtos)
+        already_exist_keys = (dto.key for dto in already_exist_dtos)
         ready_urls = set()
+        checked_keys = set()
         for url in filtered_output:
-            if url not in already_exist_urls and url not in ready_urls:
+            key = GetRequestDTO.get_url_key(url)
+            if key not in already_exist_keys and key not in checked_keys:
+                checked_keys.add(key)
                 ready_urls.add(url)
         return ready_urls

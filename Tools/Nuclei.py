@@ -33,8 +33,9 @@ class Nuclei:
                 counter -= 1
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: left:{counter}, chunk_size:{len(dtos_batch)}')
 
-            main_txt_file = open(self._main_txt_filepath, 'r')
-            report_lines = main_txt_file.readlines()
+            if os.path.exists(self._main_txt_filepath):
+                main_txt_file = open(self._main_txt_filepath, 'r')
+                report_lines = main_txt_file.readlines()
 
             self.__cleanup(len(batches))
 

@@ -137,7 +137,7 @@ class Lfimap:
 
             self._cache_manager.save_result(result)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({start_url})Lfimap found {len(result)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({start_url}) Lfimap found {len(result)} items')
 
     def __create_pwn_payloads(self, get_dtos: List[GetRequestDTO], start_url: str) -> set:
         checked_urls = set()
