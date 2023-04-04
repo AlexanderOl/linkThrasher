@@ -1,4 +1,5 @@
 import os
+import socket
 from typing import List
 
 import validators
@@ -30,11 +31,22 @@ class SubdomainChecker:
             subdomains = set(
                 [subdomain for subdomain in all_subdomains if all(oos not in subdomain for oos in out_of_scope)])
 
-            if len(subdomains) == 0:
-                subdomains.add(f'{self._domain}')
+            checked_ips = set()
+            filtered_subdomains = set()
+            for subdomain in subdomains:
+                try:
+                    ip = socket.gethostbyname(subdomain)
+                    if ip not in checked_ips:
+                        checked_ips.add(ip)
+                        filtered_subdomains.add(subdomain)
+                except socket.gaierror:
+                    continue
+
+            if len(filtered_subdomains) == 0:
+                filtered_subdomains.add(f'{self._domain}')
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_subdomain, subdomains, debug_msg=self._tool_name)
+            thread_man.run_all(self.__check_subdomain, filtered_subdomains, debug_msg=self._tool_name)
 
             if len(self._checked_subdomains) > 2:
                 origin = next((s for s in self._checked_subdomains if f'/{self._domain}/' in s.url), None)

@@ -66,8 +66,10 @@ class SingleUrlFlowManager:
         lfimap.check_dtos(get_dtos, start_url)
 
         if len(get_dtos) == 0:
-            print(f'{domain} request DTOs not found')
+            print(f'[{datetime.now().strftime("%H:%M:%S")}] ({domain}) request DTOs not found')
             return
+        else:
+            print(f'[{datetime.now().strftime("%H:%M:%S")}] ({domain}) will run {len(get_dtos)} dtos')
 
         xss_manager = XssManager(domain, cookies, self._headers)
         xss_manager.check_get_requests(get_dtos)

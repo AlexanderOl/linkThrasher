@@ -25,7 +25,7 @@ class Nuclei:
 
         report_lines = self._cache_manager.get_saved_result()
         if not report_lines and not isinstance(report_lines, List):
-
+            report_lines = []
             batches = list(self.__divide_chunks(get_dtos))
             counter = len(batches)
             for dtos_batch in batches:

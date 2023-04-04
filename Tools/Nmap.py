@@ -27,7 +27,7 @@ class Nmap:
         subdomains = list((urlparse(dto.url).netloc for dto in get_dtos))
 
         self._port_get_dtos = self._cache_manager.get_saved_result()
-        if not self._port_get_dtos:
+        if not self._port_get_dtos and not isinstance(self._port_get_dtos, List):
             self._port_get_dtos: List[GetRequestDTO] = []
             start = time.time()
 
@@ -91,6 +91,7 @@ class Nmap:
         bash_outputs = pk.run_temp_process(cmd_arr, f'NMAP runs for - {len(subdomains)} subs', timeout=600)
         os.remove(txt_filepath)
         return bash_outputs
+
     def __check_url_with_port(self, url):
         ssl_action_args = [url, False]
         response = self._request_handler.handle_request(url,
@@ -108,8 +109,10 @@ class Nmap:
                                                                 except_ssl_action_args=ssl_action_args)
             resp_length = len(response.text)
             netloc = urlparse(url).netloc
-            if not any(dto for dto in self._existing_get_dtos if netloc in dto.url and dto.response_length != resp_length) and \
-                    not any(dto for dto in self._port_get_dtos if netloc in dto.url and dto.response_length != resp_length):
+            if not any(dto for dto in self._existing_get_dtos if
+                       netloc in dto.url and dto.response_length != resp_length) and \
+                    not any(
+                        dto for dto in self._port_get_dtos if netloc in dto.url and dto.response_length != resp_length):
                 if ssl_action_args[1]:
                     url = url.replace('https:', 'http:')
                 self._port_get_dtos.append(GetRequestDTO(url, response))
