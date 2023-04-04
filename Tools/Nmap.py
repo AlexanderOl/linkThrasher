@@ -86,9 +86,9 @@ class Nmap:
             txt_file.write("%s\n" % str(subdomain))
         txt_file.close()
         subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
-        cmd_arr = ['nmap', '-sT', '-T4', '-iL', subdomains_filepath, '--top-ports', '10000']
+        cmd_arr = ['nmap', '-sT', '-T4', '-iL', subdomains_filepath, '--open']
         pk = ProcessKiller()
-        bash_outputs = pk.run_temp_process(cmd_arr, f'NMAP runs for - {len(subdomains)} subs')
+        bash_outputs = pk.run_temp_process(cmd_arr, f'NMAP runs for - {len(subdomains)} subs', timeout=600)
         os.remove(txt_filepath)
         return bash_outputs
     def __check_url_with_port(self, url):

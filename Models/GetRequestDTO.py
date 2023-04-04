@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 class GetRequestDTO:
     def __init__(self, *args):
         self._url = args[0]
-        self._url = self.get_url_key(args[0])
+        self._key = self.get_url_key(args[0])
 
         if len(args) == 1:
             self._response_length = 0
