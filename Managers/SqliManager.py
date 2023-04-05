@@ -4,6 +4,7 @@ from copy import deepcopy
 from datetime import datetime
 from typing import List
 
+from Common.RequestChecker import RequestChecker
 from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
@@ -34,6 +35,7 @@ class SqliManager:
         self._request_handler = RequestHandler(cookies, headers)
         self._injections_to_check = [' syntax', 'xpath', 'internalerror', 'warning: ', 'exception: ']
         self.errors_500 = []
+        self._request_checker = RequestChecker()
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
@@ -75,6 +77,10 @@ class SqliManager:
 
             if form.method_type == "POST":
                 for param in form.params:
+
+                    if self._request_checker.is_form_param_checked(form.method_type, dto.url, param):
+                        continue
+
                     copy_form_params = deepcopy(form.params)
                     prev_param = copy_form_params[param]
                     for payload in self._error_based_payloads:
@@ -107,6 +113,10 @@ class SqliManager:
                     url = f'{parsed.scheme}://{parsed.netloc}/{form.action}?'
 
                 for param in form.params:
+
+                    if self._request_checker.is_form_param_checked(form.method_type, dto.url, param):
+                        continue
+
                     for payload in self._error_based_payloads:
                         prev_url = url
                         url += f'{param}={payload}&'
@@ -132,6 +142,10 @@ class SqliManager:
         route_url_payloads = []
 
         for index, part in enumerate(route_parts):
+
+            if self._request_checker.is_route_checked(dto.url, part):
+                continue
+
             for payload in self._error_based_payloads:
                 payload_part = f'{part}{payload}'
                 new_route_parts = deepcopy(route_parts)
@@ -144,6 +158,8 @@ class SqliManager:
 
         route_time_based_payloads = []
         for index, part in enumerate(route_parts):
+            if self._request_checker.is_route_checked(dto.url, part):
+                continue
             for payloads in self._time_based_payloads:
                 payload_part = f'{part}{payloads["TruePld"]}'
                 new_route_parts = deepcopy(route_parts)
@@ -169,14 +185,15 @@ class SqliManager:
         error_based_payloads_urls = set()
         time_based_payloads_urls = set()
         parsed = urlparse.urlparse(dto.url)
-        queries = filter(None, parsed.query.split("&"))
+        params_key_values = filter(None, parsed.query.split("&"))
 
-        for query in queries:
-            if '=' not in query:
-                print(f'Url: {dto.url} query param without "=" {query}')
+        for param_k_v in params_key_values:
+
+            if self._request_checker.is_get_param_checked(dto.url, param_k_v):
                 continue
-            param_split = query.split('=')
-            main_url_split = dto.url.split(query)
+
+            param_split = param_k_v.split('=')
+            main_url_split = dto.url.split(param_k_v)
             for payloads in self._time_based_payloads:
                 time_based_payloads_urls.add(
                     (f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',

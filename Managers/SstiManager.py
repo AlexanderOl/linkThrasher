@@ -4,6 +4,7 @@ from datetime import datetime
 import urllib.parse as urlparse
 from typing import List
 
+from Common.RequestChecker import RequestChecker
 from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
@@ -22,6 +23,7 @@ class SstiManager:
         self._expected = '788544'
         self._double_check_expected = '603729'
         self._request_handler = RequestHandler(cookies, headers)
+        self._request_checker = RequestChecker()
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
@@ -46,6 +48,10 @@ class SstiManager:
         route_url_payloads = []
 
         for index, part in enumerate(route_parts):
+
+            if self._request_checker.is_route_checked(dto.url, part):
+                continue
+
             for payload in self._payloads:
                 payload_part = f'{part}{payload}'
                 new_route_parts = deepcopy(route_parts)
@@ -63,14 +69,15 @@ class SstiManager:
         url = dto.url
         payloads_urls = set()
         parsed = urlparse.urlparse(url)
-        queries = filter(None, parsed.query.split("&"))
+        params_k_v = filter(None, parsed.query.split("&"))
 
-        for query in queries:
-            if '=' not in query:
-                print(f'Url: {url} query param without "=" {query}')
+        for param_k_v in params_k_v:
+
+            if self._request_checker.is_get_param_checked(dto.url, param_k_v):
                 continue
-            param_split = query.split('=')
-            main_url_split = url.split(query)
+
+            param_split = param_k_v.split('=')
+            main_url_split = url.split(param_k_v)
             for payload in self._payloads:
                 payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
 
@@ -103,6 +110,10 @@ class SstiManager:
 
                 if form.method_type == "POST":
                     for param in form.params:
+
+                        if self._request_checker.is_form_param_checked(form.method_type, dto.url, param):
+                            continue
+
                         for payload in self._payloads:
                             payload_params = deepcopy(form.params)
                             payload_params[param] = payload
@@ -124,6 +135,10 @@ class SstiManager:
                         url = f'{parsed.scheme}://{parsed.netloc}/{form.action}?'
 
                     for param in form.params:
+
+                        if self._request_checker.is_form_param_checked(form.method_type, dto.url, param):
+                            continue
+
                         for payload in self._payloads:
                             prev_url = url
                             url += f'{param}={payload}&'

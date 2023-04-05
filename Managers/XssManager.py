@@ -3,6 +3,8 @@ from copy import deepcopy
 import urllib.parse as urlparse
 from datetime import datetime
 from typing import List
+
+from Common.RequestChecker import RequestChecker
 from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
@@ -21,6 +23,7 @@ class XssManager:
         self._false_positives = ['malformed request syntax',
                                  'eval|internal|range|reference|syntax|type']
         self._request_handler = RequestHandler(cookies, headers)
+        self._request_checker = RequestChecker()
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
 
@@ -55,16 +58,17 @@ class XssManager:
     def __check_params(self, original_url):
         payloads_urls = set()
         parsed = urlparse.urlparse(original_url)
-        queries = filter(None, parsed.query.split("&"))
+        param_key_values = filter([], parsed.query.split("&"))
 
-        for query in queries:
-            if '=' not in query:
-                print(f'Url: {original_url} query param without "=" {query}')
+        for param_k_v in param_key_values:
+
+            if self._request_checker.is_get_param_checked(original_url, param_k_v):
                 continue
-            param_split = query.split('=')
-            main_url_split = original_url.split(query)
+
+            main_url_split = original_url.split(param_k_v)
+            param_key = param_k_v.split('=')[0]
             for exp in self._expected:
-                payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={exp}{main_url_split[1]}')
+                payloads_urls.add(f'{main_url_split[0]}{param_key}={exp}{main_url_split[1]}')
 
         for url in payloads_urls:
             response = self._request_handler.handle_request(url)
@@ -79,6 +83,10 @@ class XssManager:
                 continue
             if form.method_type == "POST":
                 for param in form.params:
+
+                    if self._request_checker.is_form_param_checked(form.method_type, dto.url, param):
+                        continue
+
                     payload = deepcopy(form.params)
                     prev_param = payload[param]
                     for exp in self._expected:
@@ -106,6 +114,10 @@ class XssManager:
                 else:
                     url = f'{parsed.scheme}://{parsed.netloc}/{form.action}?'
                 for param in form.params:
+
+                    if self._request_checker.is_form_param_checked(form.method_type, dto.url, param):
+                        continue
+
                     prev_url = url
                     for exp in self._expected:
                         url += f'{param}={exp}&'
@@ -183,6 +195,10 @@ class XssManager:
         route_url_payloads = []
 
         for index, part in enumerate(route_parts):
+
+            if self._request_checker.is_route_checked(dto.url, part):
+                continue
+
             for exp in self._expected:
                 payload_part = f'{part}{exp}'
                 new_route_parts = deepcopy(route_parts)
