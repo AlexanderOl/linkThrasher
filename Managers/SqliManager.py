@@ -140,7 +140,7 @@ class SqliManager:
         parsed = urllib.parse.urlparse(dto.url)
         route_parts = [r for r in parsed.path.split('/') if r.strip()]
         route_url_payloads = []
-
+        route_time_based_payloads = []
         for index, part in enumerate(route_parts):
 
             if self._request_checker.is_route_checked(dto.url, part):
@@ -153,13 +153,6 @@ class SqliManager:
                 new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
                 route_url_payloads.append(new_url)
 
-        for url in route_url_payloads:
-            self.__send_error_based_request(url, dto)
-
-        route_time_based_payloads = []
-        for index, part in enumerate(route_parts):
-            if self._request_checker.is_route_checked(dto.url, part):
-                continue
             for payloads in self._time_based_payloads:
                 payload_part = f'{part}{payloads["TruePld"]}'
                 new_route_parts = deepcopy(route_parts)
@@ -177,6 +170,9 @@ class SqliManager:
                 true2_new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
 
                 route_time_based_payloads.append([true_new_url, false_new_url, true2_new_url])
+
+        for url in route_url_payloads:
+            self.__send_error_based_request(url, dto)
 
         for payloads in route_time_based_payloads:
             self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
