@@ -26,6 +26,7 @@ class Feroxbuster:
         self._request_handler = RequestHandler(cookies, headers)
         self._raw_cookies = raw_cookies
         self._had_found_too_many_urls = False
+        self._valid_statuses = [200, 204, 301, 302, 307, 308, 401, 403, 405, 500]
 
     def check_single_url(self, url,
                          already_exist__get_dtos: List[GetRequestDTO],
@@ -60,15 +61,15 @@ class Feroxbuster:
                                                      dto.response_length != len(response.text)):
             return
 
-        if self._had_found_too_many_urls and \
-                (str(response.status_code).startswith('2') or str(response.status_code).startswith('5')):
+        if response.status_code not in self._valid_statuses:
             return
 
         get_dto = GetRequestDTO(url, response)
         self._get_dtos.append(get_dto)
-        form_dto = self.__find_forms(url, response.text, get_dto)
-        if form_dto:
-            self._form_dtos.append(form_dto)
+        if response.status_code == 200:
+            form_dto = self.__find_forms(url, response.text, get_dto)
+            if form_dto:
+                self._form_dtos.append(form_dto)
 
     def __find_forms(self, target_url, web_page, dto: GetRequestDTO):
         if '<form' not in web_page:
