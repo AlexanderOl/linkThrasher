@@ -14,7 +14,7 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
 class XssManager:
-    def __init__(self, domain, cookies='', headers={}):
+    def __init__(self, domain, headers, cookies=''):
         self._result = None
         self._domain = domain
         self._expected = ['<poc>', '""poc\'\'']
@@ -58,7 +58,7 @@ class XssManager:
     def __check_params(self, original_url):
         payloads_urls = set()
         parsed = urlparse.urlparse(original_url)
-        param_key_values = filter([], parsed.query.split("&"))
+        param_key_values = filter(None, parsed.query.split("&"))
 
         for param_k_v in param_key_values:
 

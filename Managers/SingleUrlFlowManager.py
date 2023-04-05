@@ -71,7 +71,7 @@ class SingleUrlFlowManager:
         else:
             print(f'[{datetime.now().strftime("%H:%M:%S")}] ({domain}) will run {len(get_dtos)} dtos')
 
-        xss_manager = XssManager(domain, cookies, self._headers)
+        xss_manager = XssManager(domain, self._headers, cookies)
         xss_manager.check_get_requests(get_dtos)
         xss_manager.check_form_requests(form_dtos)
 
