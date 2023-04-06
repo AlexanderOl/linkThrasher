@@ -1,8 +1,5 @@
 from urllib.parse import urlparse
 
-import requests
-from requests.exceptions import SSLError, Timeout, ConnectionError
-
 
 class RequestChecker:
     def __init__(self):

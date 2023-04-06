@@ -57,16 +57,16 @@ class Nmap:
         for line in bash_outputs:
 
             if line.startswith('Nmap scan report for '):
-                txt_file.write(f"{line}")
+                txt_file.write(f"{line}\n")
                 current_domain = line.split('Nmap scan report for ', 1)[1].split(' ', 1)[0]
                 ip = line.split('(')[0].split(')')[0]
                 ip_already_added = ip in ips
                 if not ip_already_added:
                     ips.add(ip)
             elif ' open ' in line and not ip_already_added:
-                txt_file.write(f"{line}")
+                txt_file.write(f"{line}\n")
                 port = line.split('/', 1)[0]
-                if port in ['80', '443']:
+                if port in ['80', '8080', '8443', '443']:
                     continue
                 url_with_ports.add(f'https://{current_domain}:{port}/')
         txt_file.close()
