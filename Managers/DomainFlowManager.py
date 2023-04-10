@@ -29,9 +29,9 @@ class DomainFlowManager:
         subfinder_subdomains = subfinder.get_subdomains()
         # subfinder_subdomains = set()
 
-        # massdns = MassDns(domain)
-        # massdns_subdomains = massdns.get_subdomains()
-        massdns_subdomains = set()
+        massdns = MassDns(domain)
+        massdns_subdomains = massdns.get_subdomains()
+        # massdns_subdomains = set()
 
         all_subdomains = amass_subdomains \
             .union(subfinder_subdomains) \
@@ -43,11 +43,11 @@ class DomainFlowManager:
         out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
         start_urls_dtos = [dto for dto in start_urls_dtos if all(oos not in dto.url for oos in out_of_scope)]
 
-        # if len(start_urls_dtos) == 0:
-        #     print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) No live urls found')
-        #     return
-        # else:
-        #     print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) Found {len(start_urls_dtos)} start urls')
+        if len(start_urls_dtos) == 0:
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) No live urls found')
+            return
+        else:
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) Found {len(start_urls_dtos)} start urls')
 
         nmap = Nmap(domain, self._headers)
         nmap_get_dtos = nmap.check_ports(start_urls_dtos)
