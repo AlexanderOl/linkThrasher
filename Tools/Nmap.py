@@ -66,7 +66,7 @@ class Nmap:
             elif ' open ' in line and not ip_already_added:
                 txt_file.write(f"{line}\n")
                 port = line.split('/', 1)[0]
-                if port in ['80', '8080', '8443', '443']:
+                if port in ['80', '443']:
                     continue
                 url_with_ports.add(f'https://{current_domain}:{port}/')
         txt_file.close()
