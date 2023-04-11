@@ -21,6 +21,7 @@ class SubdomainChecker:
         cookies = cookie_manager.get_cookies_dict(raw_cookies)
         self._request_handler = RequestHandler(cookies, headers)
         self._out_of_scope_domains = os.environ.get("out_of_scope_domains")
+        self._checked_ips = set()
 
     def check_all_subdomains(self, all_subdomains: set) -> List[GetRequestDTO]:
         cache_manager = CacheManager(self._tool_name, self._domain)
@@ -31,22 +32,11 @@ class SubdomainChecker:
             subdomains = set(
                 [subdomain for subdomain in all_subdomains if all(oos not in subdomain for oos in out_of_scope)])
 
-            checked_ips = set()
-            filtered_subdomains = set()
-            for subdomain in subdomains:
-                try:
-                    ip = socket.gethostbyname(subdomain)
-                    if ip not in checked_ips:
-                        checked_ips.add(ip)
-                        filtered_subdomains.add(subdomain)
-                except socket.gaierror:
-                    continue
-
-            if len(filtered_subdomains) == 0:
-                filtered_subdomains.add(f'{self._domain}')
-
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_subdomain, filtered_subdomains, debug_msg=self._tool_name)
+            thread_man.run_all(self.__check_subdomain, subdomains, debug_msg=self._tool_name)
+            
+            if len(self._checked_subdomains) == 0:
+                self.__check_subdomain(self._domain)
 
             if len(self._checked_subdomains) > 2:
                 origin = next((s for s in self._checked_subdomains if f'/{self._domain}/' in s.url), None)
@@ -73,6 +63,14 @@ class SubdomainChecker:
             return filtered_subdomains
 
     def __check_subdomain(self, subdomain):
+
+        try:
+            ip = socket.gethostbyname(subdomain)
+            if ip not in self._checked_ips:
+                self._checked_ips.add(ip)
+        except socket.gaierror:
+            return
+
         url = f'https://{subdomain}'
         response = self._request_handler.handle_request(url=url,
                                                         except_ssl_action=self.__except_ssl_action,
@@ -89,9 +87,9 @@ class SubdomainChecker:
                 else:
                     redirect_url = redirect
                 response2 = self._request_handler.handle_request(url=redirect_url,
-                                                                except_ssl_action=self.__except_ssl_action,
-                                                                except_ssl_action_args=[url],
-                                                                timeout=5)
+                                                                 except_ssl_action=self.__except_ssl_action,
+                                                                 except_ssl_action_args=[url],
+                                                                 timeout=5)
                 if response2 is not None and all(dto.url != redirect_url for dto in self._checked_subdomains):
                     self._checked_subdomains.append(GetRequestDTO(redirect_url, response2))
             else:
