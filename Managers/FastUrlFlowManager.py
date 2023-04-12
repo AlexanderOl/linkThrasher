@@ -79,13 +79,13 @@ class FastUrlFlowManager:
             sqli_manager = SqliManager(domain=cache_key, headers=self._headers)
             sqli_manager.check_get_requests(get_dtos)
             sqli_manager.check_form_requests(form_dtos)
-            #
-            # ssti_manager = SstiManager(domain=cache_key, headers=self._headers)
-            # ssti_manager.check_get_requests(get_dtos)
-            # ssti_manager.check_form_requests(form_dtos)
 
-            errors = sqli_manager.errors_500
-            # errors = sqli_manager.errors_500 + ssti_manager.errors_500
+            ssti_manager = SstiManager(domain=cache_key, headers=self._headers)
+            ssti_manager.check_get_requests(get_dtos)
+            ssti_manager.check_form_requests(form_dtos)
+
+            # errors = sqli_manager.errors_500
+            errors = sqli_manager.errors_500 + ssti_manager.errors_500
             err_count = self.__store_errors(errors)
             print(f'Added {err_count} unique errors')
 
@@ -150,7 +150,7 @@ class FastUrlFlowManager:
             filtered_urls = [url for url in raw_urls if all(oos not in url for oos in out_of_scope)]
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_url, filtered_urls)
+            thread_man.run_all(self.__check_url, filtered_urls, debug_msg='check_url')
 
             cache_manager.save_result(
                 {'get_dtos': self._get_dtos, 'form_dtos': self._form_dtos},
@@ -163,7 +163,7 @@ class FastUrlFlowManager:
         return self._get_dtos, self._form_dtos
 
     def __check_url(self, url):
-        response = self._request_handler.handle_request(url)
+        response = self._request_handler.handle_request(url, timeout=3)
         if response is None:
             return
         if len(response.text) > 1000000:
