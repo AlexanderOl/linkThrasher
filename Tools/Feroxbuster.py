@@ -56,9 +56,11 @@ class Feroxbuster:
         if response is None:
             return
 
-        if not self._had_found_too_many_urls and any(dto for dto in self._get_dtos if
-                                                     dto.status_code == response.status_code and
-                                                     dto.response_length != len(response.text)):
+        if self._had_found_too_many_urls and (
+                any(dto for dto in self._get_dtos if
+                    dto.status_code == response.status_code and
+                    dto.response_length != len(response.text)) or
+                'captcha' in response.text.lower()):
             return
 
         if response.status_code not in self._valid_statuses:
