@@ -46,8 +46,8 @@ class SqliManager:
             self._result: List[InjectionFoundDTO] = []
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_url, dtos)
-            thread_man.run_all(self.__check_get_params, dtos)
+            thread_man.run_all(self.__check_url, dtos, debug_msg='SqliManager/Get/Route')
+            thread_man.run_all(self.__check_get_params, dtos, debug_msg='SqliManager/Get/Params')
 
             cache_manager.save_result(self._result, has_final_result=True)
 
@@ -63,7 +63,7 @@ class SqliManager:
             self._result: List[InjectionFoundDTO] = []
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_form, form_dtos)
+            thread_man.run_all(self.__check_form, form_dtos, debug_msg='SqliManager/Form')
 
             cache_manager.save_result(self._result, has_final_result=True)
 

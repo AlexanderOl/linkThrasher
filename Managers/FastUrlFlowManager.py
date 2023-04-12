@@ -160,6 +160,10 @@ class FastUrlFlowManager:
             self._get_dtos = list([dto for dto in dtos['get_dtos'] if all(oos not in dto.url for oos in out_of_scope)])
             self._form_dtos = list(
                 [dto for dto in dtos['form_dtos'] if all(oos not in dto.url for oos in out_of_scope)])
+
+        print(
+            f'[{datetime.now().strftime("%H:%M:%S")}]: FastUrlFlowManager found '
+            f'{len(self._get_dtos)} get_dtos and {len(self._form_dtos)} form_dtos')
         return self._get_dtos, self._form_dtos
 
     def __check_url(self, url):
