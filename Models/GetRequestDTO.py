@@ -1,9 +1,13 @@
+from typing import List
 from urllib.parse import urlparse
 
 
 class GetRequestDTO:
     def __init__(self, *args):
         self._url = args[0]
+        parsed = urlparse(self._url)
+        self._query_params = list([r for r in parsed.query.split('&') if r.strip()])
+
         self._key = self.get_url_key(args[0])
 
         if len(args) == 1:
@@ -30,9 +34,15 @@ class GetRequestDTO:
                 query_params.append(splitted[1])
         key = f'{parsed.netloc};{parsed.path};{"&".join(query_params)}'
         return key
+
+    @property
+    def query_params(self) -> List[str]:
+        return self._query_params
+
     @property
     def key(self) -> str:
         return self._key
+
     @property
     def url(self) -> str:
         return self._url

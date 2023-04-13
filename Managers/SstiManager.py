@@ -35,7 +35,9 @@ class SstiManager:
 
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_url, dtos, debug_msg='SstiManager/Get/Route')
-            thread_man.run_all(self.__check_get_params, dtos, debug_msg='SstiManager/Get/Param')
+
+            dtos_with_params = list([dto for dto in dtos if len(dto.query_params) > 0])
+            thread_man.run_all(self.__check_get_params, dtos_with_params, debug_msg='SstiManager/Get/Param')
 
             cache_manager.save_result(self._result, has_final_result=True)
 
@@ -43,21 +45,7 @@ class SstiManager:
 
     def __check_url(self, dto: GetRequestDTO):
 
-        parsed = urllib.parse.urlparse(dto.url)
-        route_parts = [r for r in parsed.path.split('/') if r.strip()]
-        route_url_payloads = []
-
-        for index, part in enumerate(route_parts):
-
-            if self._request_checker.is_route_checked(dto.url, part):
-                continue
-
-            for payload in self._payloads:
-                payload_part = f'{part}{payload}'
-                new_route_parts = deepcopy(route_parts)
-                new_route_parts[index] = payload_part
-                new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
-                route_url_payloads.append(new_url)
+        route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._payloads)
 
         for url in route_url_payloads:
             response = self._request_handler.handle_request(url)
@@ -66,20 +54,8 @@ class SstiManager:
             self.__check_keywords(response, url, InjectionType.Ssti_Get)
 
     def __check_get_params(self, dto: GetRequestDTO):
-        url = dto.url
-        payloads_urls = set()
-        parsed = urlparse.urlparse(url)
-        params_k_v = filter(None, parsed.query.split("&"))
 
-        for param_k_v in params_k_v:
-
-            if self._request_checker.is_get_param_checked(dto.url, param_k_v):
-                continue
-
-            param_split = param_k_v.split('=')
-            main_url_split = url.split(param_k_v)
-            for payload in self._payloads:
-                payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
+        payloads_urls = self._request_checker.get_param_payloads(dto.url, self._payloads)
 
         for url in payloads_urls:
             response = self._request_handler.handle_request(url)

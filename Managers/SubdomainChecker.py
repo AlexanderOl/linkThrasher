@@ -68,6 +68,8 @@ class SubdomainChecker:
             ip = socket.gethostbyname(subdomain)
             if ip not in self._checked_ips:
                 self._checked_ips.add(ip)
+            else:
+                return
         except socket.gaierror:
             return
 

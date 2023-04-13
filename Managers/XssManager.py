@@ -34,7 +34,8 @@ class XssManager:
             self._result: List[InjectionFoundDTO] = []
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_route_params, dtos, debug_msg='XssManager/Get')
+            dtos_with_params = list([dto for dto in dtos if len(dto.query_params) > 0])
+            thread_man.run_all(self.__check_route_params, dtos_with_params, debug_msg='XssManager/Get')
 
             cache_manager.save_result(self._result, has_final_result=True)
 
@@ -56,19 +57,8 @@ class XssManager:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found FORM XSS: {len(self._result)}')
 
     def __check_params(self, original_url):
-        payloads_urls = set()
-        parsed = urlparse.urlparse(original_url)
-        param_key_values = filter(None, parsed.query.split("&"))
 
-        for param_k_v in param_key_values:
-
-            if self._request_checker.is_get_param_checked(original_url, param_k_v):
-                continue
-
-            main_url_split = original_url.split(param_k_v)
-            param_key = param_k_v.split('=')[0]
-            for exp in self._expected:
-                payloads_urls.add(f'{main_url_split[0]}{param_key}={exp}{main_url_split[1]}')
+        payloads_urls = self._request_checker.get_param_payloads(original_url, self._injections_to_check)
 
         for url in payloads_urls:
             response = self._request_handler.handle_request(url)
@@ -190,21 +180,8 @@ class XssManager:
         return need_to_discard_payload
 
     def __check_route_params(self, dto: GetRequestDTO):
-        parsed = urllib.parse.urlparse(dto.url)
-        route_parts = [r for r in parsed.path.split('/') if r.strip()]
-        route_url_payloads = []
 
-        for index, part in enumerate(route_parts):
-
-            if self._request_checker.is_route_checked(dto.url, part):
-                continue
-
-            for exp in self._expected:
-                payload_part = f'{part}{exp}'
-                new_route_parts = deepcopy(route_parts)
-                new_route_parts[index] = payload_part
-                new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
-                route_url_payloads.append(new_url)
+        route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._injections_to_check)
 
         for url in route_url_payloads:
             response = self._request_handler.handle_request(url)
