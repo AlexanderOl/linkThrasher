@@ -49,16 +49,3 @@ if __name__ == '__main__':
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{file_path} is missing')
 
-# if __name__ == '__main__':
-#     proc = subprocess.Popen(["curl", "https://8c9d-91-196-101-94.eu.ngrok.io/sss"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-#     # proc.wait()
-#     # err_message2 = proc.stderr.read().decode()
-#     kill = lambda process: process.kill()
-#     my_timer = Timer(1200, kill, [proc])
-#     try:
-#         my_timer.start()
-#         proc.wait()
-#         err_message = proc.stderr.read().decode()
-#
-#     finally:
-#         my_timer.cancel()

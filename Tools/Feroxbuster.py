@@ -114,9 +114,7 @@ class Feroxbuster:
     def __run_tool_cmd(self, url) -> [str]:
 
         output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
-        cmd = ["feroxbuster", "--url", url, "--silent",
-               "-w", f"{self._app_wordlists_path}directories.txt",
-               "-o", output_file, "--insecure"]
+        cmd = ["feroxbuster", "--url", url, "-w", f"{self._app_wordlists_path}directories.txt", "-o", output_file, "--insecure"]
         if len(self._raw_cookies) > 0:
             cmd.append("-b")
             cmd.append(self._raw_cookies)
@@ -139,11 +137,14 @@ class Feroxbuster:
     def __get_ready_urls(self, report_lines: [], already_exist_dtos: List[GetRequestDTO]) -> set:
         filtered_output = set()
         for line in report_lines:
-            if '=>' in line:
-                redirected_url = line.split('=>', 1)[1]
+            if ' => ' in line:
+                redirected_url = line.split(' => ', 1)[1]
+                filtered_output.add(redirected_url.strip())
+            elif '        0c ' in line:
+                redirected_url = line.split('        0c ', 1)[1]
                 filtered_output.add(redirected_url.strip())
             else:
-                filtered_output.add(line.strip())
+                print(f'FEROXBUSTER error! Unable to parse - ({line})')
 
         already_exist_keys = (dto.key for dto in already_exist_dtos)
         ready_urls = set()
