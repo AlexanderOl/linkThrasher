@@ -114,7 +114,8 @@ class Feroxbuster:
     def __run_tool_cmd(self, url) -> [str]:
 
         output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
-        cmd = ["feroxbuster", "--url", url, "-w", f"{self._app_wordlists_path}directories.txt", "-o", output_file, "--insecure"]
+        cmd = ["feroxbuster", "--url", url, "-w", f"{self._app_wordlists_path}directories.txt", "-o", output_file,
+               "--insecure", "--no-state"]
         if len(self._raw_cookies) > 0:
             cmd.append("-b")
             cmd.append(self._raw_cookies)

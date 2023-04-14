@@ -16,7 +16,7 @@ class Nuclei:
         self._raw_cookies = raw_cookies
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._cache_manager = CacheManager(self._tool_name, cache_key)
-        self._expected = ['[medium]', '[high]', '[critical]', '[unknown]', '[network]']
+        self._expected = ['[info]', '[medium]', '[high]', '[critical]', '[unknown]', '[network]']
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         self._chunk_size = 30
         self._main_txt_filepath = f"{self._tool_result_dir}/MAIN_{self._cache_key}.txt"
