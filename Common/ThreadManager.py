@@ -13,7 +13,7 @@ class ThreadManager:
         count_left = len(list(items)) / int(self.batch_size)
         for batch in url_batches:
             if debug_msg:
-                print(f'---===TM msg: {debug_msg}; counter: {count_left} left ===---')
+                print(f'---===TM msg: {debug_msg}; counter: {round(count_left, 1)} left ===---')
             threads = []
             for item in batch:
                 t = threading.Thread(target=action, args=(item,))

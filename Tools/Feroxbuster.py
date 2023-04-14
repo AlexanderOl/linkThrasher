@@ -59,7 +59,7 @@ class Feroxbuster:
         if self._had_found_too_many_urls and (
                 any(dto for dto in self._get_dtos if
                     dto.status_code == response.status_code and
-                    dto.response_length != len(response.text)) or
+                    dto.response_length == len(response.text)) or
                 'captcha' in response.text.lower()):
             return
 
