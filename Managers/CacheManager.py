@@ -5,10 +5,10 @@ from datetime import datetime
 
 
 class CacheManager:
-    def __init__(self, tool_name, domain):
+    def __init__(self, tool_name, domain:str):
         self._tool_result_dir = f"Results/{tool_name}"
-        self._result_filepath = f"{self._tool_result_dir}/{domain}.json"
-        self._txt_result_filepath = f"{self._tool_result_dir}/{domain}.txt"
+        self._result_filepath = f"{self._tool_result_dir}/{domain.replace(':','_')}.json"
+        self._txt_result_filepath = f"{self._tool_result_dir}/{domain.replace(':','_')}.txt"
 
     @staticmethod
     def clear_all():
