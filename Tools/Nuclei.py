@@ -92,7 +92,7 @@ class Nuclei:
                   f"-t /root/Desktop/TOOLs/nuclei-templates/cves " \
                   f"-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
                   f"-t /root/Desktop/TOOLs/nuclei-templates/miscellaneous " \
-                  f"-t /root/Desktop/TOOLs/nuclei-templates/cves/2022/CVE-2022-45362.yaml"
+                  f"-et /root/Desktop/TOOLs/nuclei-templates/cves/2022/CVE-2022-45362.yaml"
 
         stream = os.popen(command)
         bash_outputs = stream.readlines()
