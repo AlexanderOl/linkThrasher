@@ -41,7 +41,9 @@ class MassDns:
 
             os.remove(massdns_result_file)
             cache_manager.save_result(subdomains)
-
+        if len(subdomains) > 1000000:
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} failed! Found too many items.')
+            return set()
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} found {len(subdomains)} items')
         return subdomains
 
