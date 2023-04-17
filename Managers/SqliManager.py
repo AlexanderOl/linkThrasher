@@ -47,7 +47,7 @@ class SqliManager:
             self._result: List[InjectionFoundDTO] = []
 
             thread_man = ThreadManager()
-            # thread_man.run_all(self.__check_url, dtos, debug_msg='SqliManager/Get/Route')
+            thread_man.run_all(self.__check_url, dtos, debug_msg='SqliManager/Get/Route')
             dtos_with_params = list([dto for dto in dtos if len(dto.query_params) > 0])
             thread_man.run_all(self.__check_get_params, dtos_with_params, debug_msg='SqliManager/Get/Params')
 

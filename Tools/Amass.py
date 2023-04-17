@@ -2,6 +2,7 @@ import os
 import re
 from datetime import datetime
 
+from Common.ProcessKiller import ProcessKiller
 from Managers.CacheManager import CacheManager
 
 
@@ -15,10 +16,12 @@ class Amass:
         cache_manager = CacheManager(self._tool_name, self._domain)
         subdomains = cache_manager.get_saved_result()
         if not subdomains and not isinstance(subdomains, set):
+
+            cmd_arr = ['amass', 'enum', '-d', self._domain]
+            pk = ProcessKiller()
+            bash_outputs = pk.run_temp_process(cmd_arr, self._domain, timeout=600)
+
             subdomains = set()
-            command = f'amass enum -d {self._domain}'
-            stream = os.popen(command)
-            bash_outputs = stream.readlines()
             for line in bash_outputs:
                 encoded_line = self._ansi_escape.sub('', line)
                 if self._domain in encoded_line:

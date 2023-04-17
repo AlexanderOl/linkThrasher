@@ -34,8 +34,9 @@ class XssManager:
             self._result: List[InjectionFoundDTO] = []
 
             thread_man = ThreadManager()
+            thread_man.run_all(self.__check_route, dtos, debug_msg='XssManager/Get/Route')
             dtos_with_params = list([dto for dto in dtos if len(dto.query_params) > 0])
-            thread_man.run_all(self.__check_route_params, dtos_with_params, debug_msg='XssManager/Get')
+            thread_man.run_all(self.__check_params, dtos_with_params, debug_msg='XssManager/Get/Param')
 
             cache_manager.save_result(self._result, has_final_result=True)
 
@@ -56,16 +57,16 @@ class XssManager:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found FORM XSS: {len(self._result)}')
 
-    def __check_params(self, original_url):
+    def __check_params(self, dto: GetRequestDTO):
 
-        payloads_urls = self._request_checker.get_param_payloads(original_url, self._injections_to_check)
+        payloads_urls = self._request_checker.get_param_payloads(dto.url, self._injections_to_check)
 
         for url in payloads_urls:
             response = self._request_handler.handle_request(url)
             if response is None:
                 return
 
-            self.__check_keywords(response, url, InjectionType.Xss_Get, original_url=original_url)
+            self.__check_keywords(response, url, InjectionType.Xss_Get, original_url=dto.url)
 
     def __check_form(self, dto: FormRequestDTO):
         for form in dto.form_params:
@@ -179,7 +180,7 @@ class XssManager:
 
         return need_to_discard_payload
 
-    def __check_route_params(self, dto: GetRequestDTO):
+    def __check_route(self, dto: GetRequestDTO):
 
         route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._injections_to_check)
 
@@ -189,4 +190,4 @@ class XssManager:
                 return
             self.__check_keywords(response, url, InjectionType.Xss_Get, original_url=dto.url)
 
-        self.__check_params(dto.url)
+
