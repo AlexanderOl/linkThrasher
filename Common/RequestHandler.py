@@ -1,4 +1,5 @@
 import requests
+import validators
 from requests.exceptions import SSLError, Timeout, ConnectionError
 
 
@@ -11,6 +12,10 @@ class RequestHandler:
                        timeout=10):
 
         try:
+
+            if validators.url(url):
+                print(f'{url} - url is not valid')
+                return
             if post_data:
                 response = requests.post(url,
                                          data=post_data,

@@ -141,8 +141,9 @@ class Feroxbuster:
             if ' => ' in line:
                 redirected_url = line.split(' => ', 1)[1]
                 filtered_output.add(redirected_url.strip())
-            elif '        0c ' in line:
-                redirected_url = line.split('        0c ', 1)[1]
+            elif 'http' in line:
+                index = line.find('http')
+                redirected_url = line[index:]
                 filtered_output.add(redirected_url.strip())
             else:
                 print(f'FEROXBUSTER error! Unable to parse - ({line})')
