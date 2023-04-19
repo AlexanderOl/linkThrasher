@@ -77,7 +77,7 @@ class SubdomainChecker:
         response = self._request_handler.handle_request(url=url,
                                                         except_ssl_action=self.__except_ssl_action,
                                                         except_ssl_action_args=[url],
-                                                        timeout=10)
+                                                        timeout=5)
 
         if response is not None:
             if str(response.status_code).startswith('3') and 'Location' in response.headers:

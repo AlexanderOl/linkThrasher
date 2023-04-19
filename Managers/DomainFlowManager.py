@@ -23,15 +23,14 @@ class DomainFlowManager:
     def check_domain(self, domain):
         amass = Amass(domain)
         amass_subdomains = amass.get_subdomains()
-        # amass_subdomains = set()
 
         subfinder = SubFinder(domain)
         subfinder_subdomains = subfinder.get_subdomains()
-        # subfinder_subdomains = set()
 
-        massdns = MassDns(domain)
-        massdns_subdomains = massdns.get_subdomains()
-        # massdns_subdomains = set()
+        massdns_subdomains = set()
+        if self._check_mode == 'D':
+            massdns = MassDns(domain)
+            massdns_subdomains = massdns.get_subdomains()
 
         all_subdomains = amass_subdomains \
             .union(subfinder_subdomains) \

@@ -14,7 +14,6 @@ from Tools.Gobuster import Gobuster
 from Tools.Hakrawler import Hakrawler
 from Managers.XssManager import XssManager
 from Models.GetRequestDTO import GetRequestDTO
-from Tools.Lfimap import Lfimap
 from Tools.Nuclei import Nuclei
 
 
@@ -61,9 +60,6 @@ class SingleUrlFlowManager:
 
         manual_testing = ManualTesting(domain)
         get_dtos = manual_testing.save_urls_for_manual_testing(all_get_dtos, all_form_dtos)
-
-        lfimap = Lfimap(domain, self._headers)
-        lfimap.check_dtos(get_dtos, start_url)
 
         if len(get_dtos) == 0:
             print(f'[{datetime.now().strftime("%H:%M:%S")}] ({domain}) request DTOs not found')
