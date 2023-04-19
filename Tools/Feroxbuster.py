@@ -40,7 +40,7 @@ class Feroxbuster:
             report_lines = self.__run_tool_cmd(url)
 
             ready_urls = self.__get_ready_urls(report_lines, already_exist_get_dtos)
-            self._had_found_too_many_urls = len(ready_urls) > 1000
+
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_url, ready_urls, debug_msg=self._tool_name)
             self._get_dtos.extend(already_exist_get_dtos)
@@ -139,10 +139,25 @@ class Feroxbuster:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) Feroxbuster finished!')
         return report_lines
 
-    def __get_ready_urls(self, report_lines: [], already_exist_dtos: List[GetRequestDTO]) -> set:
+    def __get_ready_urls(self, report_lines: List[str], already_exist_dtos: List[GetRequestDTO]) -> set:
         filtered_output = set()
+        http_ok_only = False
+        if len(report_lines) > 10000:
+            http_ok_only = True
+
         for line in report_lines:
-            if ' => ' in line:
+
+            if http_ok_only:
+                if line.startswith('200') and 'http' in line:
+                    index = line.find('http')
+                    redirected_url = line[index:]
+                    parsed = urlparse(redirected_url)
+                    if self._domain in parsed.netloc:
+                        filtered_output.add(redirected_url.strip())
+                else:
+                    print(f'http_ok_only - {http_ok_only}. line ({line}) is not 200')
+                    continue
+            elif ' => ' in line:
                 redirected_url = line.split(' => ', 1)[1]
                 parsed = urlparse(redirected_url)
                 if self._domain in parsed.netloc:
@@ -164,4 +179,7 @@ class Feroxbuster:
             if key not in already_exist_keys and key not in checked_keys:
                 checked_keys.add(key)
                 ready_urls.add(url)
+
+        self._had_found_too_many_urls = len(ready_urls) > 1000
+
         return ready_urls
