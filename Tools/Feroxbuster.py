@@ -27,6 +27,7 @@ class Feroxbuster:
         self._raw_cookies = raw_cookies
         self._had_found_too_many_urls = False
         self._valid_statuses = [200, 204, 301, 302, 307, 308, 401, 403, 405, 500]
+        self._default_timeout = 5
 
     def check_single_url(self, url,
                          already_exist_get_dtos: List[GetRequestDTO],
@@ -52,7 +53,10 @@ class Feroxbuster:
         return self._get_dtos, self._form_dtos
 
     def __check_url(self, url):
-        response = self._request_handler.handle_request(url)
+        timeout = self._default_timeout
+        if self._had_found_too_many_urls:
+            timeout = 3
+        response = self._request_handler.handle_request(url, timeout=timeout)
         if response is None:
             return
 
@@ -140,15 +144,11 @@ class Feroxbuster:
         for line in report_lines:
             if ' => ' in line:
                 redirected_url = line.split(' => ', 1)[1]
-                parsed = urlparse(redirected_url)
-                if self._domain in parsed.netloc:
-                    filtered_output.add(redirected_url.strip())
+                filtered_output.add(redirected_url.strip())
             elif 'http' in line:
                 index = line.find('http')
                 redirected_url = line[index:]
-                parsed = urlparse(redirected_url)
-                if self._domain in parsed.netloc:
-                    filtered_output.add(redirected_url.strip())
+                filtered_output.add(redirected_url.strip())
             else:
                 print(f'FEROXBUSTER error! Unable to parse - ({line})')
 
