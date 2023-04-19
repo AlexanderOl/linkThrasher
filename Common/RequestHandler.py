@@ -1,5 +1,6 @@
+from urllib.parse import urlparse
+
 import requests
-import validators
 from requests.exceptions import SSLError, Timeout, ConnectionError
 
 
@@ -12,8 +13,8 @@ class RequestHandler:
                        timeout=10):
 
         try:
-
-            if validators.url(url):
+            parsed = urlparse(url)
+            if not parsed.scheme or not parsed.netloc:
                 print(f'{url} - url is not valid')
                 return
             if post_data:
