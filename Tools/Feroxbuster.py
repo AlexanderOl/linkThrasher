@@ -148,7 +148,7 @@ class Feroxbuster:
         for line in report_lines:
 
             if http_ok_only:
-                if line.startswith('200') and 'http' in line:
+                if (line.startswith('200') or 'Got 200' in line) and 'http' in line:
                     index = line.find('http')
                     redirected_url = line[index:]
                     parsed = urlparse(redirected_url)
