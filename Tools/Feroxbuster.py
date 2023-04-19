@@ -29,20 +29,20 @@ class Feroxbuster:
         self._valid_statuses = [200, 204, 301, 302, 307, 308, 401, 403, 405, 500]
 
     def check_single_url(self, url,
-                         already_exist__get_dtos: List[GetRequestDTO],
-                         already_exist__form_dtos: List[FormRequestDTO]):
+                         already_exist_get_dtos: List[GetRequestDTO],
+                         already_exist_form_dtos: List[FormRequestDTO]):
 
         dtos = self._cache_manager.get_saved_result()
         if not dtos and not isinstance(dtos, List):
 
-            self._form_dtos = already_exist__form_dtos
+            self._form_dtos = already_exist_form_dtos
             report_lines = self.__run_tool_cmd(url)
 
-            ready_urls = self.__get_ready_urls(report_lines, already_exist__get_dtos)
+            ready_urls = self.__get_ready_urls(report_lines, already_exist_get_dtos)
             self._had_found_too_many_urls = len(ready_urls) > 1000
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_url, ready_urls, debug_msg=self._tool_name)
-            already_exist__get_dtos.extend(self._get_dtos)
+            self._get_dtos.extend(already_exist_get_dtos)
             self._cache_manager.save_result({'get_dtos': self._get_dtos, 'form_dtos': self._form_dtos})
 
         else:
@@ -140,11 +140,15 @@ class Feroxbuster:
         for line in report_lines:
             if ' => ' in line:
                 redirected_url = line.split(' => ', 1)[1]
-                filtered_output.add(redirected_url.strip())
+                parsed = urlparse(redirected_url)
+                if self._domain in parsed.netloc:
+                    filtered_output.add(redirected_url.strip())
             elif 'http' in line:
                 index = line.find('http')
                 redirected_url = line[index:]
-                filtered_output.add(redirected_url.strip())
+                parsed = urlparse(redirected_url)
+                if self._domain in parsed.netloc:
+                    filtered_output.add(redirected_url.strip())
             else:
                 print(f'FEROXBUSTER error! Unable to parse - ({line})')
 
