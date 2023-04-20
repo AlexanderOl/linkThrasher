@@ -27,7 +27,7 @@ class SubdomainChecker:
         cache_manager = CacheManager(self._tool_name, self._domain)
         checked_subdomains = cache_manager.get_saved_result()
         out_of_scope = [x for x in self._out_of_scope_domains.split(';') if x]
-        if not checked_subdomains:
+        if not checked_subdomains and not isinstance(checked_subdomains, List):
 
             subdomains = set(
                 [subdomain for subdomain in all_subdomains if all(oos not in subdomain for oos in out_of_scope)])
