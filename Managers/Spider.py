@@ -171,19 +171,17 @@ class Spider:
 
     def __check_target_url(self, url):
 
-        if url.endswith('/'):
-            url = url[:-1]
-
         parsed = urlparse(url)
         if url in self._checked_urls \
                 or any(word in url for word in self._social_media) \
                 or self._current_domain not in parsed.netloc:
             return
 
+        self._checked_urls.add(url)
+
         return url
 
     def __get_urls_for_search(self, web_page, target_url):
-        self._checked_urls.add(target_url)
 
         href_urls = self.__get_url_from_html(tag='a', attr='href', web_page=web_page, target_url=target_url)
         data_url = self.__get_url_from_html(tag='div', attr='data-url', web_page=web_page, target_url=target_url)
