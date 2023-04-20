@@ -3,6 +3,8 @@ import re
 from urllib.parse import urlparse
 from datetime import datetime
 from typing import List
+
+from Common.ThreadManager import ThreadManager
 from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Tools.LinkFinder import LinkFinder
@@ -20,6 +22,8 @@ class Hakrawler:
             '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
             '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$',
             re.IGNORECASE)
+        self._result: List[GetRequestDTO] = []
+        self._checked_hrefs = set()
 
     def get_requests_dtos(self, start_url) -> List[GetRequestDTO]:
         cache_manager = CacheManager('Hakrawler', self._domain)
@@ -60,29 +64,28 @@ class Hakrawler:
         get_urls_from_js = link_finder.search_urls_in_js(script_urls)
         href_urls.update(get_urls_from_js)
 
-        return self.__check_href_urls(href_urls)
+        tm = ThreadManager()
+        tm.run_all(self.__check_href_urls, href_urls, debug_msg=self._tool_name)
 
-    def __check_href_urls(self, href_urls) -> List[GetRequestDTO]:
-        result: List[GetRequestDTO] = []
-        checked_hrefs = set()
-        for url in href_urls:
+        return self._result
 
-            url_parts = urlparse(url)
-            if url_parts.path in checked_hrefs or self._url_ignore_ext_regex.search(url):
-                continue
-            else:
-                checked_hrefs.add(url_parts.path)
+    def __check_href_urls(self, url: str):
+        url_parts = urlparse(url)
+        if url_parts.path in self._checked_hrefs or self._url_ignore_ext_regex.search(url):
+            return
+        else:
+            self._checked_hrefs.add(url_parts.path)
 
-            response = self._request_handler.handle_request(url)
-            if response is None:
-                continue
+        response = self._request_handler.handle_request(url, timeout=5)
+        if response is None:
+            return
 
-            if len(result) > 0 and any(dto for dto in result if
-                                       dto.response_length == len(response.text) and
-                                       dto.status_code == response.status_code):
-                continue
+        if len(self._result) > 0 and any(dto for dto in self._result if
+                                         dto.response_length == len(response.text) and
+                                         dto.status_code == response.status_code):
+            return
 
-            if response.status_code < 400 or response.status_code == 500:
-                result.append(GetRequestDTO(url, response))
+        if response.status_code < 400 or response.status_code == 500:
+            self._result.append(GetRequestDTO(url, response))
 
-        return result
+        return self._result

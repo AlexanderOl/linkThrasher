@@ -9,7 +9,7 @@ class LinkFinder:
         self._tool_name = self.__class__.__name__
         self._domain = domain
         self._start_url = start_url
-        self._black_list = ["application/", "text/", "image/", "mm/dd/yyyy", "yyyy/mm/dd", "dd/m/yyyy", "mm/d/yyyy"]
+        self._black_list = ["application/", "text/", "image/", "mm/dd/yyyy", "yyyy/mm/dd", "dd/m/yyyy", "mm/d/yyyy", "request/", "dojo/", "audio/", "video/", "font/"]
         self._url_ignore_ext_regex = re.compile(
             '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
             '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$')
@@ -41,16 +41,20 @@ class LinkFinder:
             if self._url_ignore_ext_regex.search(found) or 'mailto:' in found:
                 continue
             if found.startswith('./'):
-                result.add(f'{self._start_url}{found[2:]}')
+                found = found[2:]
             if found.endswith('\n'):
-                found = found[:-1]
+                found = found[:-2]
             if not any(word in found for word in self._black_list):
-                if found.startswith('http') and self._domain in found:
-                    result.add(found)
+                if found.startswith('http'):
+                    if self._domain in found:
+                        result.add(found)
+                    else:
+                        continue
                 elif found[0] == '/':
                     result.add(f'{self._start_url}{found[1:]}')
                 else:
-                    result.add(f'{self._start_url}{found}')
+                    result.add(f'{self._start_url}/{found}')
+
 
         # shutil.rmtree(tool_directory, ignore_errors=True)
 
