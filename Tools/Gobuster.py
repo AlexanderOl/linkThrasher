@@ -6,7 +6,7 @@ from Managers.CacheManager import CacheManager
 
 
 class Gobuster:
-    def __init__(self, domain, headers, raw_cookies):
+    def __init__(self, domain: str, headers, raw_cookies):
         self._tool_name = self.__class__.__name__
         self._domain = domain
         self._raw_cookies = raw_cookies
@@ -26,7 +26,7 @@ class Gobuster:
 
                 print(f'[{then.strftime("%H:%M:%S")}]: Gobuster {base_url} start...')
 
-                output_file = f'{self._tool_result_dir}/RAW_{self._domain}.txt'
+                output_file = f'{self._tool_result_dir}/RAW_{self._domain.replace(":","_")}.txt'
                 cmd_arr = ["gobuster", "dir",
                            "-u", base_url,
                            "-w", f"{self._app_wordlists_path}ExploitDB.txt",
