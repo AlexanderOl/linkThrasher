@@ -28,6 +28,7 @@ class Gobuster:
 
                 output_file = f'{self._tool_result_dir}/RAW_{self._domain.replace(":","_")}.txt'
                 cmd_arr = ["gobuster", "dir",
+                           "-s", "200-305,500"
                            "-u", base_url,
                            "-w", f"{self._app_wordlists_path}ExploitDB.txt",
                            "-H", f"User-Agent:{self._headers['User-Agent']}",
