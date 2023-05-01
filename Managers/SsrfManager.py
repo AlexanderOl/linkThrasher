@@ -20,8 +20,8 @@ class SsrfManager:
         self._ngrok_url_safe = urllib.parse.quote(self._ngrok_url, safe='')
         self._url_params = ['url', 'redirect', 'file', 'page', 'source']
         self._tool_dir = f'Results/SsrfManager'
-        self._get_domain_log = f'{self._tool_dir}/GET_{self._domain}_uids.txt'
-        self._form_domain_log = f'{self._tool_dir}/FORM_{self._domain}_uids.txt'
+        self._get_domain_log = f'{self._tool_dir}/GET_{self._domain.replace(":","_")}_uids.txt'
+        self._form_domain_log = f'{self._tool_dir}/FORM_{self._domain.replace(":","_")}_uids.txt'
         self._request_handler = RequestHandler(cookies, headers)
 
     def check_get_requests(self, dtos: List[GetRequestDTO]):
