@@ -28,11 +28,11 @@ class Gobuster:
 
                 output_file = f'{self._tool_result_dir}/RAW_{self._domain.replace(":","_")}.txt'
                 cmd_arr = ["gobuster", "dir",
-                           "-s", "200-305,500"
+                           "-s", "200-305,500", "-b", "''",
                            "-u", base_url,
                            "-w", f"{self._app_wordlists_path}ExploitDB.txt",
                            "-H", f"User-Agent:{self._headers['User-Agent']}",
-                           "--no-error", "-t", "50", "-o", output_file]
+                           "--no-error", "-t", "10", "-o", output_file]
 
                 if len(self._raw_cookies) > 0:
                     cmd_arr.append("-c")
