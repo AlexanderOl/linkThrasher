@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from urllib3 import exceptions, disable_warnings
 from bs4 import BeautifulSoup
 
+from Common.S500Handler import S500Handler
 from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Managers.SqliManager import SqliManager
@@ -86,8 +87,8 @@ class FastUrlFlowManager:
 
             # errors = sqli_manager.errors_500
             errors = sqli_manager.errors_500 + ssti_manager.errors_500
-            err_count = self.__store_errors(errors)
-            print(f'Added {err_count} unique errors')
+            s500 = S500Handler()
+            s500.save_server_errors(errors)
 
             last_url = raw_urls[len(raw_urls) - 1]
             print(f'Last URL was processed - {last_url}')
@@ -96,46 +97,6 @@ class FastUrlFlowManager:
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{self._target_file_path} is missing')
             return
-
-    def __store_errors(self, errors):
-        if len(errors) == 0:
-            return 0
-
-        checked_key_urls = {}
-        for error in errors:
-            url = error['url']
-            netloc = urlparse(url).netloc
-            response_length = len(error['response'].text)
-            key = f'{netloc};{response_length}'
-            if key in checked_key_urls:
-                continue
-            else:
-                checked_key_urls[key] = url
-
-        if not os.path.exists(self._res_500_error_key_path):
-            json_file = open(self._res_500_error_key_path, 'w')
-            for key in checked_key_urls.keys():
-                json_file.write(f"{key}\n")
-            json_file.close()
-            txt_file = open(self._res_500_error_urls_path, 'w')
-            for url in checked_key_urls.values():
-                txt_file.write(f"{url}\n")
-            txt_file.close()
-            return len(checked_key_urls)
-        else:
-            json_file = open(self._res_500_error_key_path, 'r')
-            stored_keys = json_file.readlines()
-            json_file.close()
-            filtered_keys = list([k_v for k_v in checked_key_urls if not f'{k_v}\n' in stored_keys])
-            if len(filtered_keys) > 0:
-                json_file = open(self._res_500_error_key_path, 'a')
-                txt_file = open(self._res_500_error_urls_path, 'a')
-                for key in filtered_keys:
-                    json_file.write(f"{key}\n")
-                    txt_file.write(f"{checked_key_urls[key]}\n")
-                json_file.close()
-                txt_file.close()
-            return len(filtered_keys)
 
     def __get_cached_dtos(self, raw_urls: List[str], cache_key) -> Tuple[List[GetRequestDTO], List[FormRequestDTO]]:
 

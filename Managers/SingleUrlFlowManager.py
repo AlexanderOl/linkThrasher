@@ -3,6 +3,8 @@ from datetime import datetime
 
 from urllib.parse import urlparse
 from urllib3 import exceptions, disable_warnings
+
+from Common.S500Handler import S500Handler
 from Managers.CookieManager import CookieManager
 from Managers.ManualTesting import ManualTesting
 from Managers.Spider import Spider
@@ -82,5 +84,9 @@ class SingleUrlFlowManager:
         ssti_manager = SstiManager(domain, cookies, self._headers)
         ssti_manager.check_get_requests(get_dtos)
         ssti_manager.check_form_requests(form_dtos)
+
+        errors = sqli_manager.errors_500 + ssti_manager.errors_500
+        s500 = S500Handler()
+        s500.save_server_errors(errors)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SingleUrlFlowManager done with ({start_url})')
