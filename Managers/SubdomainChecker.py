@@ -1,6 +1,7 @@
 import os
 import socket
 from typing import List
+from urllib.parse import urlparse
 
 import validators
 from Managers.CacheManager import CacheManager
@@ -82,9 +83,10 @@ class SubdomainChecker:
         if response is not None:
             if str(response.status_code).startswith('3') and 'Location' in response.headers:
                 redirect = response.headers['Location']
+                parsed = urlparse(redirect)
                 if redirect[0] == '/':
                     redirect_url = f"{url}{redirect}"
-                elif self._domain not in redirect:
+                elif self._domain not in parsed.netloc:
                     return
                 else:
                     redirect_url = redirect
