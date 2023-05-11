@@ -108,7 +108,7 @@ class Nmap:
                                                                 except_ssl_action=self.__except_ssl_action,
                                                                 except_ssl_action_args=ssl_action_args)
             resp_length = len(response.text)
-            netloc = urlparse(url).netloc
+            netloc = str(urlparse(url).netloc.split(':', 1)[0])
             if not any(dto for dto in self._existing_get_dtos if
                        netloc in dto.url and dto.response_length != resp_length) and \
                     not any(

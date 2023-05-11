@@ -32,6 +32,11 @@ class RequestHandler:
                                         allow_redirects=False,
                                         verify=False,
                                         timeout=timeout)
+
+            if len(response.text) > 1000000:
+                print(f'Url: ({url}) response too long')
+                return
+
             return response
 
         except SSLError:
