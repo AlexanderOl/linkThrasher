@@ -10,29 +10,6 @@ class CacheManager:
         self._result_filepath = f"{self._tool_result_dir}/{domain.replace(':','_')}.json"
         self._txt_result_filepath = f"{self._tool_result_dir}/{domain.replace(':','_')}.txt"
 
-    @staticmethod
-    def clear_all():
-        path_list = ['Amass',
-                     'Dirb',
-                     'FormRequestFetcher',
-                     'Spider',
-                     'MassDns',
-                     'MultipleUrlFlowManager',
-                     'Nmap',
-                     'Nuclei',
-                     'SqliManager',
-                     'SstiManager',
-                     'SsrfManager',
-                     'SubdomainChecker',
-                     'SubFinder',
-                     'XssManager']
-        for path in path_list:
-            result_path = f'Results/{path}'
-            if os.path.exists(result_path):
-                files = [f for f in os.listdir(result_path)]
-                for f in files:
-                    os.remove(os.path.join(result_path, f))
-
     def get_saved_result(self):
         try:
             if not os.path.exists(self._tool_result_dir):

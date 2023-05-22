@@ -6,6 +6,7 @@ from Managers.SubdomainChecker import SubdomainChecker
 from Common.ThreadManager import ThreadManager
 from Tools.Amass import Amass
 from Tools.EyeWitness import EyeWitness
+from Tools.Knock import Knock
 from Tools.MassDns import MassDns
 from Tools.Nmap import Nmap
 from Tools.Nuclei import Nuclei
@@ -21,8 +22,12 @@ class DomainFlowManager:
         disable_warnings(exceptions.InsecureRequestWarning)
 
     def check_domain(self, domain):
+
         amass = Amass(domain)
         amass_subdomains = amass.get_subdomains()
+
+        knock = Knock(domain)
+        knock_subdomains = knock.get_subdomains()
 
         subfinder = SubFinder(domain)
         subfinder_subdomains = subfinder.get_subdomains()
@@ -33,6 +38,7 @@ class DomainFlowManager:
             massdns_subdomains = massdns.get_subdomains()
 
         all_subdomains = amass_subdomains \
+            .union(knock_subdomains) \
             .union(subfinder_subdomains) \
             .union(massdns_subdomains)
 

@@ -9,3 +9,4 @@ selenium
 fuzzywuzzy
 pyvirtualdisplay
 python-Levenshtein
+colorama

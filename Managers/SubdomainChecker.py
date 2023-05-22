@@ -98,6 +98,8 @@ class SubdomainChecker:
                     self._checked_subdomains.append(GetRequestDTO(redirect_url, response2))
             else:
                 self._checked_subdomains.append(GetRequestDTO(url, response))
+        else:
+            self._checked_subdomains.append(GetRequestDTO(url))
 
     def __except_ssl_action(self, args):
         url = args[0]
