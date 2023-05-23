@@ -23,11 +23,10 @@ class Knock:
         if not subdomains and not isinstance(subdomains, set):
 
             res_dir = f'{self._tool_result_dir}/{self._domain}'
-            cmd_arr = ['python', '/root/Desktop/TOOLs/knock/knockpy.py', str(self._domain), '--no-local', '--silent',
-                       '--no-http', '-o', res_dir]
 
-            pk = ProcessKiller()
-            pk.run_temp_process(cmd_arr, self._domain, timeout=1200)
+            command = f"echo '{self._domain}' | knockpy --silent --no-local --no-http -o {res_dir}"
+            stream = os.popen(command)
+            stream.read()
 
             subdomains = set()
             files = glob(f'{res_dir}/*')
@@ -40,9 +39,8 @@ class Knock:
                     if self._domain in row:
                         subdomains.add(row)
                 f.close()
-                os.remove(file)
 
-            # shutil.rmtree(res_dir, ignore_errors=True)
+            shutil.rmtree(res_dir, ignore_errors=True)
 
             cache_manager.save_result(subdomains)
 

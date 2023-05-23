@@ -16,6 +16,7 @@ from Tools.Gobuster import Gobuster
 from Tools.Hakrawler import Hakrawler
 from Managers.XssManager import XssManager
 from Models.GetRequestDTO import GetRequestDTO
+from Tools.Katana import Katana
 from Tools.Nuclei import Nuclei
 
 
@@ -51,11 +52,15 @@ class SingleUrlFlowManager:
         hakrawler = Hakrawler(domain, raw_cookies, self._headers, cookies)
         get_hakrawler_dtos = hakrawler.get_requests_dtos(start_url)
         # get_hakrawler_dtos = []
+        katana = Katana(domain, raw_cookies, self._headers, cookies)
+        katana_katana_dtos = katana.get_requests_dtos(start_url)
+        # katana_katana_dtos = []
 
         spider = Spider(domain, cookies, self._headers, self._max_depth, main_domain)
         get_spider_dtos, form_dtos = spider.get_all_links(start_url)
 
         get_hakrawler_dtos.extend(get_spider_dtos)
+        get_hakrawler_dtos.extend(katana_katana_dtos)
 
         feroxbuster = Feroxbuster(domain, cookies, self._headers, raw_cookies)
         all_get_dtos, all_form_dtos = feroxbuster.check_single_url(start_url, get_hakrawler_dtos, form_dtos)

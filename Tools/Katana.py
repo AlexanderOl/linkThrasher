@@ -1,17 +1,16 @@
 import os
 import re
-from urllib.parse import urlparse
 from datetime import datetime
 from typing import List
+from urllib.parse import urlparse
 
+from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Managers.CacheManager import CacheManager
-from Common.RequestHandler import RequestHandler
-from Tools.LinkFinder import LinkFinder
 from Models.GetRequestDTO import GetRequestDTO
 
 
-class Hakrawler:
+class Katana:
     def __init__(self, domain, raw_cookies, headers, cookies):
         self._domain = domain
         self._raw_cookies = raw_cookies
@@ -23,10 +22,11 @@ class Hakrawler:
             '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$',
             re.IGNORECASE)
         self._result: List[GetRequestDTO] = []
+        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._checked_hrefs = set()
 
     def get_requests_dtos(self, start_url) -> List[GetRequestDTO]:
-        cache_manager = CacheManager('Hakrawler', self._domain)
+        cache_manager = CacheManager(self._tool_name, self._domain)
         result = cache_manager.get_saved_result()
         if result is None:
             result = self.__get_urls(start_url)
@@ -39,30 +39,22 @@ class Hakrawler:
 
         cookie_param = ''
         if self._raw_cookies:
-            cookie_param = f"-h 'Cookie: {self._raw_cookies}'"
+            cookie_param = f"-H 'Cookie: {self._raw_cookies}'"
 
-        command = f"echo '{start_url}' | hakrawler -d 5 {cookie_param} -t 20"
+        res_file = f'{self._tool_result_dir}/{self._domain}.txt'
+
+        command = f"echo '{start_url}' | katana -d 3 -o {res_file} {cookie_param}"
         stream = os.popen(command)
-        bash_outputs = stream.readlines()
-        href_urls = set()
-        script_urls = set()
-        for output in bash_outputs:
-            if output.endswith('\n'):
-                output = output[:-1]
-            if output.endswith('/'):
-                output = output[:-1]
-            if output.startswith('[href] '):
-                output = output.replace('[href] ', '')
-                if not any(word in output for word in self._social_media) and self._domain in output:
-                    href_urls.add(output)
-            elif output.startswith('[script] '):
-                output = output.replace('[script] ', '')
-                if not any(word in output for word in self._social_media) and self._domain in output:
-                    script_urls.add(output)
+        stream.read()
 
-        link_finder = LinkFinder(self._domain, start_url)
-        get_urls_from_js = link_finder.search_urls_in_js(script_urls)
-        href_urls.update(get_urls_from_js)
+        href_urls = set()
+        json_file = open(res_file, 'r')
+        lines = json_file.readlines()
+        for line in lines:
+            netloc = urlparse(line).netloc
+            if self._domain in netloc:
+                href_urls.add(line)
+        json_file.close()
 
         tm = ThreadManager()
         tm.run_all(self.__check_href_urls, href_urls, debug_msg=self._tool_name)
