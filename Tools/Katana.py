@@ -43,7 +43,7 @@ class Katana:
 
         res_file = f'{self._tool_result_dir}/{self._domain}.txt'
 
-        command = f"echo '{start_url}' | katana -d 3 -o {res_file} {cookie_param}"
+        command = f"echo '{start_url}' | katana -d 3 -o {res_file} -jc -mrs 10000000 -kf all {cookie_param}"
         stream = os.popen(command)
         stream.read()
 
