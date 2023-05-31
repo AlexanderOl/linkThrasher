@@ -18,7 +18,7 @@ class Amass:
 
             cmd_arr = ['amass', 'enum', '-d', self._domain, '-r', '8.8.8.8,1.1.1.1']
             pk = ProcessKiller()
-            bash_outputs = pk.run_temp_process(cmd_arr, self._domain, timeout=600)
+            bash_outputs = pk.run_temp_process(cmd_arr, self._domain, timeout=1200)
 
             subdomains = set()
             for line in bash_outputs:
