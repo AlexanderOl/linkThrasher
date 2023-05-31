@@ -29,11 +29,14 @@ class ProcessKiller:
             return result
 
         except subprocess.TimeoutExpired as timeErr:
-            lines = timeErr.stdout.decode().strip().split('\n')
-            result = list([self._ansi_escape.sub('', line) for line in lines])
             proc.kill()
             proc.terminate()
-            return result
+            if timeErr.stdout:
+                lines = timeErr.stdout.decode().strip().split('\n')
+                result = list([self._ansi_escape.sub('', line) for line in lines])
+                return result
+            else:
+                return ['timeout']
 
         except Exception as inst:
             print(f'ProccessKillerException: {inst}')
