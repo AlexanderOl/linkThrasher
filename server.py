@@ -42,17 +42,6 @@ if __name__ == '__main__':
 
         elif check_mode == 'UL':
             check_mode = os.environ.get('check_mode')
-        print(f'Running - {check_mode} mode')
-        if check_mode == 'D':
-            domain = os.environ.get('domain')
-            domain_man = DomainFlowManager(headers)
-            domain_man.check_domain(domain)
-
-        elif check_mode == 'U':
-            single_url_man = SingleUrlFlowManager(headers)
-            single_url = os.environ.get('single_url')
-            single_url_man.run(GetRequestDTO(single_url))
-
             multiple_url_man = MultipleUrlFlowManager(headers)
             multiple_url_man.run()
 

@@ -84,9 +84,9 @@ class SubdomainChecker:
             if str(response.status_code).startswith('3') and 'Location' in response.headers:
                 redirect = response.headers['Location']
                 parsed = urlparse(redirect)
-                if redirect[0] == '/':
+                if redirect and redirect[0] == '/':
                     redirect_url = f"{url}{redirect}"
-                elif self._domain not in parsed.netloc:
+                elif not parsed or self._domain not in parsed.netloc:
                     return
                 else:
                     redirect_url = redirect
