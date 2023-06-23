@@ -1,6 +1,6 @@
 import os
 import urllib3
-from datetime import date
+from datetime import date, datetime
 from typing import List
 from urllib.parse import urlparse
 from Managers.CacheManager import CacheManager
@@ -20,11 +20,28 @@ class MultipleUrlFlowManager:
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    def run(self):
+    def run(self, urls=set()):
         file_path = 'Targets/urls.txt'
         if os.path.exists(file_path):
 
             get_dtos = self.__get_cached_dtos(file_path)
+
+            nuclei = Nuclei(str(date.today()), self._headers)
+            nuclei.check_multiple_uls(get_dtos)
+
+            single_url_man = SingleUrlFlowManager(self._headers)
+            thread_man = ThreadManager()
+            thread_man.run_all(single_url_man.run, get_dtos, debug_msg=self._tool_name)
+
+        elif len(urls) > 0:
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: {self._tool_name} will run {len(urls)} urls')
+            get_dtos: List[GetRequestDTO] = []
+
+            for url in urls:
+                response = self._request_handler.handle_request(url)
+                if response is None:
+                    continue
+                get_dtos.append(GetRequestDTO(url, response))
 
             nuclei = Nuclei(str(date.today()), self._headers)
             nuclei.check_multiple_uls(get_dtos)

@@ -23,7 +23,7 @@ class ManualTesting:
         if not os.path.exists(self._tool_result_dir):
             os.makedirs(self._tool_result_dir)
 
-        txt_filepath = f"{self._tool_result_dir}/{self._domain}_manual.txt"
+        txt_filepath = f"{self._tool_result_dir}/{self._domain.replace(':','_')}_manual.txt"
         if os.path.exists(txt_filepath):
             return get_dtos
 
