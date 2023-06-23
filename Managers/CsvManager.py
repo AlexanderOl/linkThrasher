@@ -1,7 +1,7 @@
-from csv import reader
 import glob
 import os
 
+from csv import reader
 from Managers.DomainFlowManager import DomainFlowManager
 from Managers.MultipleUrlFlowManager import MultipleUrlFlowManager
 
@@ -25,11 +25,13 @@ class CsvManager:
                 for row in csv_reader:
 
                     if len(row) >= 5:
-                        if row[3] == 'true' and row[4] == 'true':
+                        if row[3].upper() in ['WILDCARD', 'URL', 'OTHER'] and row[3] == 'true' and row[4] == 'true':
                             if row[0].startswith('http'):
                                 urls.add(row[0])
                             elif '*.' in row[0]:
                                 domains.add(row[0].replace('*.', ''))
+                            elif row[0].startswith('www.'):
+                                domains.add(row[0].replace('www.', ''))
                             else:
                                 domains.add(row[0])
                     else:

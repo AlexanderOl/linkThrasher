@@ -4,9 +4,6 @@ import re
 import shutil
 from datetime import datetime
 from glob import glob
-from subprocess import Popen, PIPE, STDOUT
-
-from Common.ProcessKiller import ProcessKiller
 from Managers.CacheManager import CacheManager
 
 
