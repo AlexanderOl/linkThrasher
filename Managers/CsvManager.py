@@ -1,4 +1,5 @@
-import csv
+from csv import reader
+import glob
 import os
 
 from Managers.DomainFlowManager import DomainFlowManager
@@ -12,30 +13,35 @@ class CsvManager:
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
 
     def run(self):
-        with open('Targets/scopes.csv', newline='') as csvfile:
-            reader = csv.reader(csvfile, delimiter=',', quotechar='|')
-            domains = set()
-            urls = set()
-            for splitted in reader:
-                if len(splitted) <= 0:
-                    continue
 
-                if len(splitted) >= 5:
-                    if splitted[3] == 'true' and splitted[4] == 'true':
-                        if splitted[0].startswith('http'):
-                            urls.add(splitted[0])
-                        elif '*.' in splitted[0]:
-                            domains.add(splitted[0].replace('*.', ''))
-                        else:
-                            domains.add(splitted[0])
+        domains = set()
+        urls = set()
+
+        files = glob.glob(f'Targets/*.csv')
+        for file in files:
+            with open(file, 'r') as read_obj:
+
+                csv_reader = reader(read_obj)
+                for row in csv_reader:
+
+                    if len(row) >= 5:
+                        if row[3] == 'true' and row[4] == 'true':
+                            if row[0].startswith('http'):
+                                urls.add(row[0])
+                            elif '*.' in row[0]:
+                                domains.add(row[0].replace('*.', ''))
+                            else:
+                                domains.add(row[0])
                     else:
-                        print(f"NotEligible/OOS: {', '.join(splitted)}")
+                        print(f"NotEligible/OOS: {', '.join(row)}")
 
-            if len(domains) > 0:
-                domain_man = DomainFlowManager(self._headers)
-                for domain in domains:
-                    domain_man.check_domain(domain)
+        print(f'Found {", ".join(domains)} domains and {", ".join(urls)} urls')
 
-            if len(urls) > 0:
-                multiple_man = MultipleUrlFlowManager(self._headers)
-                multiple_man.run(urls)
+        if len(domains) > 0:
+            domain_man = DomainFlowManager(self._headers)
+            for domain in domains:
+                domain_man.check_domain(domain)
+
+        if len(urls) > 0:
+            multiple_man = MultipleUrlFlowManager(self._headers)
+            multiple_man.run(urls)
