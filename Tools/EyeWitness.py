@@ -49,14 +49,13 @@ class EyeWitness:
             for urls_batch in batches_list:
                 msg = self.__make_screens(urls_batch, counter)
                 counter -= 1
-                print(
-                    f'[{datetime.now().strftime("%H:%M:%S")}]: left:{counter}, chunk_size:{len(urls_batch)}, result:{msg}')
+                print(f'[{datetime.now().strftime("%H:%M:%S")}]: left:{counter}, chunk_size:{len(urls_batch)}, result:{msg}')
 
             self.__cleanup()
 
             urls = [f.url for f in dtos]
             duration = datetime.now() - start
-            result = f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._cache_key}) Eyewitness finished in {duration.total_seconds()} seconds'
+            result = f'({self._cache_key}) Eyewitness finished in {duration.total_seconds()} seconds'
             cache_manager.save_result(urls)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: {result}')

@@ -1,9 +1,7 @@
 import os
 from datetime import datetime
-
 from urllib.parse import urlparse
 from urllib3 import exceptions, disable_warnings
-
 from Common.S500Handler import S500Handler
 from Managers.CookieManager import CookieManager
 from Managers.ManualTesting import ManualTesting
@@ -18,6 +16,7 @@ from Managers.XssManager import XssManager
 from Models.GetRequestDTO import GetRequestDTO
 from Tools.Katana import Katana
 from Tools.Nuclei import Nuclei
+from Tools.Waybackurls import Waybackurls
 
 
 class SingleUrlFlowManager:
@@ -51,16 +50,19 @@ class SingleUrlFlowManager:
 
         hakrawler = Hakrawler(domain, raw_cookies, self._headers, cookies)
         get_hakrawler_dtos = hakrawler.get_requests_dtos(start_url)
-        # get_hakrawler_dtos = []
+
         katana = Katana(domain, raw_cookies, self._headers, cookies)
-        katana_katana_dtos = katana.get_requests_dtos(start_url)
-        # katana_katana_dtos = []
+        katana_dtos = katana.get_requests_dtos(start_url)
+
+        waybackurls = Waybackurls(domain, raw_cookies, self._headers, cookies)
+        waybackurls_dtos = waybackurls.get_requests_dtos()
 
         spider = Spider(domain, cookies, self._headers, self._max_depth, main_domain)
         get_spider_dtos, form_dtos = spider.get_all_links(start_url)
 
         get_hakrawler_dtos.extend(get_spider_dtos)
-        get_hakrawler_dtos.extend(katana_katana_dtos)
+        get_hakrawler_dtos.extend(katana_dtos)
+        get_hakrawler_dtos.extend(waybackurls_dtos)
 
         feroxbuster = Feroxbuster(domain, cookies, self._headers, raw_cookies)
         all_get_dtos, all_form_dtos = feroxbuster.check_single_url(start_url, get_hakrawler_dtos, form_dtos)

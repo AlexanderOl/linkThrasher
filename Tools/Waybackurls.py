@@ -10,7 +10,7 @@ from Managers.CacheManager import CacheManager
 from Models.GetRequestDTO import GetRequestDTO
 
 
-class Katana:
+class Waybackurls:
     def __init__(self, domain, raw_cookies, headers, cookies):
         self._domain = domain
         self._raw_cookies = raw_cookies
@@ -25,36 +25,30 @@ class Katana:
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._checked_hrefs = set()
 
-    def get_requests_dtos(self, start_url) -> List[GetRequestDTO]:
+    def get_requests_dtos(self) -> List[GetRequestDTO]:
         cache_manager = CacheManager(self._tool_name, self._domain)
         result = cache_manager.get_saved_result()
         if result is None:
-            result = self.__get_urls(start_url)
+            result = self.__get_urls()
             cache_manager.save_result(result)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} found {len(result)} items')
         return result
+    def __get_urls(self) -> List[GetRequestDTO]:
+        res_file = f'{self._tool_result_dir}/{self._domain.replace(":", "_")}.txt'
 
-    def __get_urls(self, start_url) -> List[GetRequestDTO]:
-
-        cookie_param = ''
-        if self._raw_cookies:
-            cookie_param = f"-H 'Cookie: {self._raw_cookies}'"
-
-        res_file = f'{self._tool_result_dir}/{self._domain.replace(":","_")}.txt'
-
-        command = f"echo '{start_url}' | katana -d 3 -o {res_file} -jc -mrs 10000000 -kf all {cookie_param}"
+        command = f"echo '{self._domain}' | waybackurls > {res_file}"
         stream = os.popen(command)
         stream.read()
 
         href_urls = set()
-        json_file = open(res_file, 'r')
-        lines = json_file.readlines()
+        text_file = open(res_file, 'r')
+        lines = text_file.readlines()
         for line in lines:
             netloc = urlparse(line).netloc
             if self._domain in netloc:
                 href_urls.add(line)
-        json_file.close()
+        text_file.close()
 
         tm = ThreadManager()
         tm.run_all(self.__check_href_urls, href_urls, debug_msg=self._tool_name)
