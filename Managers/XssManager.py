@@ -156,7 +156,7 @@ class XssManager:
 
                 substr_index = web_page.find(keyword)
                 start_index = substr_index - 50 if substr_index - 50 > 0 else 0
-                last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
+                last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index+len(web_page)-substr_index-1
                 mime_type = ''
                 if "Content-Type" in response.headers:
                     mime_type = response.headers["Content-Type"]
