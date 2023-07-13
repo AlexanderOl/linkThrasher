@@ -37,7 +37,7 @@ class CsvManager:
                     else:
                         print(f"NotEligible/OOS: {', '.join(row)}")
 
-        print(f'Found {", ".join(domains)} domains and {", ".join(urls)} urls')
+        print(f'FOUND {", ".join(domains)} DOMAINS and {", ".join(urls)} URLS')
 
         if len(domains) > 0:
             domain_man = DomainFlowManager(self._headers)
