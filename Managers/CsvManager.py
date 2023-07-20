@@ -1,4 +1,5 @@
 import glob
+import ipaddress
 import os
 
 from csv import reader
@@ -34,6 +35,12 @@ class CsvManager:
                                 domains.add(row[0].replace('www.', ''))
                             else:
                                 domains.add(row[0])
+                        elif row[1].upper() == 'CIDR' and row[3] == 'true' and row[4] == 'true':
+                            ips_str = str(row[0])
+                            if '/' in ips_str:
+                                ips = [str(ip) for ip in ipaddress.IPv4Network(ips_str)]
+
+
                     else:
                         print(f"NotEligible/OOS: {', '.join(row)}")
 
