@@ -21,6 +21,37 @@ class DomainFlowManager:
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
         disable_warnings(exceptions.InsecureRequestWarning)
 
+    def check_ip(self, ip):
+        ips = set()
+        ips.add(ip)
+
+        subdomain_checker = SubdomainChecker(ip, self._headers)
+        start_urls_dtos = subdomain_checker.check_all_subdomains(ips)
+
+        out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
+        start_urls_dtos = [dto for dto in start_urls_dtos if all(oos not in dto.url for oos in out_of_scope)]
+
+        if len(start_urls_dtos) == 0:
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({ip}) No live urls found at ip')
+            return
+        else:
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({ip}) Found {len(start_urls_dtos)} start urls at ip')
+
+        nmap = Nmap(ip, self._headers)
+        nmap_get_dtos = nmap.check_ports(start_urls_dtos)
+        start_urls_dtos += nmap_get_dtos
+
+        eyewitness = EyeWitness(ip, self._headers)
+        eyewitness.visit_dtos(start_urls_dtos)
+
+        nuclei = Nuclei(ip, self._headers)
+        nuclei.check_multiple_uls(start_urls_dtos)
+
+        single_url_man = SingleUrlFlowManager(self._headers)
+        thread_man = ThreadManager()
+        thread_man.run_all(single_url_man.run, start_urls_dtos)
+
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: DomainFlowManager done with ip ({ip})')
     def check_domain(self, domain):
 
         amass = Amass(domain)

@@ -2,10 +2,9 @@ import os
 import re
 import urllib.parse as urlparse
 from typing import List
-
+from collections import defaultdict
 from Models.FormRequestDTO import FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
-
 
 class ManualTesting:
     def __init__(self, domain):
@@ -15,10 +14,13 @@ class ManualTesting:
         self._already_added_pathes = {}
 
     def save_urls_for_manual_testing(self, spider_dtos: List[GetRequestDTO], form_dtos: List[FormRequestDTO]):
-        get_dtos: List[GetRequestDTO] = []
-        for dto in spider_dtos:
-            if not any(dto.url == item.url for item in get_dtos):
-                get_dtos.append(dto)
+
+        groups = defaultdict(list)
+
+        for obj in spider_dtos:
+            groups[obj.url] = obj
+
+        get_dtos = groups.values()
 
         if not os.path.exists(self._tool_result_dir):
             os.makedirs(self._tool_result_dir)

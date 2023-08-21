@@ -50,8 +50,10 @@ class Waybackurls:
                 href_urls.add(line)
         text_file.close()
 
+        urls = self._filter_urls(href_urls)
+
         tm = ThreadManager()
-        tm.run_all(self.__check_href_urls, href_urls, debug_msg=self._tool_name)
+        tm.run_all(self.__check_href_urls, urls, debug_msg=self._tool_name)
 
         return self._result
 
@@ -62,7 +64,7 @@ class Waybackurls:
         else:
             self._checked_hrefs.add(url_parts.path)
 
-        response = self._request_handler.handle_request(url, timeout=5)
+        response = self._request_handler.handle_request(url, timeout=3)
         if response is None:
             return
 
@@ -75,3 +77,51 @@ class Waybackurls:
             self._result.append(GetRequestDTO(url, response))
 
         return self._result
+
+    def _filter_urls(self, href_urls) -> set:
+        urls = set()
+        path_without_digits = set()
+        added_url_params = {}
+
+        for href_url in href_urls:
+            parsed_parts = urlparse(href_url)
+            url_without_params = f'{parsed_parts.scheme}://{parsed_parts.netloc}{parsed_parts.path}'
+            query_params = {}
+            if self._url_ignore_ext_regex.search(parsed_parts.path):
+                continue
+            if '?' in href_url:
+                params = parsed_parts.query.split('&')
+                for param in params:
+                    splitted = param.split('=')
+                    if len(splitted) == 2:
+                        query_params[splitted[0]] = splitted[1]
+
+            if url_without_params in added_url_params:
+                added_url_params[url_without_params].update(query_params)
+            else:
+                added_url_params[url_without_params] = query_params
+
+        for url_without_params in added_url_params:
+            params = added_url_params[url_without_params]
+            url = url_without_params
+
+            splitted_path = url_without_params.split('/')
+            path_key = ''
+            for part in splitted_path:
+                if part.isdigit():
+                    path_key += 'numb'
+                else:
+                    path_key += part
+            if path_key in path_without_digits:
+                continue
+            else:
+                path_without_digits.add(path_key)
+
+            if len(params) > 0:
+                url += '?'
+
+            for key in params:
+                url += f'{key}={params[key]}'
+            urls.add(url)
+
+        return urls
