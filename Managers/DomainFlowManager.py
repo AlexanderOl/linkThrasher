@@ -1,4 +1,5 @@
 import os
+import validators
 from datetime import datetime
 from urllib3 import exceptions, disable_warnings
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
@@ -52,8 +53,12 @@ class DomainFlowManager:
         thread_man.run_all(single_url_man.run, start_urls_dtos)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: DomainFlowManager done with ip ({ip})')
+
     def check_domain(self, domain):
 
+        if not validators.domain(domain):
+            print(f'{domain} is not a domain')
+            return
         amass = Amass(domain)
         amass_subdomains = amass.get_subdomains()
 

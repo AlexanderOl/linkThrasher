@@ -88,6 +88,7 @@ class SsrfManager:
                     for param in form.params:
                         if any(s in str(param).lower() for s in self._url_params) or \
                                 str(form.params[param]).startswith('/') or \
+                                str(form.params[param]).startswith('%2F') or \
                                 str(form.params[param]).startswith('http'):
                             payload = deepcopy(form.params)
                             payload[param] = self.__get_param_ngrok_payload(dto.url, param, "POST")
@@ -114,6 +115,7 @@ class SsrfManager:
                     for param in form.params:
                         if any(s in str(param).lower() for s in self._url_params) or \
                                 str(form.params[param]).startswith('/') or \
+                                str(form.params[param]).startswith('%2F') or \
                                 str(form.params[param]).startswith('http'):
                             payload = self.__get_param_ngrok_payload(dto.url, param, "POST")
                             prev_url = url
