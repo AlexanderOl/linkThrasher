@@ -23,7 +23,6 @@ class SingleUrlFlowManager:
     def __init__(self, headers):
         self._headers = headers
         self._ngrok_url = os.environ.get('ngrok_url')
-        self._max_depth = os.environ.get('max_depth')
         self._check_mode = os.environ.get('check_mode')
         disable_warnings(exceptions.InsecureRequestWarning)
 
@@ -57,7 +56,7 @@ class SingleUrlFlowManager:
         waybackurls = Waybackurls(domain, raw_cookies, self._headers, cookies)
         waybackurls_dtos = waybackurls.get_requests_dtos()
 
-        spider = Spider(domain, cookies, self._headers, self._max_depth, main_domain)
+        spider = Spider(domain, cookies, self._headers, main_domain)
         get_spider_dtos, form_dtos = spider.get_all_links(start_url)
 
         get_hakrawler_dtos.extend(get_spider_dtos)

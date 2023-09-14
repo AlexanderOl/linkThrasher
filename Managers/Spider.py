@@ -1,3 +1,4 @@
+import os
 import re
 from datetime import datetime
 from typing import List, Tuple
@@ -10,10 +11,10 @@ from Models.FormRequestDTO import FormRequestDTO, FormDetailsDTO
 
 
 class Spider:
-    def __init__(self, current_domain, cookies, headers, max_depth, main_domain):
+    def __init__(self, current_domain, cookies, headers, main_domain):
         self._current_domain = current_domain
         self._main_domain = main_domain
-        self._max_depth = int(max_depth)
+        self._max_depth = int(os.environ.get('max_depth'))
         self._social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "intercom", "atlassian",
                               "instagram", "github", "letgo", "yahoo"]
         self._checked_urls = set()
@@ -162,7 +163,6 @@ class Spider:
                     and href not in self._checked_hrefs \
                     and target_url[len(target_url) - len(href):] != href \
                     and href not in target_url \
-                    and ':' not in href\
                     and not self._url_ignore_ext_regex.search(href):
                 self._checked_hrefs.add(href)
                 result = True
@@ -184,10 +184,12 @@ class Spider:
     def __get_urls_for_search(self, web_page, target_url):
 
         href_urls = self.__get_url_from_html(tag='a', attr='href', web_page=web_page, target_url=target_url)
+        links_urls = self.__get_url_from_html(tag='link', attr='href', web_page=web_page, target_url=target_url)
         data_url = self.__get_url_from_html(tag='div', attr='data-url', web_page=web_page, target_url=target_url)
         form_url = self.__get_url_from_html(tag='form', attr='action', web_page=web_page, target_url=target_url)
         action_urlsrc_url = self.__get_url_from_html(tag='action', attr='urlsrc', web_page=web_page, target_url=target_url)
 
+        href_urls.update(links_urls)
         href_urls.update(data_url)
         href_urls.update(form_url)
         href_urls.update(action_urlsrc_url)

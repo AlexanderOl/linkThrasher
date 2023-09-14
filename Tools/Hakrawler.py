@@ -12,9 +12,10 @@ from Models.GetRequestDTO import GetRequestDTO
 
 
 class Hakrawler:
-    def __init__(self, domain, raw_cookies, headers, cookies):
+    def __init__(self, domain, raw_cookies='', headers={}, cookies=''):
         self._domain = domain
         self._raw_cookies = raw_cookies
+        self._max_depth = os.environ.get('max_depth')
         self._social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "intercom", "atlassian"]
         self._tool_name = self.__class__.__name__
         self._request_handler = RequestHandler(cookies, headers)
@@ -41,7 +42,7 @@ class Hakrawler:
         if self._raw_cookies:
             cookie_param = f"-h 'Cookie: {self._raw_cookies}'"
 
-        command = f"echo '{start_url}' | hakrawler -d 5 {cookie_param} -t 20"
+        command = f"echo '{start_url}' | hakrawler -d {self._max_depth} {cookie_param} -t 20"
         stream = os.popen(command)
         bash_outputs = stream.readlines()
         href_urls = set()
