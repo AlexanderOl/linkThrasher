@@ -70,10 +70,10 @@ class SingleUrlFlowManager:
         get_dtos = manual_testing.save_urls_for_manual_testing(all_get_dtos, all_form_dtos)
 
         if len(get_dtos) == 0:
-            print(f'[{datetime.now().strftime("%H:%M:%S")}] ({domain}) request DTOs not found')
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) request DTOs not found')
             return
         else:
-            print(f'[{datetime.now().strftime("%H:%M:%S")}] ({domain}) will run {len(get_dtos)} dtos')
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) will run {len(get_dtos)} dtos')
 
         xss_manager = XssManager(domain, self._headers, cookies)
         xss_manager.check_get_requests(get_dtos)

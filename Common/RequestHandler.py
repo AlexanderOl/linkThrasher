@@ -9,6 +9,22 @@ class RequestHandler:
         self._cookies = cookies
         self._headers = headers
 
+    def send_head_request(self, url):
+        try:
+            parsed = urlparse(url)
+            if not parsed.scheme or not parsed.netloc:
+                print(f'{url} - url is not valid')
+                return
+            head_response = requests.head(url, headers=self._headers, cookies=self._cookies)
+            if 'Content-Type' in head_response.headers \
+                    and head_response.headers['Content-Type'] == 'application/octet-stream':
+                print(f'Url: ({url}) content type - application/octet-stream')
+                return
+            return head_response
+        except Exception as inst:
+            print(f'Url ({url}) - Exception: {inst}')
+            return
+
     def handle_request(self, url, post_data=None, except_ssl_action=None, except_ssl_action_args: [] = None,
                        timeout=10):
 

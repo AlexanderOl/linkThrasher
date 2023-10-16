@@ -31,6 +31,8 @@ class CsvManager:
                         target = str(row[0])
                         if target.startswith('http'):
                             urls.add(target)
+                        elif '*' in target and '/' in target and row[1].upper() == 'WILDCARD':
+                            urls.add(f"https://{target.replace('*', '')}")
                         elif '*.' in target:
                             domains.add(target.replace('*.', ''))
                         elif target.startswith('www.'):

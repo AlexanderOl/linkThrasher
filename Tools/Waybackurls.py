@@ -63,7 +63,9 @@ class Waybackurls:
             return
         else:
             self._checked_hrefs.add(url_parts.path)
-
+        check = self._request_handler.send_head_request(url)
+        if check is None:
+            return
         response = self._request_handler.handle_request(url, timeout=3)
         if response is None:
             return

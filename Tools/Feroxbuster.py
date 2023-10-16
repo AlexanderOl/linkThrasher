@@ -56,6 +56,9 @@ class Feroxbuster:
         timeout = self._default_timeout
         if self._had_found_too_many_urls:
             timeout = 3
+        check = self._request_handler.send_head_request(url)
+        if check is None:
+            return
         response = self._request_handler.handle_request(url, timeout=timeout)
         if response is None:
             return

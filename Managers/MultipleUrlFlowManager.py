@@ -38,6 +38,9 @@ class MultipleUrlFlowManager:
             get_dtos: List[GetRequestDTO] = []
 
             for url in urls:
+                check = self._request_handler.send_head_request(url)
+                if check is None:
+                    continue
                 response = self._request_handler.handle_request(url)
                 if response is None:
                     continue
@@ -78,6 +81,9 @@ class MultipleUrlFlowManager:
 
             get_dtos: List[GetRequestDTO] = []
             for url in filtered_urls:
+                check = self._request_handler.send_head_request(url)
+                if check is None:
+                    continue
                 response = self._request_handler.handle_request(url)
                 if response is None:
                     continue

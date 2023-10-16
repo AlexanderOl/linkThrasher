@@ -69,7 +69,9 @@ class Spider:
         checked_url = self.__check_target_url(target_url)
         if not checked_url:
             return
-
+        check = self._request_handler.send_head_request(checked_url)
+        if check is None:
+            return
         response = self._request_handler.handle_request(url=checked_url,
                                                         except_ssl_action=self.__except_ssl_action,
                                                         except_ssl_action_args=[checked_url, current_depth])
@@ -213,6 +215,8 @@ class Spider:
                 if is_valid_href:
                     if url_part.startswith('/'):
                         html_urls.add(main_url + url_part)
+                    elif url_part.startswith('./'):
+                        html_urls.add(main_url + url_part[1:])
                     elif url_part.startswith('http'):
                         html_urls.add(url_part)
                     elif url_part.startswith('..') or url_part.startswith('\t'):
