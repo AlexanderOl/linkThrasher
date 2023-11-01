@@ -58,6 +58,7 @@ class Nuclei:
             command = f"nuclei -u {url} {header_args} " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing/ " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
+                      f"-t /root/Desktop/TOOLs/nuclei-templates/miscellaneous " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/cves " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
                       f"-et /root/Desktop/TOOLs/nuclei-templates/cves/2022/CVE-2022-45362.yaml"
