@@ -36,14 +36,14 @@ class RequestChecker:
             return False
         return True
 
-    def get_param_payloads(self, url: str, injections: []) -> set:
+    def get_param_payloads(self, url: str, injections: [], salt) -> set:
         payloads_urls = set()
         parsed = urlparse(url)
         param_key_values = filter(None, parsed.query.split("&"))
 
         for param_k_v in param_key_values:
 
-            if self.is_get_param_checked(url, param_k_v):
+            if self.is_get_param_checked(url, param_k_v, salt):
                 continue
 
             main_url_split = url.split(param_k_v)
@@ -53,12 +53,12 @@ class RequestChecker:
 
         return payloads_urls
 
-    def is_get_param_checked(self, original_url, param_k_v) -> bool:
+    def is_get_param_checked(self, original_url, param_k_v, salt) -> bool:
         if '=' not in param_k_v:
             print(f'Url: {original_url} query param without "=" {param_k_v}')
             return True
         main_url_split = original_url.split(param_k_v)
-        key = f'{main_url_split[0]};{param_k_v}'
+        key = f'{main_url_split[0]};{param_k_v.split("=")[0]}{salt}'
         if key not in self._checked_get_params:
             self._checked_get_params.add(key)
             return False

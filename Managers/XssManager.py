@@ -59,7 +59,7 @@ class XssManager:
 
     def __check_params(self, dto: GetRequestDTO):
 
-        payloads_urls = self._request_checker.get_param_payloads(dto.url, self._injections_to_check)
+        payloads_urls = self._request_checker.get_param_payloads(dto.url, self._injections_to_check, 'XSS')
 
         for url in payloads_urls:
             response = self._request_handler.handle_request(url)

@@ -55,7 +55,7 @@ class SstiManager:
 
     def __check_get_params(self, dto: GetRequestDTO):
 
-        payloads_urls = self._request_checker.get_param_payloads(dto.url, self._payloads)
+        payloads_urls = self._request_checker.get_param_payloads(dto.url, self._payloads, 'SSTI')
 
         for url in payloads_urls:
             response = self._request_handler.handle_request(url)
