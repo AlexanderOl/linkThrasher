@@ -135,7 +135,7 @@ class SqliManager:
 
                         self.__check_keywords(response,
                                               url,
-                                              InjectionType.Sqli_GetForm_Error,
+                                              InjectionType.Sqli_Get_Error,
                                               original_url=dto.url)
 
                         url = prev_url
@@ -244,6 +244,8 @@ class SqliManager:
         false_response = self._request_handler.handle_request(false_payload)
         false_status = false_response.status_code
         false_length = len(false_response.text)
+        if false_length == 0:
+            false_length = 1
 
         if abs(true_length - false_length) / true_length > self._bool_diff_rate or true_length != false_length:
             true2_response = self._request_handler.handle_request(true2_payload)
