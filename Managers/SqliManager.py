@@ -179,11 +179,11 @@ class SqliManager:
         route_time_based_payloads = self.__get_route_payloads(dto.url, self._time_based_payloads)
         route_bool_based_payloads = self.__get_route_payloads(dto.url, self._bool_based_payloads)
 
-        for url in route_url_payloads:
-            self.__send_error_based_request(url, dto)
+        # for url in route_url_payloads:
+            # self.__send_error_based_request(url, dto)
 
-        for payloads in route_time_based_payloads:
-            self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
+        # for payloads in route_time_based_payloads:
+        #     self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
 
         for payloads in route_bool_based_payloads:
             self.__send_bool_based_request(payloads[0], payloads[1], payloads[2])
@@ -236,7 +236,14 @@ class SqliManager:
 
     def __send_bool_based_request(self, true_payload, false_payload, true2_payload):
         true_response = self._request_handler.handle_request(true_payload)
+        if not true_response:
+            return
+
         true_status = true_response.status_code
+
+        if true_status == 403:
+            return
+
         true_length = len(true_response.text)
         if true_length == 0:
             true_length = 1
@@ -247,13 +254,13 @@ class SqliManager:
         if false_length == 0:
             false_length = 1
 
-        if abs(true_length - false_length) / true_length > self._bool_diff_rate or true_length != false_length:
+        if abs(true_length - false_length) / true_length > self._bool_diff_rate:
             true2_response = self._request_handler.handle_request(true2_payload)
             true2_length = len(true2_response.text)
             if true2_length == 0:
                 true2_length = 1
 
-            if abs(true_length - true2_length) / true_length > self._bool_diff_rate or true_length == true2_length:
+            if abs(true_length - true2_length) / true_length < self._bool_diff_rate or true_length == true2_length:
                 msg = f"SQLiManager bool PARAM length! TRUE:{true_payload} ; FALSE:{false_payload}"
                 print(msg)
                 return self._result.append(
@@ -385,6 +392,10 @@ class SqliManager:
         copy_form_params = deepcopy(form_params)
         copy_form_params[param] = payloads["TruePld"]
         true_response = self._request_handler.handle_request(url, post_data=copy_form_params)
+
+        if not true_response:
+            return
+
         true_length = len(true_response.text)
         true_status = true_response.status_code
         if true_length == 0:
@@ -396,7 +407,7 @@ class SqliManager:
         false_status = false_response.status_code
         false_length = len(false_response.text)
 
-        if abs(true_length - false_length) / true_length > self._bool_diff_rate or true_length != false_length:
+        if abs(true_length - false_length) / true_length > self._bool_diff_rate:
             copy_form_params = deepcopy(form_params)
             copy_form_params[param] = payloads["True2Pld"]
             true2_response = self._request_handler.handle_request(url, post_data=copy_form_params)
@@ -404,7 +415,7 @@ class SqliManager:
             if true2_length == 0:
                 true2_length = 1
 
-            if abs(true_length - true2_length) / true_length > self._bool_diff_rate or true_length == true2_length:
+            if abs(true_length - true2_length) / true_length < self._bool_diff_rate or true_length == true2_length:
                 msg = f"SqliManager bool FORM size! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
                 print(msg)
                 self._result.append(
