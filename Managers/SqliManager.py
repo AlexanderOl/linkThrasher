@@ -35,7 +35,7 @@ class SqliManager:
             {'TruePld': '\'OR(1=1)OR\'', 'FalsePld': '\'OR(1=2)OR\'', 'True2Pld': '\'OR(2=2)OR\''},
             {'TruePld': '"OR(1=1)OR"', 'FalsePld': '"OR(1=2)OR"', 'True2Pld': '"OR(2=2)OR"'}
         ]
-        self._bool_diff_rate = 0.1
+        self._bool_diff_rate = 0.05
         self._delay_in_seconds = 5
         self._request_handler = RequestHandler(cookies, headers)
         self._injections_to_check = [' syntax', 'xpath', 'internalerror', 'exception: ']
@@ -189,7 +189,7 @@ class SqliManager:
             self.__send_bool_based_request(payloads[0], payloads[1], payloads[2])
 
     def __get_param_payloads(self, url: str, injections: [], salt) -> set[tuple[str, str, str]]:
-        time_based_payloads_urls = set()
+        payloads_urls = set()
         parsed = urlparse.urlparse(url)
         params_key_values = filter(None, parsed.query.split("&"))
 
@@ -201,12 +201,12 @@ class SqliManager:
             param_split = param_k_v.split('=')
             main_url_split = url.split(param_k_v)
             for payloads in injections:
-                time_based_payloads_urls.add(
+                payloads_urls.add(
                     (f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',
                      f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}',
                      f'{main_url_split[0]}{param_split[0]}={payloads["True2Pld"]}{main_url_split[1]}'))
 
-        return time_based_payloads_urls
+        return payloads_urls
 
     def __check_get_params(self, dto: GetRequestDTO):
 
@@ -240,8 +240,7 @@ class SqliManager:
             return
 
         true_status = true_response.status_code
-
-        if true_status == 403:
+        if true_status == 403 or true_status == 429:
             return
 
         true_length = len(true_response.text)
@@ -254,11 +253,19 @@ class SqliManager:
         if false_length == 0:
             false_length = 1
 
+        if false_status == 403 or false_status == 429:
+            return
+
         if abs(true_length - false_length) / true_length > self._bool_diff_rate:
             true2_response = self._request_handler.handle_request(true2_payload)
             true2_length = len(true2_response.text)
+            true2_status = true2_response.status_code
+
             if true2_length == 0:
                 true2_length = 1
+
+            if true2_status == 403 or true2_status == 429:
+                return
 
             if abs(true_length - true2_length) / true_length < self._bool_diff_rate or true_length == true2_length:
                 msg = f"SQLiManager bool PARAM length! TRUE:{true_payload} ; FALSE:{false_payload}"
