@@ -179,11 +179,11 @@ class SqliManager:
         route_time_based_payloads = self.__get_route_payloads(dto.url, self._time_based_payloads)
         route_bool_based_payloads = self.__get_route_payloads(dto.url, self._bool_based_payloads)
 
-        # for url in route_url_payloads:
-            # self.__send_error_based_request(url, dto)
+        for url in route_url_payloads:
+            self.__send_error_based_request(url, dto)
 
-        # for payloads in route_time_based_payloads:
-        #     self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
+        for payloads in route_time_based_payloads:
+            self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
 
         for payloads in route_bool_based_payloads:
             self.__send_bool_based_request(payloads[0], payloads[1], payloads[2])
