@@ -15,7 +15,7 @@ from Common.ThreadManager import ThreadManager
 from Managers.XssManager import XssManager
 from Models.FormRequestDTO import FormDetailsDTO, FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
-from Tools.EyeWitness import EyeWitness
+from Tools.Nuclei import Nuclei
 
 
 class FastUrlFlowManager:
@@ -68,6 +68,9 @@ class FastUrlFlowManager:
             parsed_parts = urlparse(raw_urls[len(raw_urls) - 1])
             cache_key = parsed_parts.netloc
             get_dtos, form_dtos = self.__get_cached_dtos(raw_urls, cache_key)
+
+            nuclei = Nuclei(cache_key, self._headers)
+            nuclei.fuzz_batch(get_dtos)
 
             xss_manager = XssManager(domain=cache_key, headers=self._headers)
             xss_manager.check_get_requests(get_dtos)

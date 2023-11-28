@@ -43,8 +43,8 @@ class SingleUrlFlowManager:
         gobuster = Gobuster(domain, self._headers, raw_cookies)
         gobuster.check_single_url(start_url)
 
+        nuclei = Nuclei(domain, self._headers, raw_cookies)
         if self._check_mode == 'U':
-            nuclei = Nuclei(domain, self._headers, raw_cookies)
             nuclei.check_single_url(start_url)
 
         hakrawler = Hakrawler(domain, raw_cookies, self._headers, cookies)
@@ -65,6 +65,8 @@ class SingleUrlFlowManager:
 
         feroxbuster = Feroxbuster(domain, cookies, self._headers, raw_cookies)
         all_get_dtos, all_form_dtos = feroxbuster.check_single_url(start_url, get_hakrawler_dtos, form_dtos)
+
+        nuclei.fuzz_batch(all_get_dtos)
 
         manual_testing = ManualTesting(domain)
         get_dtos = manual_testing.save_urls_for_manual_testing(all_get_dtos, all_form_dtos)

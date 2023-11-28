@@ -3,6 +3,7 @@ import pathlib
 import re
 from datetime import datetime
 from typing import List
+import urllib.parse as urlparse
 
 from Managers.CacheManager import CacheManager
 from Models.GetRequestDTO import GetRequestDTO
@@ -15,11 +16,67 @@ class Nuclei:
         self._headers = headers
         self._raw_cookies = raw_cookies
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
+        self._tool_result_fuzzing_dir = f'{os.environ.get("app_result_path")}{self._tool_name}_fuzzing'
         self._cache_manager = CacheManager(self._tool_name, cache_key)
         self._expected = ['[info]', '[medium]', '[high]', '[critical]', '[unknown]', '[network]']
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         self._chunk_size = 30
         self._main_txt_filepath = f"{self._tool_result_dir}/MAIN_{self._cache_key}.txt"
+        self._main_txt_fuzzing_filepath = f"{self._tool_result_fuzzing_dir}/MAIN_{self._cache_key}.txt"
+        self._already_added_pathes = {}
+
+    def fuzz_batch(self, get_dtos: List[GetRequestDTO]):
+
+        if not os.path.exists(self._tool_result_fuzzing_dir):
+            os.makedirs(self._tool_result_fuzzing_dir)
+
+        if os.path.isfile(self._main_txt_fuzzing_filepath):
+            return
+
+        get_result = set()
+        checked_urls = set()
+        for dto in get_dtos:
+
+            is_added = self.__check_if_added(dto.url)
+            if is_added:
+                continue
+
+            if '?' in dto.url:
+                to_check = dto.url.split('?')[0]
+                if to_check not in checked_urls:
+                    checked_urls.add(to_check)
+                    get_result.add(dto.url)
+
+        if len(get_result) == 0:
+            return
+
+        txt_filepath = f"{self._tool_result_fuzzing_dir}/{self._cache_key}.txt"
+        if os.path.exists(txt_filepath):
+            print(f"File found: {txt_filepath}")
+            return
+
+        txt_file = open(txt_filepath, 'w')
+        for url in get_result:
+            txt_file.write(f"{url}\n")
+        txt_file.close()
+
+        filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
+        command = f"nuclei --list {filepath} -t /root/Desktop/TOOLs/fuzzing-templates"
+
+        stream = os.popen(command)
+        bash_outputs = stream.readlines()
+
+        main_txt_file = open(self._main_txt_fuzzing_filepath, 'w')
+        for line in bash_outputs:
+            encoded_line = self._ansi_escape.sub('', line)
+            for keyword in self._expected:
+                if keyword in encoded_line:
+                    main_txt_file.write(f"{encoded_line}")
+            print(line)
+        main_txt_file.close()
+
+        if os.path.isfile(filepath):
+            os.remove(filepath)
 
     def check_multiple_uls(self, get_dtos: List[GetRequestDTO]):
 
@@ -114,3 +171,23 @@ class Nuclei:
                 os.remove(filepath)
         if os.path.exists(self._main_txt_filepath):
             os.remove(self._main_txt_filepath)
+
+    def __check_if_added(self, url):
+        is_already_added = False
+        parsed = urlparse.urlparse(url)
+        params_to_check = filter(None, parsed.query.split("&"))
+        key_to_check = ''
+        for param_to_check in params_to_check:
+            param_value_split = param_to_check.split('=')
+            key_to_check += f'{param_value_split[0]};'
+
+        added_path = self._already_added_pathes.get(parsed.path)
+        if added_path:
+            if key_to_check in added_path:
+                is_already_added = True
+            else:
+                self._already_added_pathes[parsed.path].append(key_to_check)
+        else:
+            self._already_added_pathes[parsed.path] = [key_to_check]
+
+        return is_already_added
