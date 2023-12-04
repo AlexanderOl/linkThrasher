@@ -27,7 +27,7 @@ class MassDns:
 
             massdns_result_file = f"{self._tool_result_dir}/{self._domain}_raw.txt"
             command = f'cd /root/Desktop/TOOLs/massdns/; ' \
-                      f'./scripts/subbrute.py lists/all.txt {self._domain} | ' \
+                      f'./scripts/subbrute.py {self._domain} lists/all.txt | ' \
                       f'./bin/massdns -r lists/resolvers.txt -t A -o S -w {massdns_result_file}'
             stream = os.popen(command)
             stream.read()
