@@ -132,15 +132,36 @@ class Feroxbuster:
         pk = ProcessKiller()
         pk.run_temp_process(cmd, url)
         report_lines = []
-
         if os.path.exists(output_file):
             main_txt_file = open(output_file, 'r')
             report_lines = main_txt_file.readlines()
             if os.path.getsize(output_file) == 0:
                 os.remove(output_file)
 
+        result_lines = []
+        unique_keys = {}
+        for line in report_lines:
+            split = list(filter(None, line.split(' ')))
+            if len(split) > 4:
+                key = f"{split[0]}_{split[1]}_{split[2]}_{split[3]}"
+                if key not in unique_keys:
+                    unique_keys[key] = 0
+                if unique_keys[key] >= 5:
+                    continue
+                unique_keys[key] += 1
+                result_lines.append(line)
+
+        if len(result_lines) == 0:
+            os.remove(output_file)
+            return result_lines
+
+        txt_file = open(output_file, 'w')
+        for line in result_lines:
+            txt_file.write(line)
+        txt_file.close()
+
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) Feroxbuster finished!')
-        return report_lines
+        return result_lines
 
     def __get_ready_urls(self, report_lines: List[str], already_exist_dtos: List[GetRequestDTO]) -> set:
         filtered_output = set()

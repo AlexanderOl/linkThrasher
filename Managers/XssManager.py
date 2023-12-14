@@ -131,7 +131,7 @@ class XssManager:
             if response is None:
                 return
 
-            self.__check_keywords(response, dto.parent_url, InjectionType.Xss_Stored)
+            self.__check_keywords(response, dto.url, InjectionType.Xss_Stored)
 
     def __check_keywords(self,
                          response,

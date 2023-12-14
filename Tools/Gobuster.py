@@ -66,6 +66,30 @@ class Gobuster:
                 if os.path.exists(output_file) and os.path.getsize(output_file) == 0:
                     os.remove(output_file)
 
+                main_txt_file = open(output_file, 'r')
+                report_lines = main_txt_file.readlines()
+                result_lines = []
+                unique_keys = {}
+                for line in report_lines:
+                    split = list(filter(None, line.split('(Status: ')))
+                    if len(split) >= 2:
+                        key = f"{split[-1]}"
+                        if key not in unique_keys:
+                            unique_keys[key] = 0
+                        if unique_keys[key] >= 5:
+                            continue
+                        unique_keys[key] += 1
+                        result_lines.append(line)
+
+                if len(result_lines) == 0:
+                    os.remove(output_file)
+                    return result_lines
+
+                txt_file = open(output_file, 'w')
+                for line in result_lines:
+                    txt_file.write(line)
+                txt_file.close()
+
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: Gobuster {url} finished.')
                 duration = datetime.now() - then
                 self._cache_manager.save_result([f'Gobuster finished in {duration.total_seconds()} seconds'])
