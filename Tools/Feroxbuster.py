@@ -151,7 +151,7 @@ class Feroxbuster:
                 unique_keys[key] += 1
                 result_lines.append(line)
 
-        if len(result_lines) == 0:
+        if len(result_lines) == 0 and os.path.exists(output_file):
             os.remove(output_file)
             return result_lines
 

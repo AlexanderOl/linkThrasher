@@ -183,13 +183,13 @@ class SqliManager:
             self.__send_error_based_request(url, dto)
 
         for payloads in route_time_based_payloads:
-            self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
+            self.__send_time_based_request(payloads['TruePld'], payloads['FalsePld'], payloads['True2Pld'])
 
         for payloads in route_bool_based_payloads:
             self.__send_bool_based_request(payloads)
 
     def __get_param_payloads(self, url: str, injections: [], salt) -> set[tuple[str, str, str]]:
-        payloads_urls = set()
+        payloads_urls = list()
         parsed = urlparse.urlparse(url)
         params_key_values = filter(None, parsed.query.split("&"))
 
@@ -202,17 +202,17 @@ class SqliManager:
             main_url_split = url.split(param_k_v)
             for payloads in injections:
                 if len(payloads.keys()) == 3:
-                    payloads_urls.add(
-                        (f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',
-                         f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}',
-                         f'{main_url_split[0]}{param_split[0]}={payloads["True2Pld"]}{main_url_split[1]}'))
+                    payloads_urls.append({
+                        'TruePld': f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',
+                        'FalsePld': f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}',
+                        'True2Pld': f'{main_url_split[0]}{param_split[0]}={payloads["True2Pld"]}{main_url_split[1]}'})
                 elif len(payloads.keys()) == 5:
-                    payloads_urls.add(
-                        (f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',
-                         f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}',
-                         f'{main_url_split[0]}{param_split[0]}={payloads["True2Pld"]}{main_url_split[1]}',
-                         f'{main_url_split[0]}{param_split[0]}={payloads["False2Pld"]}{main_url_split[1]}',
-                         f'{main_url_split[0]}{param_split[0]}={payloads["True3Pld"]}{main_url_split[1]}'))
+                    payloads_urls.append({
+                        'TruePld': f'{main_url_split[0]}{param_split[0]}={payloads["TruePld"]}{main_url_split[1]}',
+                        'FalsePld': f'{main_url_split[0]}{param_split[0]}={payloads["FalsePld"]}{main_url_split[1]}',
+                        'True2Pld': f'{main_url_split[0]}{param_split[0]}={payloads["True2Pld"]}{main_url_split[1]}',
+                        'False2Pld': f'{main_url_split[0]}{param_split[0]}={payloads["False2Pld"]}{main_url_split[1]}',
+                        'True3Pld': f'{main_url_split[0]}{param_split[0]}={payloads["True3Pld"]}{main_url_split[1]}'})
 
         return payloads_urls
 
@@ -226,7 +226,7 @@ class SqliManager:
             self.__send_error_based_request(payload, dto)
 
         for payloads in time_based_payloads_urls:
-            self.__send_time_based_request(payloads[0], payloads[1], payloads[2])
+            self.__send_time_based_request(payloads['TruePld'], payloads['FalsePld'], payloads['True2Pld'])
 
         for payloads in bool_based_payloads_urls:
             self.__send_bool_based_request(payloads)
