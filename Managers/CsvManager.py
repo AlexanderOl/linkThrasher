@@ -34,13 +34,13 @@ class CsvManager:
                         elif '*' in target and '/' in target and row[1].upper() == 'WILDCARD':
                             urls.add(f"https://{target.replace('*', '')}")
                         elif '*.' in target:
-                            domains.add(target.replace('*.', ''))
+                            domains.add(target.replace('*.', '').replace('*', ''))
                         elif target.startswith('www.'):
                             domains.add(target.replace('www.', ''))
                         elif '/' in str(target):
                             ips.update(set([str(ip) for ip in ipaddress.IPv4Network(target)]))
-                        else:
-                            domains.add(target)
+                        elif ' ' not in target:
+                            domains.add(target.replace('*', ''))
                     else:
                         print(f"NotEligible/OOS: {', '.join(row)}")
 
