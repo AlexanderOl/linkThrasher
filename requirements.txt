@@ -10,3 +10,4 @@ fuzzywuzzy
 pyvirtualdisplay
 python-Levenshtein
 colorama
+tld

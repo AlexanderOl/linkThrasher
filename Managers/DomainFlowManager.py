@@ -68,10 +68,8 @@ class DomainFlowManager:
         subfinder = SubFinder(domain)
         subfinder_subdomains = subfinder.get_subdomains()
 
-        massdns_subdomains = set()
-        if self._check_mode == 'D':
-            massdns = MassDns(domain)
-            massdns_subdomains = massdns.get_subdomains()
+        massdns = MassDns(domain)
+        massdns_subdomains = massdns.get_subdomains()
 
         all_subdomains = amass_subdomains \
             .union(knock_subdomains) \
