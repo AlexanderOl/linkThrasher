@@ -18,6 +18,7 @@ class SqliManager:
         self._result = None
         self._domain = domain
         self._false_positives = ['malformed request syntax',
+                                 'script tag to avoid syntax errors'
                                  'eval|internal|range|reference|syntax|type']
         self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
         self._time_based_payloads = [

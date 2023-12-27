@@ -20,8 +20,7 @@ class XssManager:
         self._expected = ['<poc>', '""poc\'\'']
         self._injections_to_check = ['<poc>', '""poc\'\'']
         # self._injections_to_check = ['syntax', 'xpath', '<poc>', '""poc\'\'', 'internalerror', 'warning: ', 'exception: ']
-        self._false_positives = ['malformed request syntax',
-                                 'eval|internal|range|reference|syntax|type']
+        self._false_positives = ['malformed request syntax', 'eval|internal|range|reference|syntax|type']
         self._request_handler = RequestHandler(cookies, headers)
         self._request_checker = RequestChecker()
 

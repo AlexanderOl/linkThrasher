@@ -57,8 +57,9 @@ class MassDns:
                 if os.path.exists(massdns_ct_result_file):
                     with open(massdns_ct_result_file) as file:
                         for line in file:
-                            subdomain = str(line.split(' A ')[1])
-                            subdomains.add(subdomain)
+                            if ' A ' in line:
+                                subdomain = str(line.split(' A ')[1])
+                                subdomains.add(subdomain)
                 os.remove(massdns_ct_result_file)
 
             os.remove(massdns_result_file)
