@@ -25,8 +25,13 @@ class RequestHandler:
                         redirect_url = redirect
                     head_response = requests.head(redirect_url, headers=self._headers, cookies=self._cookies, timeout=timeout)
             if 'Content-Type' in head_response.headers \
-                    and head_response.headers['Content-Type'] == 'application/octet-stream':
+                    and head_response.headers['Content-Type'] == 'application/octet-stream' \
+                    and head_response.headers['Content-Type'] == 'application/x-gzip':
                 print(f'Url: ({url}) content type - application/octet-stream')
+                return
+            if 'content-disposition' in head_response.headers \
+                    and 'attachment' in head_response.headers['content-disposition']:
+                print(f'Url: ({url}) content-disposition - {head_response.headers["content-disposition"]}')
                 return
             return head_response
         except Exception as inst:
