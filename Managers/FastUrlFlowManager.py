@@ -131,9 +131,15 @@ class FastUrlFlowManager:
         return self._get_dtos, self._form_dtos
 
     def __check_url(self, url):
+
+        head_response = self._request_handler.send_head_request(url, timeout=3)
+        if not head_response:
+            return
+
         response = self._request_handler.handle_request(url, timeout=3)
         if response is None:
             return
+
         if len(response.text) > 1000000:
             print(f'Url: ({url}) response too long')
             return
