@@ -46,11 +46,11 @@ class Gobuster:
                         status_code = proc_msg.split(' => ', 1)[1].split(' (', 1)[0]
                         length_to_exclude = proc_msg.split('Length: ', 1)[1].split(')', 1)[0]
                         if status_code.isdigit() and status_code != '200':
-                            print(f'Status will be excluded: {status_code}')
+                            print(f'Gobuster status will be excluded: {status_code}')
                             cmd_arr.append('-b')
                             cmd_arr.append(f'{status_code},404')
                         elif length_to_exclude.isdigit():
-                            print(f'Length will be excluded: {length_to_exclude}')
+                            print(f'Gobuster length will be excluded: {length_to_exclude}')
                             cmd_arr.append('-b')
                             cmd_arr.append('404')
                             cmd_arr.append('--exclude-length')

@@ -16,6 +16,14 @@ class RequestHandler:
                 print(f'{url} - url is not valid')
                 return
             head_response = requests.head(url, headers=self._headers, cookies=self._cookies, timeout=timeout)
+            if 300 <= head_response.status_code < 400:
+                if 'Location' in head_response.headers:
+                    redirect = head_response.headers['Location']
+                    if redirect[0] == '/':
+                        redirect_url = f'{parsed.scheme}://{parsed.netloc}{redirect}'
+                    else:
+                        redirect_url = redirect
+                    head_response = requests.head(redirect_url, headers=self._headers, cookies=self._cookies, timeout=timeout)
             if 'Content-Type' in head_response.headers \
                     and head_response.headers['Content-Type'] == 'application/octet-stream':
                 print(f'Url: ({url}) content type - application/octet-stream')

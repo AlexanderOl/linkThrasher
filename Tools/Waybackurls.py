@@ -24,16 +24,23 @@ class Waybackurls:
         self._result: List[GetRequestDTO] = []
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._checked_hrefs = set()
+        self._waybackurls_out_of_scope_domains = os.environ.get("waybackurls_out_of_scope_domains")
 
     def get_requests_dtos(self) -> List[GetRequestDTO]:
         cache_manager = CacheManager(self._tool_name, self._domain)
         result = cache_manager.get_saved_result()
         if result is None:
+
+            out_of_scope = [x for x in self._waybackurls_out_of_scope_domains.split(';') if x]
+            if any(oos in self._domain for oos in out_of_scope):
+                print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) out of scope waybackurls')
+                return []
             result = self.__get_urls()
             cache_manager.save_result(result)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} found {len(result)} items')
         return result
+
     def __get_urls(self) -> List[GetRequestDTO]:
         res_file = f'{self._tool_result_dir}/{self._domain.replace(":", "_")}.txt'
 
