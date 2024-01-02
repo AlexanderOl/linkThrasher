@@ -151,9 +151,10 @@ class Feroxbuster:
                 unique_keys[key] += 1
                 result_lines.append(line)
 
-        if len(result_lines) == 0 and os.path.exists(output_file):
+        if os.path.exists(output_file):
             os.remove(output_file)
-            return result_lines
+        if len(result_lines) == 0:
+            return []
 
         txt_file = open(output_file, 'w')
         for line in result_lines:
