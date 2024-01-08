@@ -10,9 +10,9 @@ from Models.GetRequestDTO import GetRequestDTO
 
 
 class Nuclei:
-    def __init__(self, cache_key, headers, raw_cookies=''):
+    def __init__(self, cache_key: str, headers, raw_cookies=''):
         self._tool_name = self.__class__.__name__
-        self._cache_key = cache_key
+        self._cache_key = cache_key.replace(':', '_')
         self._headers = headers
         self._raw_cookies = raw_cookies
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
@@ -75,8 +75,11 @@ class Nuclei:
             print(line)
         main_txt_file.close()
 
-        if os.path.isfile(filepath):
+        if os.path.getsize(filepath) == 0:
             os.remove(filepath)
+
+        if os.path.getsize(self._main_txt_fuzzing_filepath) == 0:
+            os.remove(self._main_txt_fuzzing_filepath)
 
     def check_multiple_uls(self, get_dtos: List[GetRequestDTO]):
 
@@ -113,12 +116,19 @@ class Nuclei:
                 header_args += f' -H "Cookies:{self._raw_cookies}"'
 
             command = f"nuclei -u {url} {header_args} " \
-                      f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing/ " \
+                      f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/miscellaneous " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/cves " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
-                      f"-et /root/Desktop/TOOLs/nuclei-templates/cves/2022/CVE-2022-45362.yaml"
+                      f"-et /root/Desktop/TOOLs/nuclei-templates/cves/2022/CVE-2022-45362.yaml " \
+                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-csp.yaml " \
+                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-hsts.yaml " \
+                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/display-via-header.yaml " \
+                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-x-frame-options.yaml " \
+                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/detect-dns-over-https.yaml " \
+                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/tabnabbing-check.yaml "
+
             stream = os.popen(command)
             bash_outputs = stream.readlines()
 
@@ -144,13 +154,20 @@ class Nuclei:
         txt_file.close()
 
         filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
+
         command = f"nuclei --list {filepath} " \
-                  f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing/ " \
+                  f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing " \
                   f"-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
+                  f"-t /root/Desktop/TOOLs/nuclei-templates/miscellaneous " \
                   f"-t /root/Desktop/TOOLs/nuclei-templates/cves " \
                   f"-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
-                  f"-t /root/Desktop/TOOLs/nuclei-templates/miscellaneous " \
-                  f"-et /root/Desktop/TOOLs/nuclei-templates/cves/2022/CVE-2022-45362.yaml"
+                  f"-et /root/Desktop/TOOLs/nuclei-templates/cves/2022/CVE-2022-45362.yaml " \
+                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-csp.yaml " \
+                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-hsts.yaml " \
+                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/display-via-header.yaml " \
+                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-x-frame-options.yaml " \
+                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/detect-dns-over-https.yaml " \
+                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/tabnabbing-check.yaml "
 
         stream = os.popen(command)
         bash_outputs = stream.readlines()

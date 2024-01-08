@@ -335,8 +335,9 @@ class SqliManager:
                     if abs(true2_length - true3_length) / true2_length < self._bool_diff_rate or true2_length == true3_length:
                         msg = f"SQLiManager bool PARAM length! TRUE:{payloads['TruePld']}; FALSE:{payloads['FalsePld']}"
                         print(msg)
+
                         return self._result.append(
-                            InjectionFoundDTO(InjectionType.Sqli_Get_Bool, payloads["TruePld"],
+                            InjectionFoundDTO(InjectionType.Sqli_Get_Bool, url or payloads["TruePld"],
                                               'BOOL_BASED', 'RESPONSE1 is NONE', msg))
         if true_status != false_status:
             if url:
@@ -351,7 +352,7 @@ class SqliManager:
                 msg = f"SQLiManager bool PARAM status_code! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
                 print(msg)
                 return self._result.append(
-                    InjectionFoundDTO(InjectionType.Sqli_Get_Bool, payloads["TruePld"],
+                    InjectionFoundDTO(InjectionType.Sqli_Get_Bool, url or payloads["TruePld"],
                                       'BOOL_BASED', 'RESPONSE1 is NONE', msg))
 
     def __send_time_based_request(self, true_payload, false_payload, true_2payload):

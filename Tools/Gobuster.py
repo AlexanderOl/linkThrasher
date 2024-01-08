@@ -83,7 +83,7 @@ class Gobuster:
 
                 if len(result_lines) == 0:
                     os.remove(output_file)
-                    return result_lines
+                    return []
 
                 txt_file = open(output_file, 'w')
                 for line in result_lines:

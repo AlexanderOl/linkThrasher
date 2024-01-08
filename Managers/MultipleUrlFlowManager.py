@@ -1,6 +1,6 @@
 import os
 import urllib3
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import List
 from urllib.parse import urlparse
 from Managers.CacheManager import CacheManager
@@ -19,21 +19,23 @@ class MultipleUrlFlowManager:
         self._tool_name = self.__class__.__name__
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        self._result: List[GetRequestDTO] = []
+        self._cache_keys = str(date.today()-timedelta(days=4))
 
-    def run(self, urls=set()):
+    def run(self, urls=None):
         file_path = 'Targets/urls.txt'
         if os.path.exists(file_path):
 
             get_dtos = self.__get_cached_dtos(file_path)
 
-            nuclei = Nuclei(str(date.today()), self._headers)
+            nuclei = Nuclei(self._cache_keys, self._headers)
             nuclei.check_multiple_uls(get_dtos)
 
             single_url_man = SingleUrlFlowManager(self._headers)
             thread_man = ThreadManager()
             thread_man.run_all(single_url_man.run, get_dtos, debug_msg=self._tool_name)
 
-        elif len(urls) > 0:
+        elif urls:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: {self._tool_name} will run {len(urls)} urls')
             get_dtos: List[GetRequestDTO] = []
 
@@ -46,7 +48,7 @@ class MultipleUrlFlowManager:
                     continue
                 get_dtos.append(GetRequestDTO(url, response))
 
-            nuclei = Nuclei(str(date.today()), self._headers)
+            nuclei = Nuclei(self._cache_keys, self._headers)
             nuclei.check_multiple_uls(get_dtos)
 
             single_url_man = SingleUrlFlowManager(self._headers)
@@ -59,7 +61,7 @@ class MultipleUrlFlowManager:
 
     def __get_cached_dtos(self, file_path) -> List[GetRequestDTO]:
 
-        cache_manager = CacheManager(self._tool_name, str(date.today()))
+        cache_manager = CacheManager(self._tool_name, self._cache_keys)
         get_dtos = cache_manager.get_saved_result()
         out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
 
@@ -73,25 +75,27 @@ class MultipleUrlFlowManager:
             for url in raw_urls:
                 parsed_parts = urlparse(url)
                 combined = f'{parsed_parts.scheme}://{parsed_parts.netloc}/'
-                if combined != url:
+                if combined.rstrip('//') != url and combined != url:
                     urls.add(url)
                 urls.add(combined)
 
             filtered_urls = [url for url in urls if all(oos not in url for oos in out_of_scope)]
 
-            get_dtos: List[GetRequestDTO] = []
-            for url in filtered_urls:
-                check = self._request_handler.send_head_request(url)
-                if check is None:
-                    continue
-                response = self._request_handler.handle_request(url)
-                if response is None:
-                    continue
-                get_dtos.append(GetRequestDTO(url, response))
+            thread_man = ThreadManager()
+            thread_man.run_all(self.__send_request, filtered_urls, debug_msg=self._tool_name)
 
-            cache_manager.save_result(get_dtos)
+            cache_manager.save_result(self._result)
         else:
             out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
             filtered_urls = list([dto for dto in get_dtos if all(oos not in dto.url for oos in out_of_scope)])
             get_dtos = filtered_urls
         return get_dtos
+
+    def __send_request(self, url: str):
+        check = self._request_handler.send_head_request(url)
+        if check is None:
+            return
+        response = self._request_handler.handle_request(url)
+        if response is None:
+            return
+        self._result.append(GetRequestDTO(url, response))
