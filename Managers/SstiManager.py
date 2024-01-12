@@ -155,5 +155,5 @@ class SstiManager:
         if response.status_code == 500:
             details = response.text[0:200].replace('\n', '').replace('\r', '').strip()
             print(f"SstiManager: 500 status - {url}; DETAILS: {details}")
-            self.errors_500.append({'url': url, 'response': response})
+            self.errors_500.append({'url': url, 'response_len': len(response.text)})
 

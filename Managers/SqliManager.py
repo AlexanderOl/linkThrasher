@@ -422,7 +422,7 @@ class SqliManager:
             details = response.text[0:200].replace('\n', '').replace('\r', '').strip()
             print(f"SqliManager: 500 status - {url_payload}; DETAILS: {details}")
             need_to_discard_payload = True
-            self.errors_500.append({'url': url_payload, 'response': response})
+            self.errors_500.append({'url': url_payload, 'response_len': len(response.text)})
 
         return need_to_discard_payload
 

@@ -75,7 +75,7 @@ class Nuclei:
             print(line)
         main_txt_file.close()
 
-        if os.path.getsize(filepath) == 0:
+        if os.path.exists(filepath):
             os.remove(filepath)
 
         if os.path.getsize(self._main_txt_fuzzing_filepath) == 0:

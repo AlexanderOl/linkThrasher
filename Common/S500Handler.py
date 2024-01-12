@@ -15,14 +15,12 @@ class S500Handler:
         for error in errors:
             url = error['url']
             netloc = urlparse(url).netloc
-            response_length = len(error['response'].text)
-            key = f'{netloc};{response_length}'
+            key = f'{netloc};{error["response_len"]}'
             if key in checked_key_urls:
                 continue
             else:
                 checked_key_urls[key] = url
 
-        new_errors_count = 0
         if not os.path.exists(self._res_500_error_key_path):
             json_file = open(self._res_500_error_key_path, 'w')
             for key in checked_key_urls.keys():
