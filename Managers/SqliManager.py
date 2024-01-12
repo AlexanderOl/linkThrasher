@@ -316,10 +316,12 @@ class SqliManager:
 
                 if abs(true2_length - false2_length) / true2_length > self._bool_diff_rate and true2_length != false2_status:
 
+                    msg_payload = 'BOOL_BASED'
                     if url:
                         copy_form_params = deepcopy(form_params)
                         copy_form_params[param] = payloads["True3Pld"]
                         true3_response = self._request_handler.handle_request(url, post_data=copy_form_params)
+                        msg_payload = str(copy_form_params)
                     else:
                         true3_response = self._request_handler.handle_request(payloads["True3Pld"])
 
@@ -338,12 +340,14 @@ class SqliManager:
 
                         return self._result.append(
                             InjectionFoundDTO(InjectionType.Sqli_Get_Bool, url or payloads["TruePld"],
-                                              'BOOL_BASED', 'RESPONSE1 is NONE', msg))
+                                              msg_payload, 'RESPONSE1 is NONE', msg))
         if true_status != false_status:
+            msg_payload = 'BOOL_BASED'
             if url:
                 copy_form_params = deepcopy(form_params)
                 copy_form_params[param] = payloads["True2Pld"]
                 true2_response = self._request_handler.handle_request(url, post_data=copy_form_params)
+                msg_payload = str(copy_form_params)
             else:
                 true2_response = self._request_handler.handle_request(payloads["True2Pld"])
 
@@ -353,7 +357,7 @@ class SqliManager:
                 print(msg)
                 return self._result.append(
                     InjectionFoundDTO(InjectionType.Sqli_Get_Bool, url or payloads["TruePld"],
-                                      'BOOL_BASED', 'RESPONSE1 is NONE', msg))
+                                      msg_payload, 'RESPONSE1 is NONE', msg))
 
     def __send_time_based_request(self, true_payload, false_payload, true_2payload):
         t1 = datetime.now()
