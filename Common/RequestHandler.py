@@ -24,10 +24,11 @@ class RequestHandler:
                     else:
                         redirect_url = redirect
                     head_response = requests.head(redirect_url, headers=self._headers, cookies=self._cookies, timeout=timeout)
-            if 'Content-Type' in head_response.headers \
-                    and head_response.headers['Content-Type'] == 'application/octet-stream' \
-                    and head_response.headers['Content-Type'] == 'application/x-gzip':
-                print(f'Url: ({url}) content type - application/octet-stream')
+            if 'Content-Type' in head_response.headers and \
+                    (head_response.headers['Content-Type'] == 'application/octet-stream' or
+                     head_response.headers['Content-Type'] == 'application/x-gzip' or
+                     head_response.headers['Content-Type'] == 'video/mp4'):
+                print(f'Url: ({url}) content type - {head_response.headers["Content-Type"]}')
                 return
             if 'content-disposition' in head_response.headers \
                     and 'attachment' in head_response.headers['content-disposition']:
