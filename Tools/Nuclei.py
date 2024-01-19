@@ -6,7 +6,7 @@ from typing import List
 import urllib.parse as urlparse
 
 from Managers.CacheManager import CacheManager
-from Models.GetRequestDTO import GetRequestDTO
+from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class Nuclei:
@@ -25,7 +25,7 @@ class Nuclei:
         self._main_txt_fuzzing_filepath = f"{self._tool_result_fuzzing_dir}/MAIN_{self._cache_key}.txt"
         self._already_added_pathes = {}
 
-    def fuzz_batch(self, get_dtos: List[GetRequestDTO]):
+    def fuzz_batch(self, head_dtos: List[HeadRequestDTO]):
 
         if not os.path.exists(self._tool_result_fuzzing_dir):
             os.makedirs(self._tool_result_fuzzing_dir)
@@ -35,7 +35,7 @@ class Nuclei:
 
         get_result = set()
         checked_urls = set()
-        for dto in get_dtos:
+        for dto in head_dtos:
 
             is_added = self.__check_if_added(dto.url)
             if is_added:
@@ -81,7 +81,7 @@ class Nuclei:
         if os.path.getsize(self._main_txt_fuzzing_filepath) == 0:
             os.remove(self._main_txt_fuzzing_filepath)
 
-    def check_multiple_uls(self, get_dtos: List[GetRequestDTO]):
+    def check_multiple_uls(self, get_dtos: List[HeadRequestDTO]):
 
         report_lines = self._cache_manager.get_saved_result()
         if not report_lines and not isinstance(report_lines, List):
@@ -119,6 +119,8 @@ class Nuclei:
                       f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/miscellaneous " \
+                      f"-t /root/Desktop/TOOLs/nuclei-templates/exposures " \
+                      f"-t /root/Desktop/TOOLs/nuclei-templates/takeovers " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/cves " \
                       f"-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
                       f"-et /root/Desktop/TOOLs/nuclei-templates/cves/2022/CVE-2022-45362.yaml " \
@@ -142,7 +144,7 @@ class Nuclei:
 
             self._cache_manager.save_result(result)
 
-    def __check_batch(self, dtos_batch: List[GetRequestDTO], counter):
+    def __check_batch(self, dtos_batch: List[HeadRequestDTO], counter):
         txt_filepath = f"{self._tool_result_dir}/{self._cache_key}_{counter}.txt"
         if os.path.exists(txt_filepath):
             print(f"File found: {txt_filepath}")

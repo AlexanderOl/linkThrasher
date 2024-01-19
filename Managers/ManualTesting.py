@@ -4,7 +4,8 @@ import urllib.parse as urlparse
 from typing import List
 from collections import defaultdict
 from Models.FormRequestDTO import FormRequestDTO
-from Models.GetRequestDTO import GetRequestDTO
+from Models.HeadRequestDTO import HeadRequestDTO
+
 
 class ManualTesting:
     def __init__(self, domain):
@@ -13,7 +14,8 @@ class ManualTesting:
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._already_added_pathes = {}
 
-    def save_urls_for_manual_testing(self, spider_dtos: List[GetRequestDTO], form_dtos: List[FormRequestDTO]):
+    def save_urls_for_manual_testing(self, spider_dtos: List[HeadRequestDTO], form_dtos: List[FormRequestDTO]) \
+            -> List[HeadRequestDTO]:
 
         groups = defaultdict(list)
 

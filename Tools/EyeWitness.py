@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from Common.ProcessKiller import ProcessKiller
 from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
-from Models.GetRequestDTO import GetRequestDTO
+from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class EyeWitness:
@@ -19,15 +19,7 @@ class EyeWitness:
         self._tool_dir = f"Results/{self._tool_name}"
         self._request_handler = RequestHandler('', headers)
 
-    def visit_urls(self, urls: set):
-        dtos: List[GetRequestDTO] = []
-        for url in urls:
-            response = self._request_handler.handle_request(url)
-            if response is not None:
-                dtos.append(GetRequestDTO(url, response))
-        self.visit_dtos(dtos)
-
-    def visit_dtos(self, dtos: List[GetRequestDTO]):
+    def visit_dtos(self, dtos: List[HeadRequestDTO]):
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._cache_key}) Eyewitness will visit {len(dtos)} urls')
 
         if len(dtos) == 0:
@@ -65,7 +57,7 @@ class EyeWitness:
         for i in range(0, len(items_to_split), self._chunk_size):
             yield items_to_split[i:i + self._chunk_size]
 
-    def __make_screens(self, dtos_batch: List[GetRequestDTO], counter: int):
+    def __make_screens(self, dtos_batch: List[HeadRequestDTO], counter: int):
 
         counter_directory_path = f'{self._tool_result_dir}/{self._cache_key}/{counter}'
         if os.path.exists(counter_directory_path):
@@ -123,4 +115,12 @@ class EyeWitness:
                 keys_to_check.add(key)
             checked_urls.add(url)
 
-        self.visit_urls(checked_urls)
+        self.__visit_urls(checked_urls)
+
+    def __visit_urls(self, urls: set):
+        dtos: List[HeadRequestDTO] = []
+        for url in urls:
+            response = self._request_handler.send_head_request(url)
+            if response is not None:
+                dtos.append(HeadRequestDTO(response))
+        self.visit_dtos(dtos)

@@ -6,11 +6,13 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 from Common.ProcessKiller import ProcessKiller
+from Common.RequestChecker import RequestChecker
 from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Models.FormRequestDTO import FormDetailsDTO, FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
+from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class Feroxbuster:
@@ -18,19 +20,21 @@ class Feroxbuster:
         self._headers = headers
         self._form_dtos: List[FormRequestDTO] = []
         self._get_dtos: List[GetRequestDTO] = []
+        self._head_dtos: List[HeadRequestDTO] = []
         self._domain = domain
         self._tool_name = self.__class__.__name__
         self._cache_manager = CacheManager(self._tool_name, domain)
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
         self._request_handler = RequestHandler(cookies, headers)
+        self._request_checker = RequestChecker()
         self._raw_cookies = raw_cookies
         self._had_found_too_many_urls = False
         self._valid_statuses = [200, 204, 301, 302, 307, 308, 401, 403, 405, 500]
         self._default_timeout = 5
 
     def check_single_url(self, url,
-                         already_exist_get_dtos: List[GetRequestDTO],
+                         already_exist_head_dtos: List[HeadRequestDTO],
                          already_exist_form_dtos: List[FormRequestDTO]):
 
         dtos = self._cache_manager.get_saved_result()
@@ -39,18 +43,18 @@ class Feroxbuster:
             self._form_dtos = already_exist_form_dtos
             report_lines = self.__run_tool_cmd(url)
 
-            ready_urls = self.__get_ready_urls(report_lines, already_exist_get_dtos)
+            ready_urls = self.__get_ready_urls(report_lines, already_exist_head_dtos)
 
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_url, ready_urls, debug_msg=self._tool_name)
-            self._get_dtos.extend(already_exist_get_dtos)
-            self._cache_manager.save_result({'get_dtos': self._get_dtos, 'form_dtos': self._form_dtos})
+            self._head_dtos.extend(already_exist_head_dtos)
+            self._cache_manager.save_result({'head_dtos': self._head_dtos, 'form_dtos': self._form_dtos})
 
         else:
-            self._get_dtos = dtos['get_dtos']
+            self._head_dtos = dtos['head_dtos']
             self._form_dtos = dtos['form_dtos']
 
-        return self._get_dtos, self._form_dtos
+        return self._head_dtos, self._form_dtos
 
     def __check_url(self, url):
         timeout = self._default_timeout
@@ -63,66 +67,28 @@ class Feroxbuster:
         if response is None:
             return
 
-        if self._had_found_too_many_urls and (
-                any(dto for dto in self._get_dtos if
-                    dto.status_code == response.status_code and
-                    dto.response_length == len(response.text)) or
-                'captcha' in response.text.lower()):
+        if self._had_found_too_many_urls and (any(dto for dto in self._get_dtos if
+                                                  dto.status_code == response.status_code and
+                                                  dto.response_length == len(response.text)) or
+                                              'captcha' in response.text.lower()):
             return
 
         if response.status_code not in self._valid_statuses:
             return
 
-        get_dto = GetRequestDTO(url, response)
-        self._get_dtos.append(get_dto)
+        get_dtos = GetRequestDTO(url, response)
+        self._get_dtos.append(get_dtos)
+        self._head_dtos.append(HeadRequestDTO(response))
         if response.status_code == 200:
-            form_dto = self.__find_forms(url, response.text, get_dto)
+            form_dto = self._request_checker.find_forms(url, response.text, get_dtos, self._form_dtos)
             if form_dto:
                 self._form_dtos.append(form_dto)
 
-    def __find_forms(self, target_url, web_page, dto: GetRequestDTO):
-        if '<form' not in web_page:
-            return
-        forms = BeautifulSoup(web_page, "html.parser").findAll('form')
-        if forms:
-            form_details: List[FormDetailsDTO] = []
-            for form in forms:
-                action_tag = BeautifulSoup(str(form), "html.parser").find('form').get('action')
-                parsed_parts = urlparse(target_url)
-                if not action_tag:
-                    action_tag = target_url
-                elif action_tag.startswith('http'):
-                    main_domain = '.'.join(parsed_parts.netloc.split('.')[-2:])
-                    if main_domain not in action_tag:
-                        continue
-                    action_tag = action_tag
-                elif action_tag.startswith('/'):
-                    base_url = f'{parsed_parts.scheme}://{parsed_parts.netloc}'
-                    action_tag = base_url + action_tag
-
-                if any(form_dto for form_dto in self._form_dtos if
-                       any(param for param in form_dto.form_params if param.action == action_tag)):
-                    continue
-
-                method = BeautifulSoup(str(form), "html.parser").find('form').get('method')
-                method = method if method else "post"
-                input_tags = BeautifulSoup(str(form), "html.parser").findAll('input')
-                params = {}
-                for input_tag in input_tags:
-                    param_name = BeautifulSoup(str(input_tag), "html.parser").find('input').get('name')
-                    if param_name:
-                        default_value = BeautifulSoup(str(input_tag), "html.parser").find('input').get('value')
-                        if default_value is None:
-                            default_value = ''
-                        params[param_name] = default_value
-                form_details.append(FormDetailsDTO(action_tag.strip(), params, method))
-            return FormRequestDTO(target_url, form_details, dto)
-
     def __run_tool_cmd(self, url) -> [str]:
 
-        output_file = f'{self._tool_result_dir}/RAW_{self._domain.replace(":","_")}.txt'
+        output_file = f'{self._tool_result_dir}/RAW_{self._domain.replace(":", "_")}.txt'
         cmd = ["feroxbuster", "--url", url, "-w", f"{self._app_wordlists_path}directories.txt", "-o", output_file,
-               "--insecure", "--no-state"]
+               "--insecure", "--no-state", "--threads", "10", "--auto-bail"]
         if len(self._raw_cookies) > 0:
             cmd.append("-b")
             cmd.append(self._raw_cookies)
@@ -164,7 +130,7 @@ class Feroxbuster:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) Feroxbuster finished!')
         return result_lines
 
-    def __get_ready_urls(self, report_lines: List[str], already_exist_dtos: List[GetRequestDTO]) -> set:
+    def __get_ready_urls(self, report_lines: List[str], already_exist_dtos: List[HeadRequestDTO]) -> set:
         filtered_output = set()
         http_ok_only = False
         if len(report_lines) > 10000:

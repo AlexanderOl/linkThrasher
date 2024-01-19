@@ -10,12 +10,14 @@ from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Models.GetRequestDTO import GetRequestDTO
+from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class Nmap:
     def __init__(self, domain, headers, cookies=''):
         self._tool_name = self.__class__.__name__
         self._domain = domain
+        self._port_head_dtos: List[HeadRequestDTO] = []
         self._port_get_dtos: List[GetRequestDTO] = []
         self._cache_manager = CacheManager(self._tool_name, self._domain)
         self._request_handler = RequestHandler(headers, cookies)
@@ -23,12 +25,12 @@ class Nmap:
         self._existing_get_dtos: List[GetRequestDTO] = []
         self._batch_size = 5
 
-    def check_ports(self, get_dtos: List[GetRequestDTO]):
+    def check_ports(self, get_dtos: List[HeadRequestDTO]):
         subdomains = list((urlparse(dto.url).netloc for dto in get_dtos))
 
-        self._port_get_dtos = self._cache_manager.get_saved_result()
-        if not self._port_get_dtos and not isinstance(self._port_get_dtos, List):
-            self._port_get_dtos: List[GetRequestDTO] = []
+        self._port_head_dtos = self._cache_manager.get_saved_result()
+        if not self._port_head_dtos and not isinstance(self._port_head_dtos, List):
+            self._port_head_dtos: List[HeadRequestDTO] = []
             start = time.time()
 
             bash_outputs = self.__run_nmap_command(subdomains)
@@ -38,13 +40,13 @@ class Nmap:
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_url_with_port, url_with_ports)
 
-            self._cache_manager.save_result(self._port_get_dtos)
+            self._cache_manager.save_result(self._port_head_dtos)
 
             end = time.time()
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: Nmap finished in {(end - start) / 60} minutes. '
-                  f'Found new {len(self._port_get_dtos)} dtos')
+                  f'Found new {len(self._port_head_dtos)} dtos')
 
-        return self._port_get_dtos
+        return self._port_head_dtos
 
     def __parse_cmd_output(self, bash_outputs: List[str]) -> set:
 
@@ -109,13 +111,13 @@ class Nmap:
                                                                 except_ssl_action_args=ssl_action_args)
             resp_length = len(response.text)
             netloc = str(urlparse(url).netloc.split(':', 1)[0])
-            if not any(dto for dto in self._existing_get_dtos if
-                       netloc in dto.url and dto.response_length != resp_length) and \
-                    not any(
-                        dto for dto in self._port_get_dtos if netloc in dto.url and dto.response_length != resp_length):
+            if (not any(dto for dto in self._existing_get_dtos if netloc in dto.url)
+                    and not any(
+                        dto for dto in self._port_get_dtos if netloc in dto.url and dto.response_length != resp_length)):
                 if ssl_action_args[1]:
                     url = url.replace('https:', 'http:')
                 self._port_get_dtos.append(GetRequestDTO(url, response))
+                self._port_head_dtos.append(HeadRequestDTO(response))
 
     def __except_ssl_action(self, args: []):
         target_url = args[0]

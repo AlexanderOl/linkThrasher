@@ -5,10 +5,10 @@ from datetime import datetime
 
 
 class CacheManager:
-    def __init__(self, tool_name, domain:str):
+    def __init__(self, tool_name, domain: str):
         self._tool_result_dir = f"Results/{tool_name}"
-        self._result_filepath = f"{self._tool_result_dir}/{domain.replace(':','_')}.json"
-        self._txt_result_filepath = f"{self._tool_result_dir}/{domain.replace(':','_')}.txt"
+        self._result_filepath = f"{self._tool_result_dir}/{domain.replace(':', '_')}.json"
+        self._txt_result_filepath = f"{self._tool_result_dir}/{domain.replace(':', '_')}.txt"
 
     def get_saved_result(self):
         try:
@@ -44,4 +44,3 @@ class CacheManager:
                 file = open('Results/Final.txt', 'a')
                 res = f'[{datetime.now().strftime("%H:%M:%S")}]: {self._result_filepath} found {len(result)} \n'
                 file.write(res)
-

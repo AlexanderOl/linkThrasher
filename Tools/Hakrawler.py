@@ -7,6 +7,7 @@ from typing import List
 from Common.ThreadManager import ThreadManager
 from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
+from Models.HeadRequestDTO import HeadRequestDTO
 from Tools.LinkFinder import LinkFinder
 from Models.GetRequestDTO import GetRequestDTO
 
@@ -23,10 +24,11 @@ class Hakrawler:
             '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
             '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$',
             re.IGNORECASE)
-        self._result: List[GetRequestDTO] = []
+        self._result: List[HeadRequestDTO] = []
+        self._get_dtos: List[GetRequestDTO] = []
         self._checked_hrefs = set()
 
-    def get_requests_dtos(self, start_url) -> List[GetRequestDTO]:
+    def get_requests_dtos(self, start_url) -> List[HeadRequestDTO]:
         cache_manager = CacheManager('Hakrawler', self._domain)
         result = cache_manager.get_saved_result()
         if result is None:
@@ -36,7 +38,7 @@ class Hakrawler:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} found {len(result)} items')
         return result
 
-    def __get_urls(self, start_url) -> List[GetRequestDTO]:
+    def __get_urls(self, start_url) -> list[HeadRequestDTO]:
 
         cookie_param = ''
         if self._raw_cookies:
@@ -83,12 +85,13 @@ class Hakrawler:
         if response is None:
             return
 
-        if len(self._result) > 0 and any(dto for dto in self._result if
-                                         dto.response_length == len(response.text) and
-                                         dto.status_code == response.status_code):
+        if len(self._get_dtos) > 0 and any(dto for dto in self._get_dtos if
+                                           dto.response_length == len(response.text) and
+                                           dto.status_code == response.status_code):
             return
 
         if response.status_code < 400 or response.status_code == 500:
-            self._result.append(GetRequestDTO(url, response))
+            self._get_dtos.append(GetRequestDTO(url, response))
+            self._result.append(HeadRequestDTO(response))
 
         return self._result

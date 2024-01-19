@@ -1,4 +1,3 @@
-import urllib
 from copy import deepcopy
 from datetime import datetime
 import urllib.parse as urlparse
@@ -8,8 +7,8 @@ from Common.RequestChecker import RequestChecker
 from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
-from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO
+from Models.HeadRequestDTO import HeadRequestDTO
 from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
@@ -25,7 +24,7 @@ class SstiManager:
         self._request_handler = RequestHandler(cookies, headers)
         self._request_checker = RequestChecker()
 
-    def check_get_requests(self, dtos: List[GetRequestDTO]):
+    def check_get_requests(self, dtos: List[HeadRequestDTO]):
 
         cache_manager = CacheManager('SstiManager/Get', self._domain)
         self._result = cache_manager.get_saved_result()
@@ -43,7 +42,7 @@ class SstiManager:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SstiManager GET found {len(self._result)} items')
 
-    def __check_url(self, dto: GetRequestDTO):
+    def __check_url(self, dto: HeadRequestDTO):
 
         route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._payloads)
 
@@ -53,7 +52,7 @@ class SstiManager:
                 return
             self.__check_keywords(response, url, InjectionType.Ssti_Get)
 
-    def __check_get_params(self, dto: GetRequestDTO):
+    def __check_get_params(self, dto: HeadRequestDTO):
 
         payloads_urls = self._request_checker.get_param_payloads(dto.url, self._payloads, 'SSTI')
 

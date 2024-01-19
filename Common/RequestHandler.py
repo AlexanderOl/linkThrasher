@@ -9,7 +9,7 @@ class RequestHandler:
         self._cookies = cookies
         self._headers = headers
 
-    def send_head_request(self, url, timeout=3):
+    def send_head_request(self, url, except_ssl_action=None, except_ssl_action_args: [] = None, timeout=3):
         try:
             parsed = urlparse(url)
             if not parsed.scheme or not parsed.netloc:
@@ -35,6 +35,12 @@ class RequestHandler:
                 print(f'Url: ({url}) content-disposition - {head_response.headers["content-disposition"]}')
                 return
             return head_response
+        except SSLError:
+            if except_ssl_action_args:
+                return except_ssl_action(except_ssl_action_args)
+        except (ConnectionError, Timeout):
+            print(f'Url ({url}) - Timeout, ConnectionError')
+            return
         except Exception as inst:
             print(f'Url ({url}) - Exception: {inst}')
             return

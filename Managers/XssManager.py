@@ -10,6 +10,7 @@ from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO
+from Models.HeadRequestDTO import HeadRequestDTO
 from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
@@ -19,12 +20,11 @@ class XssManager:
         self._domain = domain
         self._expected = ['<poc>', '""poc\'\'']
         self._injections_to_check = ['<poc>', '""poc\'\'']
-        # self._injections_to_check = ['syntax', 'xpath', '<poc>', '""poc\'\'', 'internalerror', 'warning: ', 'exception: ']
         self._false_positives = ['malformed request syntax', 'eval|internal|range|reference|syntax|type']
         self._request_handler = RequestHandler(cookies, headers)
         self._request_checker = RequestChecker()
 
-    def check_get_requests(self, dtos: List[GetRequestDTO]):
+    def check_get_requests(self, dtos: List[HeadRequestDTO]):
 
         cache_manager = CacheManager('XssManager/Get', self._domain)
         self._result = cache_manager.get_saved_result()
@@ -179,7 +179,7 @@ class XssManager:
 
         return need_to_discard_payload
 
-    def __check_route(self, dto: GetRequestDTO):
+    def __check_route(self, dto: HeadRequestDTO):
 
         route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._injections_to_check)
 

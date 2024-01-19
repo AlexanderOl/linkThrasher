@@ -9,11 +9,10 @@ from Managers.Spider import Spider
 from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
 from Managers.SstiManager import SstiManager
+from Models.HeadRequestDTO import HeadRequestDTO
 from Tools.Feroxbuster import Feroxbuster
 from Tools.Gobuster import Gobuster
 from Tools.Hakrawler import Hakrawler
-from Managers.XssManager import XssManager
-from Models.GetRequestDTO import GetRequestDTO
 from Tools.Katana import Katana
 from Tools.Nuclei import Nuclei
 from Tools.Waybackurls import Waybackurls
@@ -26,12 +25,12 @@ class SingleUrlFlowManager:
         self._check_mode = os.environ.get('check_mode')
         disable_warnings(exceptions.InsecureRequestWarning)
 
-    def run(self, get_dto: GetRequestDTO):
+    def run(self, head_dto: HeadRequestDTO):
 
-        if 404 <= get_dto.status_code < 500:
+        if 404 <= head_dto.status_code < 500:
             return
 
-        start_url = get_dto.url
+        start_url = head_dto.url
         domain = urlparse(start_url).netloc
 
         main_domain = '.'.join(domain.split('.')[-2:])
@@ -69,32 +68,40 @@ class SingleUrlFlowManager:
         nuclei.fuzz_batch(all_get_dtos)
 
         manual_testing = ManualTesting(domain)
-        get_dtos = manual_testing.save_urls_for_manual_testing(all_get_dtos, all_form_dtos)
+        head_dtos = manual_testing.save_urls_for_manual_testing(all_get_dtos, all_form_dtos)
 
-        if len(get_dtos) == 0:
+        if len(head_dtos) == 0:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) request DTOs not found')
             return
         else:
-            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) will run {len(get_dtos)} dtos')
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) will run {len(head_dtos)} dtos')
 
-        xss_manager = XssManager(domain, self._headers, cookies)
-        xss_manager.check_get_requests(get_dtos)
-        xss_manager.check_form_requests(form_dtos)
+        # xss_manager = XssManager(domain, self._headers, cookies)
+        # xss_manager.check_get_requests(get_dtos)
+        # xss_manager.check_form_requests(form_dtos)
 
         ssrf_manager = SsrfManager(domain, cookies, self._headers)
-        ssrf_manager.check_get_requests(get_dtos)
+        ssrf_manager.check_get_requests(head_dtos)
         ssrf_manager.check_form_requests(form_dtos)
 
         sqli_manager = SqliManager(domain, cookies, self._headers)
-        sqli_manager.check_get_requests(get_dtos)
+        sqli_manager.check_get_requests(head_dtos)
         sqli_manager.check_form_requests(form_dtos)
 
         ssti_manager = SstiManager(domain, cookies, self._headers)
-        ssti_manager.check_get_requests(get_dtos)
+        ssti_manager.check_get_requests(head_dtos)
         ssti_manager.check_form_requests(form_dtos)
 
         errors = sqli_manager.errors_500 + ssti_manager.errors_500
         s500 = S500Handler()
         s500.save_server_errors(errors)
+
+        if self._check_mode == 'UL':
+            with open("Targets/urls.txt", "r") as f:
+                lines = f.readlines()
+            with open("Targets/urls.txt", "w") as f:
+                for line in lines:
+                    if start_url.rstrip('/') not in line.strip("\n") :
+                        f.write(line)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SingleUrlFlowManager done with ({start_url})')

@@ -7,7 +7,7 @@ from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Common.ThreadManager import ThreadManager
-from Models.GetRequestDTO import GetRequestDTO
+from Models.HeadRequestDTO import HeadRequestDTO
 from Tools.Nuclei import Nuclei
 
 
@@ -19,53 +19,50 @@ class MultipleUrlFlowManager:
         self._tool_name = self.__class__.__name__
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        self._result: List[GetRequestDTO] = []
-        self._cache_keys = str(date.today()-timedelta(days=4))
+        self._result: List[HeadRequestDTO] = []
+        self._cache_keys = str(date.today()-timedelta(days=13))
 
     def run(self, urls=None):
         file_path = 'Targets/urls.txt'
         if os.path.exists(file_path):
 
-            get_dtos = self.__get_cached_dtos(file_path)
+            head_dtos = self.__get_cached_dtos(file_path)
 
             nuclei = Nuclei(self._cache_keys, self._headers)
-            nuclei.check_multiple_uls(get_dtos)
+            nuclei.check_multiple_uls(head_dtos)
 
             single_url_man = SingleUrlFlowManager(self._headers)
             thread_man = ThreadManager()
-            thread_man.run_all(single_url_man.run, get_dtos, debug_msg=self._tool_name)
+            thread_man.run_all(single_url_man.run, head_dtos, debug_msg=self._tool_name)
 
         elif urls:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: {self._tool_name} will run {len(urls)} urls')
-            get_dtos: List[GetRequestDTO] = []
+            head_dtos: List[HeadRequestDTO] = []
 
             for url in urls:
-                check = self._request_handler.send_head_request(url)
-                if check is None:
-                    continue
-                response = self._request_handler.handle_request(url)
+                response = self._request_handler.send_head_request(url)
                 if response is None:
                     continue
-                get_dtos.append(GetRequestDTO(url, response))
+                head_dtos.append(HeadRequestDTO(response))
 
             nuclei = Nuclei(self._cache_keys, self._headers)
-            nuclei.check_multiple_uls(get_dtos)
+            nuclei.check_multiple_uls(head_dtos)
 
             single_url_man = SingleUrlFlowManager(self._headers)
             thread_man = ThreadManager()
-            thread_man.run_all(single_url_man.run, get_dtos, debug_msg=self._tool_name)
+            thread_man.run_all(single_url_man.run, head_dtos, debug_msg=self._tool_name)
 
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{file_path} is missing')
 
-    def __get_cached_dtos(self, file_path) -> List[GetRequestDTO]:
+    def __get_cached_dtos(self, file_path) -> List[HeadRequestDTO]:
 
         cache_manager = CacheManager(self._tool_name, self._cache_keys)
-        get_dtos = cache_manager.get_saved_result()
+        head_dtos = cache_manager.get_saved_result()
         out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
 
-        if not get_dtos and not isinstance(get_dtos, List):
+        if not head_dtos and not isinstance(head_dtos, List):
 
             for f in os.listdir(self._tool_result_dir):
                 os.remove(os.path.join(self._tool_result_dir, f))
@@ -85,17 +82,15 @@ class MultipleUrlFlowManager:
             thread_man.run_all(self.__send_request, filtered_urls, debug_msg=self._tool_name)
 
             cache_manager.save_result(self._result)
+            head_dtos = self._result
         else:
             out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
-            filtered_urls = list([dto for dto in get_dtos if all(oos not in dto.url for oos in out_of_scope)])
-            get_dtos = filtered_urls
-        return get_dtos
+            filtered_urls = list([dto for dto in head_dtos if all(oos not in dto.url for oos in out_of_scope)])
+            head_dtos = filtered_urls
+        return head_dtos
 
     def __send_request(self, url: str):
-        check = self._request_handler.send_head_request(url)
-        if check is None:
-            return
-        response = self._request_handler.handle_request(url)
+        response = self._request_handler.send_head_request(url)
         if response is None:
             return
-        self._result.append(GetRequestDTO(url, response))
+        self._result.append(HeadRequestDTO(response))

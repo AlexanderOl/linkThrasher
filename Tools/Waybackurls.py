@@ -8,6 +8,7 @@ from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Managers.CacheManager import CacheManager
 from Models.GetRequestDTO import GetRequestDTO
+from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class Waybackurls:
@@ -21,12 +22,13 @@ class Waybackurls:
             '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
             '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$',
             re.IGNORECASE)
-        self._result: List[GetRequestDTO] = []
+        self._result: List[HeadRequestDTO] = []
+        self._get_dtos: List[GetRequestDTO] = []
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._checked_hrefs = set()
         self._waybackurls_out_of_scope_domains = os.environ.get("waybackurls_out_of_scope_domains")
 
-    def get_requests_dtos(self) -> List[GetRequestDTO]:
+    def get_requests_dtos(self) -> List[HeadRequestDTO]:
         cache_manager = CacheManager(self._tool_name, self._domain)
         result = cache_manager.get_saved_result()
         if result is None:
@@ -41,7 +43,7 @@ class Waybackurls:
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} found {len(result)} items')
         return result
 
-    def __get_urls(self) -> List[GetRequestDTO]:
+    def __get_urls(self) -> List[HeadRequestDTO]:
         res_file = f'{self._tool_result_dir}/{self._domain.replace(":", "_")}.txt'
 
         command = f"echo '{self._domain}' | waybackurls > {res_file}"
@@ -57,7 +59,7 @@ class Waybackurls:
                 href_urls.add(line)
         text_file.close()
 
-        urls = self._filter_urls(href_urls)
+        urls = self.__filter_urls(href_urls)
 
         tm = ThreadManager()
         tm.run_all(self.__check_href_urls, urls, debug_msg=self._tool_name)
@@ -70,24 +72,25 @@ class Waybackurls:
             return
         else:
             self._checked_hrefs.add(url_parts.path)
+
         check = self._request_handler.send_head_request(url)
         if check is None:
             return
+
         response = self._request_handler.handle_request(url, timeout=3)
         if response is None:
             return
 
-        if len(self._result) > 0 and any(dto for dto in self._result if
-                                         dto.response_length == len(response.text) and
-                                         dto.status_code == response.status_code):
+        if len(self._get_dtos) > 0 and any(dto for dto in self._get_dtos if
+                                           dto.response_length == len(response.text) and
+                                           dto.status_code == response.status_code):
             return
 
         if response.status_code < 400 or response.status_code == 500:
-            self._result.append(GetRequestDTO(url, response))
+            self._get_dtos.append(GetRequestDTO(url, response))
+            self._result.append(HeadRequestDTO(response))
 
-        return self._result
-
-    def _filter_urls(self, href_urls) -> set:
+    def __filter_urls(self, href_urls) -> set:
         urls = set()
         path_without_digits = set()
         added_url_params = {}

@@ -9,7 +9,7 @@ from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Models.FormRequestDTO import FormRequestDTO
-from Models.GetRequestDTO import GetRequestDTO
+from Models.HeadRequestDTO import HeadRequestDTO
 from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
@@ -39,11 +39,11 @@ class SqliManager:
         self._bool_diff_rate = 0.05
         self._delay_in_seconds = 5
         self._request_handler = RequestHandler(cookies, headers)
-        self._injections_to_check = [' syntax', 'xpath', 'internalerror', 'exception: ']
+        self._injections_to_check = [' syntax', 'ODBC SQL Server Driver', 'internalerror', 'exception: ']
         self.errors_500 = []
         self._request_checker = RequestChecker()
 
-    def check_get_requests(self, dtos: List[GetRequestDTO]):
+    def check_get_requests(self, dtos: List[HeadRequestDTO]):
 
         cache_manager = CacheManager('SqliManager/Get', self._domain)
         self._result = cache_manager.get_saved_result()
@@ -174,7 +174,7 @@ class SqliManager:
 
         return payloads
 
-    def __check_url(self, dto: GetRequestDTO):
+    def __check_url(self, dto: HeadRequestDTO):
 
         route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._error_based_payloads)
         route_time_based_payloads = self.__get_route_payloads(dto.url, self._time_based_payloads)
@@ -217,7 +217,7 @@ class SqliManager:
 
         return payloads_urls
 
-    def __check_get_params(self, dto: GetRequestDTO):
+    def __check_get_params(self, dto: HeadRequestDTO):
 
         error_based_payloads_urls = self._request_checker.get_param_payloads(dto.url, self._error_based_payloads, 'sqliE')
         time_based_payloads_urls = self.__get_param_payloads(dto.url, self._time_based_payloads, 'sqliT')
@@ -232,7 +232,7 @@ class SqliManager:
         for payloads in bool_based_payloads_urls:
             self.__send_bool_based_request(payloads)
 
-    def __send_error_based_request(self, url: str, dto: GetRequestDTO):
+    def __send_error_based_request(self, url: str, dto: HeadRequestDTO):
         try:
             response = self._request_handler.handle_request(url)
             if response is None:

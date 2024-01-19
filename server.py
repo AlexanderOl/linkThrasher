@@ -1,11 +1,14 @@
 import os
 from dotenv import load_dotenv
+
+from Common.RequestHandler import RequestHandler
 from Managers.CsvManager import CsvManager
 from Managers.DomainFlowManager import DomainFlowManager
 from Managers.FastUrlFlowManager import FastUrlFlowManager
 from Managers.MultipleUrlFlowManager import MultipleUrlFlowManager
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Models.GetRequestDTO import GetRequestDTO
+from Models.HeadRequestDTO import HeadRequestDTO
 
 headers = {
     'Cache-Control': 'max-age=0',
@@ -45,7 +48,9 @@ if __name__ == '__main__':
     elif check_mode == 'U':
         single_url_man = SingleUrlFlowManager(headers)
         single_url = os.environ.get('single_url')
-        single_url_man.run(GetRequestDTO(single_url))
+        request_handler = RequestHandler(cookies="", headers=headers)
+        response = request_handler.send_head_request(single_url)
+        single_url_man.run(HeadRequestDTO(response))
 
     elif check_mode == 'UL':
         check_mode = os.environ.get('check_mode')

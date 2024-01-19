@@ -7,8 +7,8 @@ from typing import List
 
 from Managers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
-from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO
+from Models.HeadRequestDTO import HeadRequestDTO
 from Models.InjectionFoundDTO import InjectionFoundDTO, InjectionType
 
 
@@ -24,7 +24,7 @@ class SsrfManager:
         self._form_domain_log = f'{self._tool_dir}/FORM_{self._domain.replace(":","_")}_uids.txt'
         self._request_handler = RequestHandler(cookies, headers)
 
-    def check_get_requests(self, dtos: List[GetRequestDTO]):
+    def check_get_requests(self, dtos: List[HeadRequestDTO]):
 
         if not os.path.exists(self._tool_dir):
             os.makedirs(self._tool_dir)
