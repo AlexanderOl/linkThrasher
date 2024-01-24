@@ -1,6 +1,7 @@
 from urllib.parse import urlparse
 
 import requests
+from requests import Response
 from requests.exceptions import SSLError, Timeout, ConnectionError
 
 
@@ -15,7 +16,7 @@ class RequestHandler:
             if not parsed.scheme or not parsed.netloc:
                 print(f'{url} - url is not valid')
                 return
-            head_response = requests.head(url, headers=self._headers, cookies=self._cookies, timeout=timeout)
+            head_response = self.__send_prepared_request('HEAD', url, {}, timeout)
             if 300 <= head_response.status_code < 400:
                 if 'Location' in head_response.headers:
                     redirect = head_response.headers['Location']
@@ -23,7 +24,7 @@ class RequestHandler:
                         redirect_url = f'{parsed.scheme}://{parsed.netloc}{redirect}'
                     else:
                         redirect_url = redirect
-                    head_response = requests.head(redirect_url, headers=self._headers, cookies=self._cookies, timeout=timeout)
+                    head_response = self.__send_prepared_request('HEAD', redirect_url, {}, timeout)
             if 'Content-Type' in head_response.headers and \
                     (head_response.headers['Content-Type'] == 'application/octet-stream' or
                      head_response.headers['Content-Type'] == 'application/x-gzip' or
@@ -53,21 +54,11 @@ class RequestHandler:
             if not parsed.scheme or not parsed.netloc:
                 print(f'{url} - url is not valid')
                 return
+
             if post_data:
-                response = requests.post(url,
-                                         data=post_data,
-                                         headers=self._headers,
-                                         cookies=self._cookies,
-                                         allow_redirects=False,
-                                         verify=False,
-                                         timeout=timeout)
+                response = self.__send_prepared_request('POST', url, post_data, timeout)
             else:
-                response = requests.get(url,
-                                        headers=self._headers,
-                                        cookies=self._cookies,
-                                        allow_redirects=False,
-                                        verify=False,
-                                        timeout=timeout)
+                response = self.__send_prepared_request('GET', url, {}, timeout)
 
             if len(response.text) > 1000000:
                 print(f'Url: ({url}) response too long')
@@ -83,3 +74,15 @@ class RequestHandler:
         except Exception as inst:
             print(f'Url ({url}) - Exception: {inst}')
             return
+
+    def __send_prepared_request(self, method, url, post_data, timeout) -> Response:
+        s = requests.Session()
+        req = requests.Request(method=method,
+                               url=url,
+                               headers=self._headers,
+                               cookies=self._cookies,
+                               data=post_data)
+        prep = req.prepare()
+        prep.url = url
+        response = s.send(prep, verify=False, timeout=timeout)
+        return response
