@@ -104,7 +104,7 @@ class RequestChecker:
                     continue
 
                 method = BeautifulSoup(str(form), "html.parser").find('form').get('method')
-                method = method if method else "post"
+                method = method if method else "get"
                 input_tags = BeautifulSoup(str(form), "html.parser").findAll('input')
                 params = {}
                 for input_tag in input_tags:
@@ -114,5 +114,24 @@ class RequestChecker:
                         if default_value is None:
                             default_value = ''
                         params[param_name] = default_value
-                form_details.append(FormDetailsDTO(action_tag.strip(), params, method))
+
+                select_tags = BeautifulSoup(str(form), "html.parser").findAll('select')
+                for select_tag in select_tags:
+                    param_name = BeautifulSoup(str(select_tag), "html.parser").find('select').get('name')
+                    if param_name:
+                        selected_options = (BeautifulSoup(str(select_tag), "html.parser")
+                                            .find_all('option', {'selected': True}))
+                        if len(selected_options) > 0:
+                            default_value = BeautifulSoup(str(selected_options[0]), "html.parser").find('option').get('value')
+                            if default_value is None:
+                                default_value = ''
+                            params[param_name] = default_value
+                        else:
+                            all_options = BeautifulSoup(str(select_tag), "html.parser").findAll('option')
+                            if len(all_options) > 0:
+                                default_value = BeautifulSoup(str(all_options[0]), "html.parser").find('option').get('value')
+                                if default_value is None:
+                                    default_value = ''
+                                params[param_name] = default_value
+                    form_details.append(FormDetailsDTO(action_tag.strip(), params, method))
             return FormRequestDTO(target_url, form_details, dto)

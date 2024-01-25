@@ -44,7 +44,7 @@ class Spider:
     def get_all_links(self, start_url) -> Tuple[List[HeadRequestDTO], List[FormRequestDTO]]:
 
         form_cache_manager = CacheManager('Spider/Form', self._current_domain)
-        head_cache_manager = CacheManager('Spider/Head', self._current_domain)
+        head_cache_manager = CacheManager('Spider/Get', self._current_domain)
         head_found = head_cache_manager.get_saved_result()
         form_found = form_cache_manager.get_saved_result()
 

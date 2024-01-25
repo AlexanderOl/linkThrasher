@@ -20,7 +20,7 @@ class MultipleUrlFlowManager:
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         self._result: List[HeadRequestDTO] = []
-        self._cache_keys = str(date.today()-timedelta(days=13))
+        self._cache_keys = str(date.today())
 
     def run(self, urls=None):
         file_path = 'Targets/urls.txt'
