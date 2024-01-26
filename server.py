@@ -7,7 +7,6 @@ from Managers.DomainFlowManager import DomainFlowManager
 from Managers.FastUrlFlowManager import FastUrlFlowManager
 from Managers.MultipleUrlFlowManager import MultipleUrlFlowManager
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
-from Models.GetRequestDTO import GetRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
 
 headers = {

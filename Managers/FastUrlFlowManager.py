@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import List, Tuple
 from urllib.parse import urlparse
 from urllib3 import exceptions, disable_warnings
-from bs4 import BeautifulSoup
 
 from Common.RequestChecker import RequestChecker
 from Common.S500Handler import S500Handler
@@ -14,7 +13,7 @@ from Managers.SsrfManager import SsrfManager
 from Managers.SstiManager import SstiManager
 from Common.ThreadManager import ThreadManager
 from Managers.XssManager import XssManager
-from Models.FormRequestDTO import FormDetailsDTO, FormRequestDTO
+from Models.FormRequestDTO import FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
 from Tools.Nuclei import Nuclei

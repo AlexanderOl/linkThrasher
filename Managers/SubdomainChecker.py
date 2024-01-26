@@ -75,7 +75,9 @@ class SubdomainChecker:
                                                            timeout=5)
 
         if response is not None:
-            if str(response.status_code).startswith('3') and 'Location' in response.headers:
+            if 'Server' in response.headers and response.headers['Server'] == 'cloudflare':
+                return
+            elif str(response.status_code).startswith('3') and 'Location' in response.headers:
                 redirect = response.headers['Location']
                 parsed = urlparse(redirect)
                 if redirect and redirect[0] == '/':

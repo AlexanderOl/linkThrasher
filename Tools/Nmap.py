@@ -109,6 +109,9 @@ class Nmap:
                 response = self._request_handler.handle_request(redirect_url,
                                                                 except_ssl_action=self.__except_ssl_action,
                                                                 except_ssl_action_args=ssl_action_args)
+
+            if 'Server' in response.headers and response.headers['Server'] == 'cloudflare':
+                return
             resp_length = len(response.text)
             netloc = str(urlparse(url).netloc.split(':', 1)[0])
             if (not any(dto for dto in self._existing_get_dtos if netloc in dto.url)

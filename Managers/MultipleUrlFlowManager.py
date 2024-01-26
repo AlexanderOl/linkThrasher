@@ -21,21 +21,10 @@ class MultipleUrlFlowManager:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         self._result: List[HeadRequestDTO] = []
         self._cache_keys = str(date.today())
+        self._file_path = 'Targets/urls.txt'
 
     def run(self, urls=None):
-        file_path = 'Targets/urls.txt'
-        if os.path.exists(file_path):
-
-            head_dtos = self.__get_cached_dtos(file_path)
-
-            nuclei = Nuclei(self._cache_keys, self._headers)
-            nuclei.check_multiple_uls(head_dtos)
-
-            single_url_man = SingleUrlFlowManager(self._headers)
-            thread_man = ThreadManager()
-            thread_man.run_all(single_url_man.run, head_dtos, debug_msg=self._tool_name)
-
-        elif urls:
+        if urls:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: {self._tool_name} will run {len(urls)} urls')
             head_dtos: List[HeadRequestDTO] = []
 
@@ -51,10 +40,19 @@ class MultipleUrlFlowManager:
             single_url_man = SingleUrlFlowManager(self._headers)
             thread_man = ThreadManager()
             thread_man.run_all(single_url_man.run, head_dtos, debug_msg=self._tool_name)
+        elif os.path.exists(self._file_path):
 
+            head_dtos = self.__get_cached_dtos(self._file_path)
+
+            nuclei = Nuclei(self._cache_keys, self._headers)
+            nuclei.check_multiple_uls(head_dtos)
+
+            single_url_man = SingleUrlFlowManager(self._headers)
+            thread_man = ThreadManager()
+            thread_man.run_all(single_url_man.run, head_dtos, debug_msg=self._tool_name)
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
-            print(f'{file_path} is missing')
+            print(f'{self._file_path} is missing')
 
     def __get_cached_dtos(self, file_path) -> List[HeadRequestDTO]:
 
