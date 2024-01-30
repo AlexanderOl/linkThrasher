@@ -101,7 +101,7 @@ class SingleUrlFlowManager:
                 lines = f.readlines()
             with open("Targets/urls.txt", "w") as f:
                 for line in lines:
-                    if start_url.rstrip('/') not in line.strip("\n") :
+                    if start_url.rstrip('/') not in line.strip("\n"):
                         f.write(line)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: SingleUrlFlowManager done with ({start_url})')

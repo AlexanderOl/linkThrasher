@@ -1,6 +1,6 @@
 import os
 import urllib3
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import List
 from urllib.parse import urlparse
 from Managers.CacheManager import CacheManager
@@ -34,8 +34,8 @@ class MultipleUrlFlowManager:
                     continue
                 head_dtos.append(HeadRequestDTO(response))
 
-            nuclei = Nuclei(self._cache_keys, self._headers)
-            nuclei.check_multiple_uls(head_dtos)
+            # nuclei = Nuclei(self._cache_keys, self._headers)
+            # nuclei.check_multiple_uls(head_dtos)
 
             single_url_man = SingleUrlFlowManager(self._headers)
             thread_man = ThreadManager()
@@ -44,8 +44,8 @@ class MultipleUrlFlowManager:
 
             head_dtos = self.__get_cached_dtos(self._file_path)
 
-            nuclei = Nuclei(self._cache_keys, self._headers)
-            nuclei.check_multiple_uls(head_dtos)
+            # nuclei = Nuclei(self._cache_keys, self._headers)
+            # nuclei.check_multiple_uls(head_dtos)
 
             single_url_man = SingleUrlFlowManager(self._headers)
             thread_man = ThreadManager()

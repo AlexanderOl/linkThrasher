@@ -77,23 +77,18 @@ class SubdomainChecker:
         if response is not None:
             if 'Server' in response.headers and response.headers['Server'] == 'cloudflare':
                 return
+            elif (len(response.history) > 0 and str(response.history[0].status_code).startswith('3') and
+                  'Location' in response.history[0].headers):
+                redirect = response.history[0].headers['Location']
+                self.__check_redirect_urls(url, redirect)
+
             elif str(response.status_code).startswith('3') and 'Location' in response.headers:
                 redirect = response.headers['Location']
-                parsed = urlparse(redirect)
-                if redirect and redirect[0] == '/':
-                    redirect_url = f"{url}{redirect}"
-                elif not parsed or self._domain not in parsed.netloc:
-                    return
-                else:
-                    redirect_url = redirect
-                response2 = self._request_handler.send_head_request(url=redirect_url,
-                                                                    except_ssl_action=self.__except_ssl_action,
-                                                                    except_ssl_action_args=[url],
-                                                                    timeout=5)
-                if response2 is not None and all(dto.url != redirect_url for dto in self._checked_subdomains):
-                    self._checked_subdomains.append(HeadRequestDTO(response2))
-            else:
+                self.__check_redirect_urls(url, redirect)
+            elif all(dto.url != url for dto in self._checked_subdomains):
                 self._checked_subdomains.append(HeadRequestDTO(response))
+            else:
+                print(f'({url}) url already added')
 
     def __except_ssl_action(self, args):
         url = args[0]
@@ -102,3 +97,18 @@ class SubdomainChecker:
             response = self._request_handler.send_head_request(url, timeout=5)
             if response is not None:
                 self._checked_subdomains.append(HeadRequestDTO(response))
+
+    def __check_redirect_urls(self, base_url, redirect):
+        parsed = urlparse(redirect)
+        if redirect and redirect[0] == '/':
+            redirect_url = f"{base_url}{redirect}"
+        elif not parsed or self._domain not in parsed.netloc:
+            return
+        else:
+            redirect_url = redirect
+        response2 = self._request_handler.send_head_request(url=redirect_url,
+                                                            except_ssl_action=self.__except_ssl_action,
+                                                            except_ssl_action_args=[base_url],
+                                                            timeout=5)
+        if response2 is not None and all(dto.url != redirect_url for dto in self._checked_subdomains):
+            self._checked_subdomains.append(HeadRequestDTO(response2))
