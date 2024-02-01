@@ -9,6 +9,7 @@ from Managers.Spider import Spider
 from Managers.SqliManager import SqliManager
 from Managers.SsrfManager import SsrfManager
 from Managers.SstiManager import SstiManager
+from Managers.XssManager import XssManager
 from Models.HeadRequestDTO import HeadRequestDTO
 from Tools.Feroxbuster import Feroxbuster
 from Tools.Gobuster import Gobuster
@@ -76,9 +77,9 @@ class SingleUrlFlowManager:
         else:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) will run {len(head_dtos)} dtos')
 
-        # xss_manager = XssManager(domain, self._headers, cookies)
-        # xss_manager.check_get_requests(get_dtos)
-        # xss_manager.check_form_requests(form_dtos)
+        xss_manager = XssManager(domain, self._headers, cookies)
+        xss_manager.check_get_requests(head_dtos)
+        xss_manager.check_form_requests(form_dtos)
 
         ssrf_manager = SsrfManager(domain, cookies, self._headers)
         ssrf_manager.check_get_requests(head_dtos)

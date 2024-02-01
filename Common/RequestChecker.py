@@ -135,3 +135,16 @@ class RequestChecker:
                                 params[param_name] = default_value
                     form_details.append(FormDetailsDTO(action_tag.strip(), params, method))
             return FormRequestDTO(target_url, form_details, dto)
+
+    @staticmethod
+    def get_url_key(url):
+        query_params = []
+        parsed = urlparse(url)
+        params = parsed.query.split('&')
+
+        for param in params:
+            split = param.split('=')
+            if len(split) == 2:
+                query_params.append(split[1])
+        key = f'{parsed.netloc};{parsed.path};{"&".join(query_params)}'
+        return key

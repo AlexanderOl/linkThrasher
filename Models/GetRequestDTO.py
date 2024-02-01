@@ -5,11 +5,6 @@ from urllib.parse import urlparse
 class GetRequestDTO:
     def __init__(self, *args):
         self._url = args[0]
-        parsed = urlparse(self._url)
-        self._query_params = list([r for r in parsed.query.split('&') if r.strip()])
-
-        self._key = self.get_url_key(args[0])
-
         if len(args) == 1:
             self._response_length = 0
             self._status_code = 0
@@ -21,27 +16,6 @@ class GetRequestDTO:
                 self._content_type = args[1].headers['Content-Type']
             else:
                 self._content_type = 'No Content-Type'
-
-    @staticmethod
-    def get_url_key(url):
-        query_params = []
-        parsed = urlparse(url)
-        params = parsed.query.split('&')
-
-        for param in params:
-            splitted = param.split('=')
-            if len(splitted) == 2:
-                query_params.append(splitted[1])
-        key = f'{parsed.netloc};{parsed.path};{"&".join(query_params)}'
-        return key
-
-    @property
-    def query_params(self) -> List[str]:
-        return self._query_params
-
-    @property
-    def key(self) -> str:
-        return self._key
 
     @property
     def url(self) -> str:

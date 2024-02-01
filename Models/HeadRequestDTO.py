@@ -2,11 +2,13 @@ from typing import List
 from urllib.parse import urlparse
 from requests.models import Response
 
+from Common.RequestChecker import RequestChecker
+
 
 class HeadRequestDTO:
     def __init__(self, response: Response):
         self._url = response.url
-        self._key = self.__init_url_key()
+        self._key = RequestChecker.get_url_key(self._url)
         parsed = urlparse(self._url)
         self._query_params = list([r for r in parsed.query.split('&') if r.strip()])
 
@@ -15,18 +17,6 @@ class HeadRequestDTO:
             self._content_type = response.headers['Content-Type']
         else:
             self._content_type = 'No Content-Type'
-
-    def __init_url_key(self):
-        query_params = []
-        parsed = urlparse(self._url)
-        params = parsed.query.split('&')
-
-        for param in params:
-            split = param.split('=')
-            if len(split) == 2:
-                query_params.append(split[1])
-        key = f'{parsed.netloc};{parsed.path};{"&".join(query_params)}'
-        return key
 
     @property
     def query_params(self) -> List[str]:

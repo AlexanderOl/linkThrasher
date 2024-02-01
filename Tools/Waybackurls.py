@@ -104,9 +104,9 @@ class Waybackurls:
             if '?' in href_url:
                 params = parsed_parts.query.split('&')
                 for param in params:
-                    splitted = param.split('=')
-                    if len(splitted) == 2:
-                        query_params[splitted[0]] = splitted[1]
+                    split = param.split('=')
+                    if len(split) == 2:
+                        query_params[split[0]] = split[1]
 
             if url_without_params in added_url_params:
                 added_url_params[url_without_params].update(query_params)
@@ -117,9 +117,9 @@ class Waybackurls:
             params = added_url_params[url_without_params]
             url = url_without_params
 
-            splitted_path = url_without_params.split('/')
+            split_path = url_without_params.split('/')
             path_key = ''
-            for part in splitted_path:
+            for part in split_path:
                 if part.isdigit():
                     path_key += 'numb'
                 else:

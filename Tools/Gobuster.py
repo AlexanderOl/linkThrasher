@@ -13,6 +13,7 @@ class Gobuster:
         self._headers = headers
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
+        self._threads = f'{os.environ.get("threads")}'
         self._cache_manager = CacheManager(self._tool_name, domain)
 
     def check_single_url(self, url):
@@ -32,7 +33,7 @@ class Gobuster:
                            "-u", base_url,
                            "-w", f"{self._app_wordlists_path}ExploitDB.txt",
                            "-H", f"User-Agent:{self._headers['User-Agent']}",
-                           "--no-error", "-t", "10", "-o", output_file]
+                           "--no-error", "-t", str(self._threads), "-o", output_file]
 
                 if len(self._raw_cookies) > 0:
                     cmd_arr.append("-c")

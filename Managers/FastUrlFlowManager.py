@@ -46,7 +46,7 @@ class FastUrlFlowManager:
                     for line in infile:
                         if can_add_targets:
                             target_urls.append(line.strip())
-                        if len(target_urls) > 500:
+                        if len(target_urls) > 1000:
                             break
                         if result == line.strip():
                             can_add_targets = True
@@ -129,7 +129,7 @@ class FastUrlFlowManager:
                 [dto for dto in dtos['form_dtos'] if all(oos not in dto.url for oos in out_of_scope)])
 
         print(
-            f'[{datetime.now().strftime("%H:%M:%S")}]: FastUrlFlowManager found '
+            f'[{datetime.now().strftime("%H:%M:%S")}]: FastUrlFlowManager found'
             f'{len(self._head_dtos)} head_dtos and {len(self._form_dtos)} form_dtos')
         return self._head_dtos, self._form_dtos
 

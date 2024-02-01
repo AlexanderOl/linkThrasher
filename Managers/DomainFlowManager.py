@@ -12,6 +12,7 @@ from Tools.MassDns import MassDns
 from Tools.Nmap import Nmap
 from Tools.Nuclei import Nuclei
 from Tools.SubFinder import SubFinder
+from Tools.Trufflehog import Trufflehog
 
 
 class DomainFlowManager:
@@ -68,8 +69,10 @@ class DomainFlowManager:
         subfinder = SubFinder(domain)
         subfinder_subdomains = subfinder.get_subdomains()
 
-        massdns = MassDns(domain)
-        massdns_subdomains = massdns.get_subdomains()
+        massdns_subdomains = set()
+        if self._check_mode != 'DL':
+            massdns = MassDns(domain)
+            massdns_subdomains = massdns.get_subdomains()
 
         all_subdomains = amass_subdomains \
             .union(knock_subdomains) \
@@ -101,5 +104,8 @@ class DomainFlowManager:
         single_url_man = SingleUrlFlowManager(self._headers)
         thread_man = ThreadManager()
         thread_man.run_all(single_url_man.run, start_urls_dtos)
+
+        th = Trufflehog(domain)
+        th.check_secrets()
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: DomainFlowManager done with ({domain})')

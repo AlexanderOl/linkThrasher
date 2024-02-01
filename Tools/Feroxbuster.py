@@ -26,6 +26,7 @@ class Feroxbuster:
         self._cache_manager = CacheManager(self._tool_name, domain)
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
+        self._threads = f'{os.environ.get("threads")}'
         self._request_handler = RequestHandler(cookies, headers)
         self._request_checker = RequestChecker()
         self._raw_cookies = raw_cookies
@@ -88,7 +89,7 @@ class Feroxbuster:
 
         output_file = f'{self._tool_result_dir}/RAW_{self._domain.replace(":", "_")}.txt'
         cmd = ["feroxbuster", "--url", url, "-w", f"{self._app_wordlists_path}directories.txt", "-o", output_file,
-               "--insecure", "--no-state", "--threads", "10", "--auto-bail"]
+               "--insecure", "--no-state", "--threads", str(self._threads), "--auto-bail"]
         if len(self._raw_cookies) > 0:
             cmd.append("-b")
             cmd.append(self._raw_cookies)
@@ -132,27 +133,28 @@ class Feroxbuster:
 
     def __get_ready_urls(self, report_lines: List[str], already_exist_dtos: List[HeadRequestDTO]) -> set:
         filtered_output = set()
-        http_ok_only = False
-        if len(report_lines) > 10000:
-            http_ok_only = True
 
         for line in report_lines:
 
-            if http_ok_only:
-                if (line.startswith('200') or 'Got 200' in line) and 'http' in line:
-                    index = line.find('http')
-                    redirected_url = line[index:]
-                    parsed = urlparse(redirected_url)
-                    if self._domain in parsed.netloc:
-                        filtered_output.add(redirected_url.strip())
-                else:
-                    print(f'http_ok_only - {http_ok_only}. line ({line}) is not 200')
-                    continue
-            elif ' => ' in line:
-                redirected_url = line.split(' => ', 1)[1]
-                parsed = urlparse(redirected_url)
+            if (line.startswith('200') or 'Got 200' in line) and 'http' in line:
+                index = line.find('http')
+                url = line[index:]
+                parsed = urlparse(url)
                 if self._domain in parsed.netloc:
-                    filtered_output.add(redirected_url.strip())
+                    filtered_output.add(url.strip())
+            elif ' => ' in line:
+                redirect = line.split(' => ', 1)[1]
+                if redirect.startswith('http'):
+                    parsed = urlparse(redirect)
+                    if self._domain in parsed.netloc:
+                        filtered_output.add(redirect.strip())
+                elif redirect.strip().endswith('/'):
+                    index = line.find('http')
+                    url = f'{line[index:].split(" ")[0]}/'
+                    parsed = urlparse(url)
+                    if self._domain in parsed.netloc:
+                        filtered_output.add(url.strip())
+
             elif 'http' in line:
                 index = line.find('http')
                 redirected_url = line[index:]
@@ -166,7 +168,7 @@ class Feroxbuster:
         ready_urls = set()
         checked_keys = set()
         for url in filtered_output:
-            key = GetRequestDTO.get_url_key(url)
+            key = RequestChecker.get_url_key(url)
             if key not in already_exist_keys and key not in checked_keys:
                 checked_keys.add(key)
                 ready_urls.add(url)
