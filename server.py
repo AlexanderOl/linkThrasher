@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from Common.RequestHandler import RequestHandler
 from Managers.CsvManager import CsvManager
 from Managers.DomainFlowManager import DomainFlowManager
+from Managers.DomainTrackerManager import DomainTackerManager
 from Managers.FastUrlFlowManager import FastUrlFlowManager
 from Managers.MultipleUrlFlowManager import MultipleUrlFlowManager
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
@@ -39,6 +40,20 @@ if __name__ == '__main__':
             for domain in domains:
                 print(f'Checking {domain} domain. Counter: {counter}')
                 domain_man.check_domain(domain)
+                counter -= 1
+        else:
+            print(os.path.dirname(os.path.realpath(__file__)))
+            print(f'{file_path} is missing')
+
+    elif check_mode == 'TD':
+        file_path = 'Targets/track_domains.txt'
+        if os.path.exists(file_path):
+            domains = list(set(line.strip() for line in open(file_path)))
+            domain_man = DomainTackerManager(headers)
+            counter = len(domains)
+            for domain in domains:
+                print(f'Checking {domain} domain. Counter: {counter}')
+                domain_man.track_domains(domain)
                 counter -= 1
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
