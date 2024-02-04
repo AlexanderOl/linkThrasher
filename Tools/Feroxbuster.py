@@ -3,14 +3,12 @@ from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
 
-from bs4 import BeautifulSoup
-
 from Common.ProcessKiller import ProcessKiller
 from Common.RequestChecker import RequestChecker
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
-from Models.FormRequestDTO import FormDetailsDTO, FormRequestDTO
+from Models.FormRequestDTO import FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
 

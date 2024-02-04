@@ -3,7 +3,7 @@ import subprocess
 from datetime import datetime
 from threading import Timer
 
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 
 
 class Dirb:

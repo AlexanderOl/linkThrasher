@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from urllib.parse import urlparse
 from Common.ProcessKiller import ProcessKiller
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 
 
 class Gobuster:

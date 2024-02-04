@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 from Models.GetRequestDTO import GetRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
 

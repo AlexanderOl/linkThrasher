@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
 from Common.RequestChecker import RequestChecker
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO

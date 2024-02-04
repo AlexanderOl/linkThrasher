@@ -3,7 +3,7 @@ import ipaddress
 from datetime import datetime
 
 from Common.ProcessKiller import ProcessKiller
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 
 
 class Amass:

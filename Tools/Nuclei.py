@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List
 import urllib.parse as urlparse
 
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 from Models.HeadRequestDTO import HeadRequestDTO
 
 

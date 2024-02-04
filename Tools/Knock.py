@@ -4,7 +4,7 @@ import re
 import shutil
 from datetime import datetime
 from glob import glob
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 
 
 class Knock:

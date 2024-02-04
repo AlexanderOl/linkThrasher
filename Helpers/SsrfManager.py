@@ -5,7 +5,7 @@ import urllib.parse as urlparse
 from copy import deepcopy
 from typing import List
 
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Models.FormRequestDTO import FormRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO

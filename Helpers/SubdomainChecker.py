@@ -4,8 +4,8 @@ from typing import List
 from urllib.parse import urlparse
 
 import validators
-from Managers.CacheManager import CacheManager
-from Managers.CookieManager import CookieManager
+from Helpers.CacheManager import CacheManager
+from Helpers.CookieManager import CookieManager
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Models.HeadRequestDTO import HeadRequestDTO

@@ -3,13 +3,13 @@ from datetime import datetime
 from urllib.parse import urlparse
 from urllib3 import exceptions, disable_warnings
 from Common.S500Handler import S500Handler
-from Managers.CookieManager import CookieManager
-from Managers.ManualTesting import ManualTesting
-from Managers.Spider import Spider
-from Managers.SqliManager import SqliManager
-from Managers.SsrfManager import SsrfManager
-from Managers.SstiManager import SstiManager
-from Managers.XssManager import XssManager
+from Helpers.CookieManager import CookieManager
+from Helpers.ManualTesting import ManualTesting
+from Helpers.Spider import Spider
+from Helpers.SqliManager import SqliManager
+from Helpers.SsrfManager import SsrfManager
+from Helpers.SstiManager import SstiManager
+from Helpers.XssManager import XssManager
 from Models.HeadRequestDTO import HeadRequestDTO
 from Tools.Feroxbuster import Feroxbuster
 from Tools.Gobuster import Gobuster

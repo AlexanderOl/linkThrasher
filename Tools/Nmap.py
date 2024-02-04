@@ -6,7 +6,7 @@ from typing import List
 from urllib.parse import urlparse
 
 from Common.ProcessKiller import ProcessKiller
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Models.GetRequestDTO import GetRequestDTO

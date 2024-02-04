@@ -3,12 +3,11 @@ import urllib3
 from datetime import date, datetime
 from typing import List
 from urllib.parse import urlparse
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Common.ThreadManager import ThreadManager
 from Models.HeadRequestDTO import HeadRequestDTO
-from Tools.Nuclei import Nuclei
 
 
 class MultipleUrlFlowManager:

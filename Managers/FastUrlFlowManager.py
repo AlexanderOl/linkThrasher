@@ -6,13 +6,13 @@ from urllib3 import exceptions, disable_warnings
 
 from Common.RequestChecker import RequestChecker
 from Common.S500Handler import S500Handler
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
-from Managers.SqliManager import SqliManager
-from Managers.SsrfManager import SsrfManager
-from Managers.SstiManager import SstiManager
+from Helpers.SqliManager import SqliManager
+from Helpers.SsrfManager import SsrfManager
+from Helpers.SstiManager import SstiManager
 from Common.ThreadManager import ThreadManager
-from Managers.XssManager import XssManager
+from Helpers.XssManager import XssManager
 from Models.FormRequestDTO import FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO

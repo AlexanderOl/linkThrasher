@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 
 
 class SubFinder:

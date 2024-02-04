@@ -1,8 +1,8 @@
 import validators
 from urllib3 import exceptions, disable_warnings
 from datetime import datetime
-from Managers.CacheManager import CacheManager
-from Managers.SubdomainChecker import SubdomainChecker
+from Helpers.CacheManager import CacheManager
+from Helpers.SubdomainChecker import SubdomainChecker
 from Tools.Amass import Amass
 from Tools.Knock import Knock
 from Tools.MassDns import MassDns

@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List
 
 from Common.ThreadManager import ThreadManager
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 from Common.RequestHandler import RequestHandler
 from Models.HeadRequestDTO import HeadRequestDTO
 from Tools.LinkFinder import LinkFinder

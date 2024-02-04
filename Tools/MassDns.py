@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from tld import get_tld
 
-from Managers.CacheManager import CacheManager
+from Helpers.CacheManager import CacheManager
 
 
 class MassDns:
