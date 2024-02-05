@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 from Common.ProcessKiller import ProcessKiller
 from Common.RequestChecker import RequestChecker
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Models.FormRequestDTO import FormRequestDTO
@@ -21,7 +21,7 @@ class Feroxbuster:
         self._head_dtos: List[HeadRequestDTO] = []
         self._domain = domain
         self._tool_name = self.__class__.__name__
-        self._cache_manager = CacheManager(self._tool_name, domain)
+        self._cache_manager = CacheHelper(self._tool_name, domain)
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
         self._threads = f'{os.environ.get("threads")}'

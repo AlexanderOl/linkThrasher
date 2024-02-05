@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 
 
 class SubFinder:
@@ -10,7 +10,7 @@ class SubFinder:
         self.__domain = domain
 
     def get_subdomains(self) -> set:
-        cache_manager = CacheManager(self.__tool_name, self.__domain)
+        cache_manager = CacheHelper(self.__tool_name, self.__domain)
         subdomains = cache_manager.get_saved_result()
         if not subdomains and not isinstance(subdomains, set):
             subdomains = set()

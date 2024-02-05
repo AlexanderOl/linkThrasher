@@ -3,7 +3,7 @@ import urllib3
 from datetime import date, datetime
 from typing import List
 from urllib.parse import urlparse
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
 from Common.ThreadManager import ThreadManager
@@ -55,7 +55,7 @@ class MultipleUrlFlowManager:
 
     def __get_cached_dtos(self, file_path) -> List[HeadRequestDTO]:
 
-        cache_manager = CacheManager(self._tool_name, self._cache_keys)
+        cache_manager = CacheHelper(self._tool_name, self._cache_keys)
         head_dtos = cache_manager.get_saved_result()
         out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
 

@@ -4,8 +4,8 @@ from typing import List
 from urllib.parse import urlparse
 
 import validators
-from Helpers.CacheManager import CacheManager
-from Helpers.CookieManager import CookieManager
+from Helpers.CacheHelper import CacheHelper
+from Helpers.CookieHelper import CookieHelper
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Models.HeadRequestDTO import HeadRequestDTO
@@ -17,21 +17,25 @@ class SubdomainChecker:
         self._domain = domain
         self._tool_name = self.__class__.__name__
         self._last_10_resp_size_attempt = {}
-        cookie_manager = CookieManager(domain)
+        cookie_manager = CookieHelper(domain)
         raw_cookies = cookie_manager.get_raw_cookies()
         cookies = cookie_manager.get_cookies_dict(raw_cookies)
         self._request_handler = RequestHandler(cookies, headers)
         self._out_of_scope_domains = os.environ.get("out_of_scope_domains")
+        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._checked_ips = set()
 
     def check_all_subdomains(self, all_subdomains: set) -> List[HeadRequestDTO]:
-        cache_manager = CacheManager(self._tool_name, self._domain)
+        cache_manager = CacheHelper(self._tool_name, self._domain)
         checked_subdomains = cache_manager.get_saved_result()
         out_of_scope = [x for x in self._out_of_scope_domains.split(';') if x]
         if not checked_subdomains and not isinstance(checked_subdomains, List):
 
             subdomains = set(
                 [subdomain for subdomain in all_subdomains if all(oos not in subdomain for oos in out_of_scope)])
+
+            ips = self.__get_ips(subdomains)
+            subdomains.update(ips)
 
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_subdomain, subdomains, debug_msg=self._tool_name)
@@ -112,3 +116,20 @@ class SubdomainChecker:
                                                             timeout=5)
         if response2 is not None and all(dto.url != redirect_url for dto in self._checked_subdomains):
             self._checked_subdomains.append(HeadRequestDTO(response2))
+
+    def __get_ips(self, subdomains):
+        subs_file = f'{self._tool_result_dir}/{self._domain}/subs.txt'
+        json_file = open(subs_file, 'w')
+        for subdomain in subdomains:
+            json_file.write(f"{subdomain}\n")
+        json_file.close()
+
+        command = f'dnsx -l {subs_file} -silent -a -resp-only'
+        stream = os.popen(command)
+        bash_outputs = stream.readlines()
+        ips = set()
+
+        for output in bash_outputs:
+            ips.add(output)
+
+        return ips

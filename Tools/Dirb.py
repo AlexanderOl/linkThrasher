@@ -3,14 +3,14 @@ import subprocess
 from datetime import datetime
 from threading import Timer
 
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 
 
 class Dirb:
     def __init__(self, domain):
         self._domain = domain
         self._tool_name = self.__class__.__name__
-        self._cache_manager = CacheManager(self._tool_name, domain)
+        self._cache_manager = CacheHelper(self._tool_name, domain)
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
 
     def check_single_url(self, url):

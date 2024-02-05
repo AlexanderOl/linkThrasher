@@ -46,18 +46,9 @@ if __name__ == '__main__':
             print(f'{file_path} is missing')
 
     elif check_mode == 'TD':
-        file_path = 'Targets/track_domains.txt'
-        if os.path.exists(file_path):
-            domains = list(set(line.strip() for line in open(file_path)))
-            domain_man = DomainTackerManager(headers)
-            counter = len(domains)
-            for domain in domains:
-                print(f'Checking {domain} domain. Counter: {counter}')
-                domain_man.track_domains(domain)
-                counter -= 1
-        else:
-            print(os.path.dirname(os.path.realpath(__file__)))
-            print(f'{file_path} is missing')
+        domain_man = DomainTackerManager(headers)
+        domain_man.track_domains()
+
 
     elif check_mode == 'U':
         single_url_man = SingleUrlFlowManager(headers)

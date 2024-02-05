@@ -5,7 +5,7 @@ from typing import List
 from urllib.parse import urlparse
 
 from Common.ProcessKiller import ProcessKiller
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
 from Models.HeadRequestDTO import HeadRequestDTO
 
@@ -24,7 +24,7 @@ class EyeWitness:
 
         if len(dtos) == 0:
             return
-        cache_manager = CacheManager(self._tool_name, self._cache_key)
+        cache_manager = CacheHelper(self._tool_name, self._cache_key)
         result = cache_manager.get_saved_result()
         if not result:
 

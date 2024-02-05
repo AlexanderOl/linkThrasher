@@ -4,7 +4,7 @@ import re
 import shutil
 from datetime import datetime
 from glob import glob
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 
 
 class Knock:
@@ -15,7 +15,7 @@ class Knock:
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
 
     def get_subdomains(self) -> set:
-        cache_manager = CacheManager(self._tool_name, self._domain)
+        cache_manager = CacheHelper(self._tool_name, self._domain)
         subdomains = cache_manager.get_saved_result()
         if not subdomains and not isinstance(subdomains, set):
 

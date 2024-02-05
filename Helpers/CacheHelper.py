@@ -7,7 +7,7 @@ from typing import List
 from Models.HeadRequestDTO import HeadRequestDTO
 
 
-class CacheManager:
+class CacheHelper:
     def __init__(self, tool_name, domain: str):
         self._tool_result_dir = f"Results/{tool_name}"
         self._tracker_dir = "Tracker"

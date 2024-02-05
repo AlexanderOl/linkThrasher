@@ -3,7 +3,7 @@ import re
 from http.cookies import SimpleCookie
 
 
-class CookieManager:
+class CookieHelper:
     def __init__(self, domain: str):
         main_domain = '.'.join(domain.split('.')[-2:])
         download_path = os.environ.get('download_path')

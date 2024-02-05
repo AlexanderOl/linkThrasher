@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List
 import urllib.parse as urlparse
 
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 from Models.HeadRequestDTO import HeadRequestDTO
 
 
@@ -17,7 +17,7 @@ class Nuclei:
         self._raw_cookies = raw_cookies
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._tool_result_fuzzing_dir = f'{os.environ.get("app_result_path")}{self._tool_name}_fuzzing'
-        self._cache_manager = CacheManager(self._tool_name, cache_key)
+        self._cache_manager = CacheHelper(self._tool_name, cache_key)
         self._expected = ['[info]', '[medium]', '[high]', '[critical]', '[unknown]', '[network]']
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         self._chunk_size = 30

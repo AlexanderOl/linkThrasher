@@ -6,7 +6,7 @@ from typing import List
 from urllib.parse import urlparse
 
 from Common.ProcessKiller import ProcessKiller
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Models.GetRequestDTO import GetRequestDTO
@@ -19,7 +19,7 @@ class Nmap:
         self._domain = domain
         self._port_head_dtos: List[HeadRequestDTO] = []
         self._port_get_dtos: List[GetRequestDTO] = []
-        self._cache_manager = CacheManager(self._tool_name, self._domain)
+        self._cache_manager = CacheHelper(self._tool_name, self._domain)
         self._request_handler = RequestHandler(headers, cookies)
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._existing_get_dtos: List[GetRequestDTO] = []

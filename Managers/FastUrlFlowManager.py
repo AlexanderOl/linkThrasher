@@ -6,7 +6,7 @@ from urllib3 import exceptions, disable_warnings
 
 from Common.RequestChecker import RequestChecker
 from Common.S500Handler import S500Handler
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
 from Helpers.SqliManager import SqliManager
 from Helpers.SsrfManager import SsrfManager
@@ -105,7 +105,7 @@ class FastUrlFlowManager:
 
     def __get_cached_dtos(self, raw_urls: List[str], cache_key) -> Tuple[List[HeadRequestDTO], List[FormRequestDTO]]:
 
-        cache_manager = CacheManager(self._tool_name, cache_key)
+        cache_manager = CacheHelper(self._tool_name, cache_key)
         dtos = cache_manager.get_saved_result()
         out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
         self._get_dtos: List[GetRequestDTO] = []

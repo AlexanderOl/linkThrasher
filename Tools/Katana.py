@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 from Models.GetRequestDTO import GetRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
 
@@ -28,7 +28,7 @@ class Katana:
         self._checked_hrefs = set()
 
     def get_requests_dtos(self, start_url) -> List[HeadRequestDTO]:
-        cache_manager = CacheManager(self._tool_name, self._domain)
+        cache_manager = CacheHelper(self._tool_name, self._domain)
         result = cache_manager.get_saved_result()
         if result is None:
             result = self.__get_urls(start_url)

@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 from Models.GetRequestDTO import GetRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
 
@@ -29,7 +29,7 @@ class Waybackurls:
         self._waybackurls_out_of_scope_domains = os.environ.get("waybackurls_out_of_scope_domains")
 
     def get_requests_dtos(self) -> List[HeadRequestDTO]:
-        cache_manager = CacheManager(self._tool_name, self._domain)
+        cache_manager = CacheHelper(self._tool_name, self._domain)
         result = cache_manager.get_saved_result()
         if result is None:
 

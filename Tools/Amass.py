@@ -3,7 +3,7 @@ import ipaddress
 from datetime import datetime
 
 from Common.ProcessKiller import ProcessKiller
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 
 
 class Amass:
@@ -13,7 +13,7 @@ class Amass:
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
     def get_subdomains(self) -> set:
-        cache_manager = CacheManager(self._tool_name, self._domain)
+        cache_manager = CacheHelper(self._tool_name, self._domain)
         subdomains = cache_manager.get_saved_result()
         if not subdomains and not isinstance(subdomains, set):
 

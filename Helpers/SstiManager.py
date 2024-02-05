@@ -4,7 +4,7 @@ import urllib.parse as urlparse
 from typing import List
 
 from Common.RequestChecker import RequestChecker
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Models.FormRequestDTO import FormRequestDTO
@@ -26,7 +26,7 @@ class SstiManager:
 
     def check_get_requests(self, dtos: List[HeadRequestDTO]):
 
-        cache_manager = CacheManager('SstiManager/Get', self._domain)
+        cache_manager = CacheHelper('SstiManager/Get', self._domain)
         self._result = cache_manager.get_saved_result()
 
         if self._result is None:
@@ -63,7 +63,7 @@ class SstiManager:
             self.__check_keywords(response, url, InjectionType.Ssti_Get)
 
     def check_form_requests(self, form_dtos: List[FormRequestDTO]):
-        cache_manager = CacheManager('SstiManager/Form', self._domain)
+        cache_manager = CacheHelper('SstiManager/Form', self._domain)
         self._result = cache_manager.get_saved_result()
 
         if self._result is None:

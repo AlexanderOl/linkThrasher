@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from urllib.parse import urlparse
 from Common.ProcessKiller import ProcessKiller
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 
 
 class Gobuster:
@@ -14,7 +14,7 @@ class Gobuster:
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
         self._threads = f'{os.environ.get("threads")}'
-        self._cache_manager = CacheManager(self._tool_name, domain)
+        self._cache_manager = CacheHelper(self._tool_name, domain)
 
     def check_single_url(self, url):
         report_lines = self._cache_manager.get_saved_result()

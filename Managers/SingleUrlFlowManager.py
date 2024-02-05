@@ -3,7 +3,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 from urllib3 import exceptions, disable_warnings
 from Common.S500Handler import S500Handler
-from Helpers.CookieManager import CookieManager
+from Helpers.CookieManager import CookieHelper
 from Helpers.ManualTesting import ManualTesting
 from Helpers.Spider import Spider
 from Helpers.SqliManager import SqliManager
@@ -36,7 +36,7 @@ class SingleUrlFlowManager:
 
         main_domain = '.'.join(domain.split('.')[-2:])
 
-        cookie_manager = CookieManager(main_domain)
+        cookie_manager = CookieHelper(main_domain)
         raw_cookies = cookie_manager.get_raw_cookies()
         cookies = cookie_manager.get_cookies_dict(raw_cookies)
 

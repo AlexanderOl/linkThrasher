@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
 from Common.RequestChecker import RequestChecker
-from Helpers.CacheManager import CacheManager
+from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO
@@ -43,8 +43,8 @@ class Spider:
 
     def get_all_links(self, start_url) -> Tuple[List[HeadRequestDTO], List[FormRequestDTO]]:
 
-        form_cache_manager = CacheManager('Spider/Form', self._current_domain)
-        head_cache_manager = CacheManager('Spider/Get', self._current_domain)
+        form_cache_manager = CacheHelper('Spider/Form', self._current_domain)
+        head_cache_manager = CacheHelper('Spider/Get', self._current_domain)
         head_found = head_cache_manager.get_saved_result()
         form_found = form_cache_manager.get_saved_result()
 
@@ -53,7 +53,7 @@ class Spider:
             self.__recursive_search(start_url, current_depth)
             head_cache_manager.save_result(self._head_dtos)
             form_cache_manager.save_result(self._form_dtos)
-            file_cache_manager = CacheManager('Spider/File', self._current_domain)
+            file_cache_manager = CacheHelper('Spider/File', self._current_domain)
             file_cache_manager.save_result(self._file_get_DTOs)
         else:
             self._head_dtos = head_found
