@@ -32,30 +32,16 @@ if __name__ == '__main__':
         domain_man.check_domain(domain)
 
     elif check_mode == 'DL':
-        file_path = 'Targets/domains.txt'
-        if os.path.exists(file_path):
-            domains = list(set(line.strip() for line in open(file_path)))
-            domain_man = DomainFlowManager(headers)
-            counter = len(domains)
-            for domain in domains:
-                print(f'Checking {domain} domain. Counter: {counter}')
-                domain_man.check_domain(domain)
-                counter -= 1
-        else:
-            print(os.path.dirname(os.path.realpath(__file__)))
-            print(f'{file_path} is missing')
+        domain_man = DomainFlowManager(headers)
+        domain_man.check_multiple_domains()
 
     elif check_mode == 'TD':
         domain_man = DomainTackerManager(headers)
         domain_man.track_domains()
 
-
     elif check_mode == 'U':
         single_url_man = SingleUrlFlowManager(headers)
-        single_url = os.environ.get('single_url')
-        request_handler = RequestHandler(cookies="", headers=headers)
-        response = request_handler.send_head_request(single_url)
-        single_url_man.run(HeadRequestDTO(response))
+        single_url_man.run()
 
     elif check_mode == 'UL':
         check_mode = os.environ.get('check_mode')
@@ -65,5 +51,3 @@ if __name__ == '__main__':
     elif check_mode == 'FU':
         fast_man = FastUrlFlowManager(headers)
         fast_man.run()
-
-

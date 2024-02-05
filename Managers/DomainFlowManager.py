@@ -21,6 +21,7 @@ class DomainFlowManager:
         self._headers = headers
         self._check_mode = os.environ.get('check_mode')
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
+        self._targets_domains_file = 'Targets/domains.txt'
         disable_warnings(exceptions.InsecureRequestWarning)
 
     def check_ip(self, ip):
@@ -51,9 +52,23 @@ class DomainFlowManager:
 
         single_url_man = SingleUrlFlowManager(self._headers)
         thread_man = ThreadManager()
-        thread_man.run_all(single_url_man.run, start_urls_dtos)
+        thread_man.run_all(single_url_man.do_run, start_urls_dtos)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: DomainFlowManager done with ip ({ip})')
+
+    def check_multiple_domains(self):
+
+        if os.path.exists(self._targets_domains_file):
+            domains = list(set(line.strip() for line in open(self._targets_domains_file)))
+
+            counter = len(domains)
+            for domain in domains:
+                print(f'Checking {domain} domain. Counter: {counter}')
+                self.check_domain(domain)
+                counter -= 1
+        else:
+            print(os.path.dirname(os.path.realpath(__file__)))
+            print(f'{self._targets_domains_file} is missing')
 
     def check_domain(self, domain):
 
@@ -103,7 +118,7 @@ class DomainFlowManager:
 
         single_url_man = SingleUrlFlowManager(self._headers)
         thread_man = ThreadManager()
-        thread_man.run_all(single_url_man.run, start_urls_dtos)
+        thread_man.run_all(single_url_man.do_run, start_urls_dtos)
 
         th = Trufflehog(domain)
         th.check_secrets()

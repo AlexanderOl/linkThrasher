@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 from urllib.parse import urlparse
 from urllib3 import exceptions, disable_warnings
+
+from Common.RequestHandler import RequestHandler
 from Common.S500Handler import S500Handler
 from Helpers.CookieManager import CookieHelper
 from Helpers.ManualTesting import ManualTesting
@@ -24,9 +26,14 @@ class SingleUrlFlowManager:
         self._headers = headers
         self._ngrok_url = os.environ.get('ngrok_url')
         self._check_mode = os.environ.get('check_mode')
+        self._single_url = os.environ.get('single_url')
         disable_warnings(exceptions.InsecureRequestWarning)
+    def run(self):
+        request_handler = RequestHandler(cookies="", headers=self._headers)
+        response = request_handler.send_head_request(self._single_url)
+        self.do_run(response)
 
-    def run(self, head_dto: HeadRequestDTO):
+    def do_run(self, head_dto: HeadRequestDTO):
 
         if 404 <= head_dto.status_code < 500:
             return

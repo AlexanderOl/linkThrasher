@@ -18,7 +18,7 @@ class DomainTackerManager:
         self._tool_name = self.__class__.__name__
         disable_warnings(exceptions.InsecureRequestWarning)
 
-    def track_domains(self, domain: str):
+    def track_domains(self):
 
         if os.path.exists(self._file_path):
             domains = list(set(line.strip() for line in open(self._file_path)))

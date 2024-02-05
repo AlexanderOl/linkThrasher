@@ -38,7 +38,7 @@ class MultipleUrlFlowManager:
 
             single_url_man = SingleUrlFlowManager(self._headers)
             thread_man = ThreadManager()
-            thread_man.run_all(single_url_man.run, head_dtos, debug_msg=self._tool_name)
+            thread_man.run_all(single_url_man.do_run, head_dtos, debug_msg=self._tool_name)
         elif os.path.exists(self._file_path):
 
             head_dtos = self.__get_cached_dtos(self._file_path)
@@ -48,7 +48,7 @@ class MultipleUrlFlowManager:
 
             single_url_man = SingleUrlFlowManager(self._headers)
             thread_man = ThreadManager()
-            thread_man.run_all(single_url_man.run, head_dtos, debug_msg=self._tool_name)
+            thread_man.run_all(single_url_man.do_run, head_dtos, debug_msg=self._tool_name)
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{self._file_path} is missing')
