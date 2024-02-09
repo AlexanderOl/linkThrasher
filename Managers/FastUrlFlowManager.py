@@ -71,8 +71,8 @@ class FastUrlFlowManager:
             cache_key = parsed_parts.netloc
             head_dtos, form_dtos = self.__get_cached_dtos(raw_urls, cache_key)
 
-            # nuclei = Nuclei(cache_key, self._headers)
-            # nuclei.fuzz_batch(head_dtos)
+            nuclei = Nuclei(cache_key, self._headers)
+            nuclei.fuzz_batch(head_dtos)
 
             xss_manager = XssManager(domain=cache_key, headers=self._headers)
             xss_manager.check_get_requests(head_dtos)
@@ -105,6 +105,8 @@ class FastUrlFlowManager:
 
     def __get_cached_dtos(self, raw_urls: List[str], cache_key) -> Tuple[List[HeadRequestDTO], List[FormRequestDTO]]:
 
+        head_key = 'head_dtos'
+        form_key = 'form_dtos'
         cache_manager = CacheHelper(self._tool_name, cache_key)
         dtos = cache_manager.get_saved_result()
         out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
@@ -119,14 +121,14 @@ class FastUrlFlowManager:
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_url, filtered_urls, debug_msg='check_url')
 
-            cache_manager.save_result(
-                {'head_dtos': self._head_dtos, 'form_dtos': self._form_dtos},
+            cache_manager.save_result({head_key: self._head_dtos, form_key: self._form_dtos},
                 cleanup_prev_results=True)
         else:
-            out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
-            self._head_dtos = list([dto for dto in dtos['head_dtos'] if all(oos not in dto.url for oos in out_of_scope)])
+            out_of_scope = set([x for x in self._out_of_scope_urls.split(';') if x])
+            self._head_dtos = list([dto for dto in dtos[head_key]
+                                    if all(oos not in dto.url for oos in out_of_scope)])
             self._form_dtos = list(
-                [dto for dto in dtos['form_dtos'] if all(oos not in dto.url for oos in out_of_scope)])
+                [dto for dto in dtos[form_key] if all(oos not in dto.url for oos in out_of_scope)])
 
         print(
             f'[{datetime.now().strftime("%H:%M:%S")}]: FastUrlFlowManager found'

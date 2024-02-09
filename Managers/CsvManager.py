@@ -1,10 +1,8 @@
 import glob
 import ipaddress
 import os
-
 from csv import reader
 from datetime import date
-
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Helpers.CacheHelper import CacheHelper
