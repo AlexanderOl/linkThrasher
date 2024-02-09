@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import List
 import urllib.parse as urlparse
 
+from Common.CollectionUtil import CollectionUtil
 from Helpers.CacheHelper import CacheHelper
 from Models.HeadRequestDTO import HeadRequestDTO
 
@@ -86,7 +87,7 @@ class Nuclei:
         report_lines = self._cache_manager.get_saved_result()
         if not report_lines and not isinstance(report_lines, List):
             report_lines = []
-            batches = list(self.__divide_chunks(get_dtos))
+            batches = CollectionUtil.divide_chunks(get_dtos, self._chunk_size)
             counter = len(batches)
             for dtos_batch in batches:
                 self.__check_batch(dtos_batch, counter)

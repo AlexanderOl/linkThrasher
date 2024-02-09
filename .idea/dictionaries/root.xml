@@ -2,11 +2,13 @@
   <dictionary name="root">
     <words>
       <w>dirb</w>
+      <w>dnsx</w>
       <w>dtos</w>
       <w>feroxbuster</w>
       <w>gobuster</w>
       <w>hackrawler</w>
       <w>hakrawler</w>
+      <w>httracker</w>
       <w>idor</w>
       <w>internalerror</w>
       <w>lfimap</w>

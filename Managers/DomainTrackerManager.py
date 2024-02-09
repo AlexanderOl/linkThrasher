@@ -56,9 +56,9 @@ class DomainTackerManager:
 
         subdomain_checker = SubdomainChecker(domain, self._headers)
         start_urls_dtos = subdomain_checker.check_all_subdomains(all_subdomains)
-
         cache_man = CacheHelper(self._tool_name, domain)
         old_start_urls_dtos = cache_man.get_tracked_subdomains()
+
         filtered_urls = [dto for dto in start_urls_dtos
                          if all(old_dto.url != dto.url for old_dto in old_start_urls_dtos)]
 
@@ -68,5 +68,5 @@ class DomainTackerManager:
         if len(filtered_urls) > 0:
             res = old_start_urls_dtos + filtered_urls
             cache_man.save_tracker_result(res)
-            print_urls = [dto.url for dto in filtered_urls]
-            print(f'[{datetime.now().strftime("%H:%M:%S")}]: Urls {", ".join(print_urls)}')
+            print_urls = "\n".join([dto.url for dto in filtered_urls])
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: Urls {print_urls}')

@@ -3,9 +3,11 @@ import ipaddress
 import os
 
 from csv import reader
+from datetime import date
 
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
+from Helpers.CacheHelper import CacheHelper
 from Managers.DomainFlowManager import DomainFlowManager
 from Managers.MultipleUrlFlowManager import MultipleUrlFlowManager
 
@@ -20,6 +22,7 @@ class CsvManager:
         self._domains = set()
         self._urls = set()
         self._ips = set()
+        self._cache_keys = str(date.today())
 
     def run(self):
 
@@ -40,6 +43,14 @@ class CsvManager:
         multiple_man.run(self._urls)
 
     def __parse_csv(self):
+
+        cache_man = CacheHelper(self._tool_name, self._cache_keys)
+        csv = cache_man.get_saved_result()
+        if csv:
+            self._urls = csv['urls']
+            self._domains = csv['domains']
+            self._ips = csv['ips']
+            return
 
         domains = set()
         ips = set()
@@ -76,9 +87,11 @@ class CsvManager:
         thread_man.run_all(self.__ping_url, urls)
         thread_man.run_all(self.__ping_ip, ips)
 
+        cache_man.save_result({'urls': self._urls, 'domains': self._domains, 'ips': self._ips})
+
     def __ping_domain(self, domain):
         url = f'http://{domain}'
-        response = self._request_handler.send_head_request(url)
+        response = self._request_handler.send_head_request(url, timeout=10)
         if response:
             self._domains.add(domain)
 
@@ -89,6 +102,6 @@ class CsvManager:
 
     def __ping_ip(self, ip):
         url = f'http://{ip}'
-        response = self._request_handler.send_head_request(url)
+        response = self._request_handler.send_head_request(url, timeout=3)
         if response:
             self._ips.add(ip)

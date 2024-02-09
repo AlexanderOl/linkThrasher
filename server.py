@@ -1,14 +1,11 @@
 import os
 from dotenv import load_dotenv
-
-from Common.RequestHandler import RequestHandler
 from Managers.CsvManager import CsvManager
 from Managers.DomainFlowManager import DomainFlowManager
 from Managers.DomainTrackerManager import DomainTackerManager
 from Managers.FastUrlFlowManager import FastUrlFlowManager
 from Managers.MultipleUrlFlowManager import MultipleUrlFlowManager
 from Managers.SingleUrlFlowManager import SingleUrlFlowManager
-from Models.HeadRequestDTO import HeadRequestDTO
 
 headers = {
     'Cache-Control': 'max-age=0',
@@ -44,7 +41,6 @@ if __name__ == '__main__':
         single_url_man.run()
 
     elif check_mode == 'UL':
-        check_mode = os.environ.get('check_mode')
         multiple_url_man = MultipleUrlFlowManager(headers)
         multiple_url_man.run()
 

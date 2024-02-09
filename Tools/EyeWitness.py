@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
 
+from Common.CollectionUtil import CollectionUtil
 from Common.ProcessKiller import ProcessKiller
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
@@ -36,9 +37,9 @@ class EyeWitness:
                 os.makedirs(domain_dir)
 
             start = datetime.now()
-            batches_list = list(self.__divide_chunks(dtos))
-            counter = len(batches_list)
-            for urls_batch in batches_list:
+            batches = CollectionUtil.divide_chunks(dtos, self._chunk_size)
+            counter = len(batches)
+            for urls_batch in batches:
                 msg = self.__make_screens(urls_batch, counter)
                 counter -= 1
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: left:{counter}, chunk_size:{len(urls_batch)}, result:{msg}')
@@ -51,11 +52,6 @@ class EyeWitness:
             cache_manager.save_result(urls)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: {result}')
-
-    def __divide_chunks(self, items):
-        items_to_split = list(items)
-        for i in range(0, len(items_to_split), self._chunk_size):
-            yield items_to_split[i:i + self._chunk_size]
 
     def __make_screens(self, dtos_batch: List[HeadRequestDTO], counter: int):
 

@@ -71,8 +71,8 @@ class FastUrlFlowManager:
             cache_key = parsed_parts.netloc
             head_dtos, form_dtos = self.__get_cached_dtos(raw_urls, cache_key)
 
-            nuclei = Nuclei(cache_key, self._headers)
-            nuclei.fuzz_batch(head_dtos)
+            # nuclei = Nuclei(cache_key, self._headers)
+            # nuclei.fuzz_batch(head_dtos)
 
             xss_manager = XssManager(domain=cache_key, headers=self._headers)
             xss_manager.check_get_requests(head_dtos)

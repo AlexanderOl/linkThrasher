@@ -64,6 +64,7 @@ class CacheHelper:
         except:
             if os.path.exists(self._tracker_filepath):
                 os.remove(self._tracker_filepath)
+        return []
 
     def save_tracker_result(self, result: List[HeadRequestDTO]):
         if not os.path.exists(self._tracker_dir):
@@ -74,7 +75,7 @@ class CacheHelper:
         json_file.close()
 
         if len(result) > 0:
-            txt_file = open(self._tracker_filepath, 'a')
+            txt_file = open(self._txt_tracker_filepath, 'a')
             for item in result:
                 txt_file.write("%s\n" % str(item))
             txt_file.close()

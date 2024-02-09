@@ -1,9 +1,14 @@
 import os
 import socket
+import subprocess
+from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
 
 import validators
+
+from Common.CollectionUtil import CollectionUtil
+from Common.ProcessKiller import ProcessKiller
 from Helpers.CacheHelper import CacheHelper
 from Helpers.CookieHelper import CookieHelper
 from Common.RequestHandler import RequestHandler
@@ -24,6 +29,7 @@ class SubdomainChecker:
         self._out_of_scope_domains = os.environ.get("out_of_scope_domains")
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._checked_ips = set()
+        self._chunk_size = 100
 
     def check_all_subdomains(self, all_subdomains: set) -> List[HeadRequestDTO]:
         cache_manager = CacheHelper(self._tool_name, self._domain)
@@ -117,19 +123,26 @@ class SubdomainChecker:
         if response2 is not None and all(dto.url != redirect_url for dto in self._checked_subdomains):
             self._checked_subdomains.append(HeadRequestDTO(response2))
 
-    def __get_ips(self, subdomains):
+    def __get_ips(self, subdomains) -> set:
+        if not os.path.exists(f'{self._tool_result_dir}/{self._domain}'):
+            os.makedirs(f'{self._tool_result_dir}/{self._domain}')
+
         subs_file = f'{self._tool_result_dir}/{self._domain}/subs.txt'
         json_file = open(subs_file, 'w')
         for subdomain in subdomains:
             json_file.write(f"{subdomain}\n")
         json_file.close()
 
-        command = f'dnsx -l {subs_file} -silent -a -resp-only'
-        stream = os.popen(command)
-        bash_outputs = stream.readlines()
+        cmd_arr = ['dnsx', '-l', subs_file, '-silent', '-a', '-resp-only']
+        pk = ProcessKiller()
+        bash_outputs = pk.run_temp_process(cmd_arr, self._domain, timeout=1200)
+
         ips = set()
 
         for output in bash_outputs:
             ips.add(output)
+
+        if os.path.exists(subs_file):
+            os.remove(subs_file)
 
         return ips

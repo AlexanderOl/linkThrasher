@@ -5,7 +5,7 @@ from urllib3 import exceptions, disable_warnings
 
 from Common.RequestHandler import RequestHandler
 from Common.S500Handler import S500Handler
-from Helpers.CookieManager import CookieHelper
+from Helpers.CookieHelper import CookieHelper
 from Helpers.ManualTesting import ManualTesting
 from Helpers.Spider import Spider
 from Helpers.SqliManager import SqliManager
@@ -16,6 +16,7 @@ from Models.HeadRequestDTO import HeadRequestDTO
 from Tools.Feroxbuster import Feroxbuster
 from Tools.Gobuster import Gobuster
 from Tools.Hakrawler import Hakrawler
+from Tools.Httracker import Httracker
 from Tools.Katana import Katana
 from Tools.Nuclei import Nuclei
 from Tools.Waybackurls import Waybackurls
@@ -28,6 +29,7 @@ class SingleUrlFlowManager:
         self._check_mode = os.environ.get('check_mode')
         self._single_url = os.environ.get('single_url')
         disable_warnings(exceptions.InsecureRequestWarning)
+
     def run(self):
         request_handler = RequestHandler(cookies="", headers=self._headers)
         response = request_handler.send_head_request(self._single_url)
@@ -46,6 +48,9 @@ class SingleUrlFlowManager:
         cookie_manager = CookieHelper(main_domain)
         raw_cookies = cookie_manager.get_raw_cookies()
         cookies = cookie_manager.get_cookies_dict(raw_cookies)
+
+        httracker = Httracker(domain)
+        httracker.check_single_url(start_url)
 
         gobuster = Gobuster(domain, self._headers, raw_cookies)
         gobuster.check_single_url(start_url)

@@ -3,12 +3,14 @@ from urllib.parse import urlparse
 import requests
 from requests import Response
 from requests.exceptions import SSLError, Timeout, ConnectionError
+from urllib3 import exceptions, disable_warnings
 
 
 class RequestHandler:
     def __init__(self, cookies='', headers={}):
         self._cookies = cookies
         self._headers = headers
+        disable_warnings(exceptions.InsecureRequestWarning)
 
     def send_head_request(self, url, except_ssl_action=None, except_ssl_action_args: [] = None, timeout=3):
         try:
