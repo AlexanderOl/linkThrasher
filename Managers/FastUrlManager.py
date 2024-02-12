@@ -19,7 +19,7 @@ from Models.HeadRequestDTO import HeadRequestDTO
 from Tools.Nuclei import Nuclei
 
 
-class FastUrlFlowManager:
+class FastUrlManager:
     def __init__(self, headers):
         self._headers = headers
         self._tool_name = self.__class__.__name__
@@ -131,7 +131,7 @@ class FastUrlFlowManager:
                 [dto for dto in dtos[form_key] if all(oos not in dto.url for oos in out_of_scope)])
 
         print(
-            f'[{datetime.now().strftime("%H:%M:%S")}]: FastUrlFlowManager found'
+            f'[{datetime.now().strftime("%H:%M:%S")}]: FastUrlFlowManager found '
             f'{len(self._head_dtos)} head_dtos and {len(self._form_dtos)} form_dtos')
         return self._head_dtos, self._form_dtos
 

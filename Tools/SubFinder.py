@@ -9,10 +9,10 @@ class SubFinder:
         self.__tool_name = self.__class__.__name__
         self.__domain = domain
 
-    def get_subdomains(self) -> set:
+    def get_subdomains(self, avoid_cache=False) -> set:
         cache_manager = CacheHelper(self.__tool_name, self.__domain)
         subdomains = cache_manager.get_saved_result()
-        if not subdomains and not isinstance(subdomains, set):
+        if (not subdomains and not isinstance(subdomains, set)) or avoid_cache:
             subdomains = set()
             command = f'subfinder -d {self.__domain} -silent'
             stream = os.popen(command)

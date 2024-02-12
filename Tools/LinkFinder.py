@@ -9,7 +9,8 @@ class LinkFinder:
         self._tool_name = self.__class__.__name__
         self._domain = domain
         self._start_url = start_url
-        self._black_list = ["application/", "text/", "image/", "mm/dd/yyyy", "yyyy/mm/dd", "dd/m/yyyy", "mm/d/yyyy", "request/", "dojo/", "audio/", "video/", "font/"]
+        self._black_list = ["application/", "text/", "image/", "mm/dd/yyyy", "yyyy/mm/dd", "dd/m/yyyy", "mm/d/yyyy",
+                            "request/", "dojo/", "audio/", "video/", "font/", "/x-icon"]
         self._url_ignore_ext_regex = re.compile(
             '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
             '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$')

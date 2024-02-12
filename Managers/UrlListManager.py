@@ -5,12 +5,12 @@ from typing import List
 from urllib.parse import urlparse
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
-from Managers.SingleUrlFlowManager import SingleUrlFlowManager
+from Managers.SingleUrlFlowManager import SingleUrlManager
 from Common.ThreadManager import ThreadManager
 from Models.HeadRequestDTO import HeadRequestDTO
 
 
-class MultipleUrlFlowManager:
+class UrlListManager:
     def __init__(self, headers):
         self._headers = headers
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
@@ -36,7 +36,7 @@ class MultipleUrlFlowManager:
             # nuclei = Nuclei(self._cache_keys, self._headers)
             # nuclei.check_multiple_uls(head_dtos)
 
-            single_url_man = SingleUrlFlowManager(self._headers)
+            single_url_man = SingleUrlManager(self._headers)
             thread_man = ThreadManager()
             thread_man.run_all(single_url_man.do_run, head_dtos, debug_msg=self._tool_name)
         elif os.path.exists(self._file_path):
@@ -46,7 +46,7 @@ class MultipleUrlFlowManager:
             # nuclei = Nuclei(self._cache_keys, self._headers)
             # nuclei.check_multiple_uls(head_dtos)
 
-            single_url_man = SingleUrlFlowManager(self._headers)
+            single_url_man = SingleUrlManager(self._headers)
             thread_man = ThreadManager()
             thread_man.run_all(single_url_man.do_run, head_dtos, debug_msg=self._tool_name)
         else:

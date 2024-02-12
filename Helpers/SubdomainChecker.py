@@ -1,13 +1,9 @@
 import os
 import socket
-import subprocess
-from datetime import datetime
+import validators
 from typing import List
 from urllib.parse import urlparse
 
-import validators
-
-from Common.CollectionUtil import CollectionUtil
 from Common.ProcessKiller import ProcessKiller
 from Helpers.CacheHelper import CacheHelper
 from Helpers.CookieHelper import CookieHelper
@@ -31,11 +27,11 @@ class SubdomainChecker:
         self._checked_ips = set()
         self._chunk_size = 100
 
-    def check_all_subdomains(self, all_subdomains: set) -> List[HeadRequestDTO]:
+    def check_all_subdomains(self, all_subdomains: set, avoid_cache=False) -> List[HeadRequestDTO]:
         cache_manager = CacheHelper(self._tool_name, self._domain)
         checked_subdomains = cache_manager.get_saved_result()
         out_of_scope = [x for x in self._out_of_scope_domains.split(';') if x]
-        if not checked_subdomains and not isinstance(checked_subdomains, List):
+        if (not checked_subdomains and not isinstance(checked_subdomains, List)) or avoid_cache:
 
             subdomains = set(
                 [subdomain for subdomain in all_subdomains if all(oos not in subdomain for oos in out_of_scope)])

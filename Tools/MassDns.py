@@ -12,7 +12,7 @@ class MassDns:
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._massdns_out_of_scope_domains = os.environ.get("massdns_out_of_scope_domains")
 
-    def get_subdomains(self) -> set:
+    def get_subdomains(self, avoid_cache=False) -> set:
         out_of_scope = [x for x in self._massdns_out_of_scope_domains.split(';') if x]
 
         if any(oos in self._domain for oos in out_of_scope):
@@ -25,7 +25,7 @@ class MassDns:
 
         cache_manager = CacheHelper(self._tool_name, self._domain)
         subdomains = cache_manager.get_saved_result()
-        if not subdomains and not isinstance(subdomains, set):
+        if (not subdomains and not isinstance(subdomains, set)) or avoid_cache:
             if not os.path.exists(self._tool_result_dir):
                 os.makedirs(self._tool_result_dir)
 

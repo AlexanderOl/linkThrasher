@@ -11,3 +11,4 @@ pyvirtualdisplay
 python-Levenshtein
 colorama
 tld
+mysql-connector-python

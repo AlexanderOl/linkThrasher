@@ -14,10 +14,10 @@ class Knock:
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
 
-    def get_subdomains(self) -> set:
+    def get_subdomains(self, avoid_cache=False) -> set:
         cache_manager = CacheHelper(self._tool_name, self._domain)
         subdomains = cache_manager.get_saved_result()
-        if not subdomains and not isinstance(subdomains, set):
+        if (not subdomains and not isinstance(subdomains, set)) or avoid_cache:
 
             res_dir = f'{self._tool_result_dir}/{self._domain}'
 

@@ -22,7 +22,7 @@ from Tools.Nuclei import Nuclei
 from Tools.Waybackurls import Waybackurls
 
 
-class SingleUrlFlowManager:
+class SingleUrlManager:
     def __init__(self, headers):
         self._headers = headers
         self._ngrok_url = os.environ.get('ngrok_url')

@@ -12,10 +12,10 @@ class Amass:
         self._domain = domain
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
-    def get_subdomains(self) -> set:
+    def get_subdomains(self, avoid_cache=False) -> set:
         cache_manager = CacheHelper(self._tool_name, self._domain)
         subdomains = cache_manager.get_saved_result()
-        if not subdomains and not isinstance(subdomains, set):
+        if (not subdomains and not isinstance(subdomains, set)) or avoid_cache:
 
             cmd_arr = ['amass', 'enum', '-d', self._domain, '-r', '8.8.8.8,1.1.1.1']
             pk = ProcessKiller()
@@ -27,10 +27,6 @@ class Amass:
 
                 if 'a_record' in encoded_line:
                     subdomain = encoded_line.split('a_record')[1].split(' ')[2]
-                    subdomains.add(subdomain)
-
-                elif 'aaaa_record' in encoded_line:
-                    subdomain = f"[{encoded_line.split('aaaa_record')[1].split(' ')[2]}]"
                     subdomains.add(subdomain)
 
                 elif 'contains' in encoded_line and not encoded_line.startswith('10'):

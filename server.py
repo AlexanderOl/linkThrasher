@@ -1,11 +1,11 @@
 import os
 from dotenv import load_dotenv
 from Managers.CsvManager import CsvManager
-from Managers.DomainFlowManager import DomainFlowManager
-from Managers.DomainTrackerManager import DomainTackerManager
-from Managers.FastUrlFlowManager import FastUrlFlowManager
-from Managers.MultipleUrlFlowManager import MultipleUrlFlowManager
-from Managers.SingleUrlFlowManager import SingleUrlFlowManager
+from Managers.DomainManager import DomainManager
+from Managers.TrackerManager import TrackerManager
+from Managers.FastUrlManager import FastUrlManager
+from Managers.UrlListManager import UrlListManager
+from Managers.SingleUrlManager import SingleUrlManager
 
 headers = {
     'Cache-Control': 'max-age=0',
@@ -25,25 +25,25 @@ if __name__ == '__main__':
 
     elif check_mode == 'D':
         domain = os.environ.get('domain')
-        domain_man = DomainFlowManager(headers)
+        domain_man = DomainManager(headers)
         domain_man.check_domain(domain)
 
     elif check_mode == 'DL':
-        domain_man = DomainFlowManager(headers)
+        domain_man = DomainManager(headers)
         domain_man.check_multiple_domains()
 
-    elif check_mode == 'TD':
-        domain_man = DomainTackerManager(headers)
+    elif check_mode == 'TR':
+        domain_man = TrackerManager(headers)
         domain_man.track_domains()
 
     elif check_mode == 'U':
-        single_url_man = SingleUrlFlowManager(headers)
+        single_url_man = SingleUrlManager(headers)
         single_url_man.run()
 
     elif check_mode == 'UL':
-        multiple_url_man = MultipleUrlFlowManager(headers)
+        multiple_url_man = UrlListManager(headers)
         multiple_url_man.run()
 
     elif check_mode == 'FU':
-        fast_man = FastUrlFlowManager(headers)
+        fast_man = FastUrlManager(headers)
         fast_man.run()

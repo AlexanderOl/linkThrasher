@@ -2,7 +2,7 @@ import os
 import validators
 from datetime import datetime
 from urllib3 import exceptions, disable_warnings
-from Managers.SingleUrlFlowManager import SingleUrlFlowManager
+from Managers.SingleUrlManager import SingleUrlManager
 from Helpers.SubdomainChecker import SubdomainChecker
 from Common.ThreadManager import ThreadManager
 from Tools.Amass import Amass
@@ -15,7 +15,7 @@ from Tools.SubFinder import SubFinder
 from Tools.Trufflehog import Trufflehog
 
 
-class DomainFlowManager:
+class DomainManager:
     def __init__(self, headers):
         self._download_path = os.environ.get('download_path')
         self._headers = headers
@@ -50,7 +50,7 @@ class DomainFlowManager:
         nuclei = Nuclei(ip, self._headers)
         nuclei.check_multiple_uls(start_urls_dtos)
 
-        single_url_man = SingleUrlFlowManager(self._headers)
+        single_url_man = SingleUrlManager(self._headers)
         thread_man = ThreadManager()
         thread_man.run_all(single_url_man.do_run, start_urls_dtos)
 
@@ -116,7 +116,7 @@ class DomainFlowManager:
         nuclei = Nuclei(domain, self._headers)
         nuclei.check_multiple_uls(start_urls_dtos)
 
-        single_url_man = SingleUrlFlowManager(self._headers)
+        single_url_man = SingleUrlManager(self._headers)
         thread_man = ThreadManager()
         thread_man.run_all(single_url_man.do_run, start_urls_dtos)
 

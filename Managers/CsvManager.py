@@ -6,8 +6,8 @@ from datetime import date
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Helpers.CacheHelper import CacheHelper
-from Managers.DomainFlowManager import DomainFlowManager
-from Managers.MultipleUrlFlowManager import MultipleUrlFlowManager
+from Managers.DomainManager import DomainManager
+from Managers.UrlListManager import UrlListManager
 
 
 class CsvManager:
@@ -30,14 +30,14 @@ class CsvManager:
         print(f'FOUND {", ".join(self._urls)} URLS')
         print(f'FOUND {", ".join(self._ips)} IPs')
 
-        domain_man = DomainFlowManager(self._headers)
+        domain_man = DomainManager(self._headers)
         for domain in self._domains:
             domain_man.check_domain(domain)
 
         for ip in self._urls:
             domain_man.check_ip(ip)
 
-        multiple_man = MultipleUrlFlowManager(self._headers)
+        multiple_man = UrlListManager(self._headers)
         multiple_man.run(self._urls)
 
     def __parse_csv(self):
