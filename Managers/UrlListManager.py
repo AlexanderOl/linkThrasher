@@ -5,7 +5,7 @@ from typing import List
 from urllib.parse import urlparse
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
-from Managers.SingleUrlFlowManager import SingleUrlManager
+from Managers.SingleUrlManager import SingleUrlManager
 from Common.ThreadManager import ThreadManager
 from Models.HeadRequestDTO import HeadRequestDTO
 

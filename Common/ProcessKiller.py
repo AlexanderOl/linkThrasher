@@ -1,7 +1,6 @@
 from datetime import datetime
 import subprocess
 import re
-from threading import Timer
 from typing import List
 
 
@@ -39,4 +38,4 @@ class ProcessKiller:
                 return ['timeout']
 
         except Exception as inst:
-            print(f'ProccessKillerException: {inst}')
+            print(f'ProcessKiller exception: {inst}')
