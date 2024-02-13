@@ -8,6 +8,7 @@ from Common.RequestHandler import RequestHandler
 from Managers.SingleUrlManager import SingleUrlManager
 from Common.ThreadManager import ThreadManager
 from Models.HeadRequestDTO import HeadRequestDTO
+from Tools.Nuclei import Nuclei
 
 
 class UrlListManager:
@@ -33,8 +34,8 @@ class UrlListManager:
                     continue
                 head_dtos.append(HeadRequestDTO(response))
 
-            # nuclei = Nuclei(self._cache_keys, self._headers)
-            # nuclei.check_multiple_uls(head_dtos)
+            nuclei = Nuclei(self._cache_keys, self._headers)
+            nuclei.check_multiple_uls(head_dtos)
 
             single_url_man = SingleUrlManager(self._headers)
             thread_man = ThreadManager()
@@ -43,8 +44,8 @@ class UrlListManager:
 
             head_dtos = self.__get_cached_dtos(self._file_path)
 
-            # nuclei = Nuclei(self._cache_keys, self._headers)
-            # nuclei.check_multiple_uls(head_dtos)
+            nuclei = Nuclei(self._cache_keys, self._headers)
+            nuclei.check_multiple_uls(head_dtos)
 
             single_url_man = SingleUrlManager(self._headers)
             thread_man = ThreadManager()

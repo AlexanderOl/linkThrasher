@@ -91,19 +91,19 @@ class SingleUrlManager:
 
         xss_manager = XssManager(domain, self._headers, cookies)
         xss_manager.check_get_requests(head_dtos)
-        xss_manager.check_form_requests(form_dtos)
+        xss_manager.check_form_requests(all_form_dtos)
 
         ssrf_manager = SsrfManager(domain, cookies, self._headers)
         ssrf_manager.check_get_requests(head_dtos)
-        ssrf_manager.check_form_requests(form_dtos)
+        ssrf_manager.check_form_requests(all_form_dtos)
 
         sqli_manager = SqliManager(domain, cookies, self._headers)
         sqli_manager.check_get_requests(head_dtos)
-        sqli_manager.check_form_requests(form_dtos)
+        sqli_manager.check_form_requests(all_form_dtos)
 
         ssti_manager = SstiManager(domain, cookies, self._headers)
         ssti_manager.check_get_requests(head_dtos)
-        ssti_manager.check_form_requests(form_dtos)
+        ssti_manager.check_form_requests(all_form_dtos)
 
         errors = sqli_manager.errors_500 + ssti_manager.errors_500
         s500 = S500Handler()

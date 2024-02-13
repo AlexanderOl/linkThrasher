@@ -46,6 +46,7 @@ class Feroxbuster:
 
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_url, ready_urls, debug_msg=self._tool_name)
+
             self._head_dtos.extend(already_exist_head_dtos)
             self._cache_manager.save_result({'head_dtos': self._head_dtos, 'form_dtos': self._form_dtos})
 

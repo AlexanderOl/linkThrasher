@@ -2,6 +2,8 @@ import os
 import validators
 from datetime import datetime
 from urllib3 import exceptions, disable_warnings
+
+from Common.RequestHandler import RequestHandler
 from Managers.SingleUrlManager import SingleUrlManager
 from Helpers.SubdomainChecker import SubdomainChecker
 from Common.ThreadManager import ThreadManager
@@ -61,8 +63,14 @@ class DomainManager:
         if os.path.exists(self._targets_domains_file):
             domains = list(set(line.strip() for line in open(self._targets_domains_file)))
 
+            request_helper = RequestHandler(cookies='', headers=self._headers)
             counter = len(domains)
             for domain in domains:
+
+                resp = request_helper.send_head_request(f'http://{domain}')
+                if not resp:
+                    continue
+
                 print(f'Checking {domain} domain. Counter: {counter}')
                 self.check_domain(domain)
                 counter -= 1
