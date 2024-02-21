@@ -26,9 +26,9 @@ class CsvManager:
 
         self.__parse_csv()
 
-        print(f'FOUND {", ".join(self._domains)} DOMAINS')
-        print(f'FOUND {", ".join(self._urls)} URLS')
-        print(f'FOUND {", ".join(self._ips)} IPs')
+        print(f'FOUND DOMAINS: {", ".join(self._domains)}')
+        print(f'FOUND URLS: {", ".join(self._urls)}')
+        print(f'FOUND IPS: {", ".join(self._ips)}')
 
         domain_man = DomainManager(self._headers)
         for domain in self._domains:

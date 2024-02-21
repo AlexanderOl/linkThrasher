@@ -37,7 +37,7 @@ class SingleUrlManager:
 
     def do_run(self, head_dto: HeadRequestDTO):
 
-        if 404 <= head_dto.status_code < 500:
+        if 403 <= head_dto.status_code < 500:
             return
 
         start_url = head_dto.url
