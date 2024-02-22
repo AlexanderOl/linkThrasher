@@ -17,7 +17,7 @@ class Nuclei:
         self._headers = headers
         self._raw_cookies = raw_cookies
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
-        self._tool_result_fuzzing_dir = f'{os.environ.get("app_result_path")}{self._tool_name}_fuzzing'
+        self._tool_result_fuzzing_dir = f'{self._tool_result_dir}_fuzzing'
         self._cache_manager = CacheHelper(self._tool_name, cache_key)
         self._expected = ['[info]', '[medium]', '[high]', '[critical]', '[unknown]', '[network]']
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')

@@ -6,7 +6,7 @@ from datetime import datetime
 
 class CacheHelper:
     def __init__(self, tool_name, domain: str):
-        self._tool_result_dir = f"Results/{tool_name}"
+        self._tool_result_dir = f"CacheResults/{tool_name}"
         self._result_filepath = f"{self._tool_result_dir}/{domain.replace(':', '_')}.json"
         self._txt_result_filepath = f"{self._tool_result_dir}/{domain.replace(':', '_')}.txt"
         self._domain = domain

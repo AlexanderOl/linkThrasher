@@ -14,7 +14,6 @@ class CsvManager:
     def __init__(self, headers):
         self._headers = headers
         self._tool_name = self.__class__.__name__
-        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._target_files = f'Targets/*.csv'
         self._request_handler = RequestHandler(headers=headers)
         self._domains = set()

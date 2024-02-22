@@ -3,8 +3,6 @@ import socket
 import validators
 from typing import List
 from urllib.parse import urlparse
-
-from Common.ProcessHandler import ProcessHandler
 from Helpers.CacheHelper import CacheHelper
 from Helpers.CookieHelper import CookieHelper
 from Common.RequestHandler import RequestHandler
@@ -23,7 +21,6 @@ class SubdomainChecker:
         cookies = cookie_manager.get_cookies_dict(raw_cookies)
         self._request_handler = RequestHandler(cookies, headers)
         self._out_of_scope_domains = os.environ.get("out_of_scope_domains")
-        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._checked_ips = set()
         self._chunk_size = 100
 

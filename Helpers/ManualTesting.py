@@ -9,9 +9,8 @@ from Models.HeadRequestDTO import HeadRequestDTO
 
 class ManualTesting:
     def __init__(self, domain):
-        self._tool_name = self.__class__.__name__
         self._domain = domain
-        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
+        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self.__class__.__name__}'
         self._already_added_pathes = {}
 
     def save_urls_for_manual_testing(self, spider_dtos: List[HeadRequestDTO], form_dtos: List[FormRequestDTO]) \
