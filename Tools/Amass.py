@@ -2,7 +2,7 @@ import re
 import ipaddress
 from datetime import datetime
 
-from Common.ProcessKiller import ProcessKiller
+from Common.ProcessHandler import ProcessHandler
 from Helpers.CacheHelper import CacheHelper
 
 
@@ -18,7 +18,7 @@ class Amass:
         if (not subdomains and not isinstance(subdomains, set)) or avoid_cache:
 
             cmd_arr = ['amass', 'enum', '-d', self._domain, '-r', '8.8.8.8,1.1.1.1']
-            pk = ProcessKiller()
+            pk = ProcessHandler()
             bash_outputs = pk.run_temp_process(cmd_arr, self._domain, timeout=1200)
 
             subdomains = set()

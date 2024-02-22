@@ -9,6 +9,7 @@ from Dal.MysqlRepository import MysqlRepository
 from Helpers.SubdomainChecker import SubdomainChecker
 from Managers.SingleUrlManager import SingleUrlManager
 from Tools.Amass import Amass
+from Tools.Dnsx import Dnsx
 from Tools.Knock import Knock
 from Tools.MassDns import MassDns
 from Tools.SubFinder import SubFinder
@@ -58,6 +59,10 @@ class TrackerManager:
             .union(knock_subdomains) \
             .union(subfinder_subdomains) \
             .union(massdns_subdomains)
+
+        dnsx = Dnsx(domain)
+        ips = dnsx.get_ips(all_subdomains)
+        all_subdomains.update(ips)
 
         subdomain_checker = SubdomainChecker(domain, self._headers)
         start_urls_dtos = subdomain_checker.check_all_subdomains(all_subdomains, avoid_cache=False)

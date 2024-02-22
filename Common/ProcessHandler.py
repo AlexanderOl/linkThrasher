@@ -1,10 +1,11 @@
+import os
 from datetime import datetime
 import subprocess
 import re
 from typing import List
 
 
-class ProcessKiller:
+class ProcessHandler:
     def __init__(self):
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
@@ -38,4 +39,4 @@ class ProcessKiller:
                 return ['timeout']
 
         except Exception as inst:
-            print(f'ProcessKiller exception: {inst}')
+            print(f'ProcessHandler exception: {inst}')

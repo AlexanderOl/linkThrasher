@@ -8,13 +8,13 @@ from Managers.SingleUrlManager import SingleUrlManager
 from Helpers.SubdomainChecker import SubdomainChecker
 from Common.ThreadManager import ThreadManager
 from Tools.Amass import Amass
+from Tools.Dnsx import Dnsx
 from Tools.EyeWitness import EyeWitness
 from Tools.Knock import Knock
 from Tools.MassDns import MassDns
 from Tools.Nmap import Nmap
 from Tools.Nuclei import Nuclei
 from Tools.SubFinder import SubFinder
-from Tools.Trufflehog import Trufflehog
 
 
 class DomainManager:
@@ -102,6 +102,10 @@ class DomainManager:
             .union(subfinder_subdomains) \
             .union(massdns_subdomains)
 
+        dnsx = Dnsx(domain)
+        ips = dnsx.get_ips(all_subdomains)
+        all_subdomains.update(ips)
+
         subdomain_checker = SubdomainChecker(domain, self._headers)
         start_urls_dtos = subdomain_checker.check_all_subdomains(all_subdomains)
 
@@ -128,7 +132,7 @@ class DomainManager:
         thread_man = ThreadManager()
         thread_man.run_all(single_url_man.do_run, start_urls_dtos)
 
-        th = Trufflehog(domain)
-        th.check_secrets()
+        # th = Trufflehog(domain)
+        # th.check_secrets()
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: DomainFlowManager done with ({domain})')

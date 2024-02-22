@@ -31,8 +31,9 @@ class Httracker:
                 cookies_arg = f'--cookies={raw_cookies}'
 
             output_file = f'{self._tool_domain_result_dir}/RESULT_{self._domain}.txt'
-            command = (f'cd {site_dir}; httrack {url} --max-size 1000000 {cookies_arg} ; '
-                       "grep -e 'secret' -e 'passw' -e 'admin' -e 'apikey' -e 'api_key' * -r --exclude=hts-log.txt --exclude-dir=hts-cache " +
+            command = (f'cd {site_dir}; httrack {url} --max-size=1000000 {cookies_arg} ; '
+                       "grep -e 'secret' -e 'passw' -e 'admin' -e 'apikey' -e 'api_key' -e 'accesskey' * -r "
+                       "--exclude=hts-log.txt --exclude-dir=hts-cache " +
                        "| awk '{print substr($0, 1, 1000)}' "
                        f"> {output_file}")
 

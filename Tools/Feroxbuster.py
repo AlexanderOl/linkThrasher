@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
 
-from Common.ProcessKiller import ProcessKiller
+from Common.ProcessHandler import ProcessHandler
 from Common.RequestChecker import RequestChecker
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
@@ -88,6 +88,7 @@ class Feroxbuster:
 
         output_file = f'{self._tool_result_dir}/RAW_{self._domain.replace(":", "_")}.txt'
         cmd = ["feroxbuster", "--url", url, "-w", f"{self._app_wordlists_path}directories.txt", "-o", output_file,
+               # "-x", "txt conf config bak bkp cache swp old db aspx aspx~ asp asp~ py py~ rb rb~ jsp jsp~ php php~ cgi csv html inc jar js json lock log rar sql sql~ swp swp~ tar tar.gz wadl zip",
                "--insecure", "--no-state", "--threads", str(self._threads), "--auto-bail"]
         if len(self._raw_cookies) > 0:
             cmd.append("-b")
@@ -95,7 +96,7 @@ class Feroxbuster:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) Feroxbuster starts...')
 
-        pk = ProcessKiller()
+        pk = ProcessHandler()
         pk.run_temp_process(cmd, url)
         report_lines = []
         if os.path.exists(output_file):

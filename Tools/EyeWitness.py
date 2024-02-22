@@ -5,7 +5,7 @@ from typing import List
 from urllib.parse import urlparse
 
 from Common.CollectionUtil import CollectionUtil
-from Common.ProcessKiller import ProcessKiller
+from Common.ProcessHandler import ProcessHandler
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
 from Models.HeadRequestDTO import HeadRequestDTO
@@ -71,7 +71,7 @@ class EyeWitness:
             cmd_arr = ['eyewitness', '-f', subdomains_filepath, '--thread', '1', '--web',
                        '-d', counter_directory_path, '--timeout', '15', '--no-prompt']
 
-            pk = ProcessKiller()
+            pk = ProcessHandler()
             lines = pk.run_temp_process(cmd_arr, self._cache_key)
             for line in lines:
                 if 'Finished in' in line:

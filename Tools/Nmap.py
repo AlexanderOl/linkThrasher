@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
 
-from Common.ProcessKiller import ProcessKiller
+from Common.ProcessHandler import ProcessHandler
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
@@ -89,7 +89,7 @@ class Nmap:
         txt_file.close()
         subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
         cmd_arr = ['nmap', '-sT', '-T4', '-iL', subdomains_filepath, '--open']
-        pk = ProcessKiller()
+        pk = ProcessHandler()
         bash_outputs = pk.run_temp_process(cmd_arr, f'NMAP runs for - {len(subdomains)} subs', timeout=600)
         os.remove(txt_filepath)
         return bash_outputs

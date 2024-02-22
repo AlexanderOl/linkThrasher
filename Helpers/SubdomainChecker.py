@@ -4,7 +4,7 @@ import validators
 from typing import List
 from urllib.parse import urlparse
 
-from Common.ProcessKiller import ProcessKiller
+from Common.ProcessHandler import ProcessHandler
 from Helpers.CacheHelper import CacheHelper
 from Helpers.CookieHelper import CookieHelper
 from Common.RequestHandler import RequestHandler
@@ -35,9 +35,6 @@ class SubdomainChecker:
 
             subdomains = set(
                 [subdomain for subdomain in all_subdomains if all(oos not in subdomain for oos in out_of_scope)])
-
-            ips = self.__get_ips(subdomains)
-            subdomains.update(ips)
 
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_subdomain, subdomains, debug_msg=self._tool_name)
@@ -81,9 +78,7 @@ class SubdomainChecker:
                                                            timeout=5)
 
         if response is not None:
-            if 'Server' in response.headers and response.headers['Server'] == 'cloudflare':
-                return
-            elif (len(response.history) > 0 and str(response.history[0].status_code).startswith('3') and
+            if (len(response.history) > 0 and str(response.history[0].status_code).startswith('3') and
                   'Location' in response.history[0].headers):
                 redirect = response.history[0].headers['Location']
                 self.__check_redirect_urls(url, redirect)
@@ -118,27 +113,3 @@ class SubdomainChecker:
                                                             timeout=5)
         if response2 is not None and all(dto.url != redirect_url for dto in self._checked_subdomains):
             self._checked_subdomains.append(HeadRequestDTO(response2))
-
-    def __get_ips(self, subdomains) -> set:
-        if not os.path.exists(f'{self._tool_result_dir}/{self._domain}'):
-            os.makedirs(f'{self._tool_result_dir}/{self._domain}')
-
-        subs_file = f'{self._tool_result_dir}/{self._domain}/subs.txt'
-        json_file = open(subs_file, 'w')
-        for subdomain in subdomains:
-            json_file.write(f"{subdomain}\n")
-        json_file.close()
-
-        cmd_arr = ['dnsx', '-l', subs_file, '-silent', '-a', '-resp-only']
-        pk = ProcessKiller()
-        bash_outputs = pk.run_temp_process(cmd_arr, self._domain, timeout=1200)
-
-        ips = set()
-
-        for output in bash_outputs:
-            ips.add(output)
-
-        if os.path.exists(subs_file):
-            os.remove(subs_file)
-
-        return ips

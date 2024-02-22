@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from urllib.parse import urlparse
-from Common.ProcessKiller import ProcessKiller
+from Common.ProcessHandler import ProcessHandler
 from Helpers.CacheHelper import CacheHelper
 
 
@@ -30,8 +30,9 @@ class Gobuster:
                 output_file = f'{self._tool_result_dir}/RAW_{self._domain.replace(":","_")}.txt'
                 cmd_arr = ["gobuster", "dir",
                            "-b", "400-429",
+                           # "-x", ".txt, .conf, .config, .bak, .bkp, .backup, .cache, .swp, .old, .db, .aspx, .aspx~, .asp, .asp~, .py, .py~, .rb, .rb~, .jsp, .jsp~, .php, .php~, .cgi, .csv, .html, .jar, .js, .json, .lock, .log, .rar, .sql, .sql~, .swp, .swp~, .tar, .tar.gz, .wadl, .zip",
                            "-u", base_url,
-                           "-w", f"{self._app_wordlists_path}ExploitDB.txt",
+                           "-w", f"{self._app_wordlists_path}gobuster.txt",
                            "-H", f"User-Agent:{self._headers['User-Agent']}",
                            "--no-error", "-t", str(self._threads), "-o", output_file]
 
@@ -39,7 +40,7 @@ class Gobuster:
                     cmd_arr.append("-c")
                     cmd_arr.append(self._raw_cookies)
 
-                pk = ProcessKiller()
+                pk = ProcessHandler()
                 lines = pk.run_temp_process(cmd_arr, url)
                 for proc_msg in lines:
                     if 'Error: ' in proc_msg and ' => ' in proc_msg:

@@ -34,7 +34,7 @@ class CsvManager:
         for domain in self._domains:
             domain_man.check_domain(domain)
 
-        for ip in self._urls:
+        for ip in self._ips:
             domain_man.check_ip(ip)
 
         multiple_man = UrlListManager(self._headers)
