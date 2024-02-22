@@ -30,12 +30,17 @@ class Httracker:
             if raw_cookies:
                 cookies_arg = f'--cookies={raw_cookies}'
 
+            output_file = f'{self._tool_domain_result_dir}/RESULT_{self._domain}.txt'
             command = (f'cd {site_dir}; httrack {url} --max-size 1000000 {cookies_arg} ; '
-                       "grep -e 'secret' -e 'passw' -e 'admin' -e 'apikey' -e 'api_key' * -r --exclude=hts-log.txt " +
-                       "| awk '{print substr($0, 1, 1000)}' " +
-                       f'> {self._tool_domain_result_dir}/RESULT_{self._domain}.txt')
+                       "grep -e 'secret' -e 'passw' -e 'admin' -e 'apikey' -e 'api_key' * -r --exclude=hts-log.txt --exclude-dir=hts-cache " +
+                       "| awk '{print substr($0, 1, 1000)}' "
+                       f"> {output_file}")
+
             print(f'Cmd executing: {command}')
             stream = os.popen(command)
             stream.read()
+
+            if os.path.getsize(output_file) == 0:
+                shutil.rmtree(self._tool_domain_result_dir, ignore_errors=True)
 
             shutil.rmtree(site_dir, ignore_errors=True)
