@@ -7,7 +7,6 @@ class ThreadManager:
     def __init__(self):
         self.batch_size = int(os.environ.get('batch_size'))
 
-
     def run_all(self, action, items, debug_msg=False):
         random.shuffle(list(items))
         url_batches = self.__chunks(items)

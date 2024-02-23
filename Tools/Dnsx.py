@@ -33,12 +33,7 @@ class Dnsx:
             ips = set()
 
             for output in bash_outputs:
-                split = output.split('.')
-                if len(split) == 4:
-                    new_ips = set()
-                    for i in range(1, 255):
-                        new_ips.add(f'{split[0]}.{split[1]}.{split[2]}.{i}')
-                    ips.update(new_ips)
+                ips.add(output)
 
             shutil.rmtree(self._domain_folder, ignore_errors=True)
 
