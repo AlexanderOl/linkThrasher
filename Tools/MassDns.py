@@ -9,7 +9,7 @@ class MassDns:
     def __init__(self, domain):
         self._tool_name = self.__class__.__name__
         self._domain = domain
-        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
+        self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'
         self._massdns_out_of_scope_domains = os.environ.get("massdns_out_of_scope_domains")
 
     def get_subdomains(self, avoid_cache=False) -> set:

@@ -18,7 +18,7 @@ class Nuclei:
         self._raw_cookies = raw_cookies
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._tool_result_fuzzing_dir = f'{self._tool_result_dir}_fuzzing'
-        self._cache_manager = CacheHelper(self._tool_name, cache_key)
+        self._cache_manager = CacheHelper(self._tool_name, cache_key, 'Results')
         self._expected = ['[info]', '[medium]', '[high]', '[critical]', '[unknown]', '[network]']
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         self._chunk_size = 30
@@ -84,6 +84,9 @@ class Nuclei:
 
     def check_multiple_uls(self, get_dtos: List[HeadRequestDTO]):
 
+        if not os.path.exists(self._tool_result_fuzzing_dir):
+            os.makedirs(self._tool_result_fuzzing_dir)
+
         report_lines = self._cache_manager.get_saved_result()
         if not report_lines and not isinstance(report_lines, List):
             report_lines = []
@@ -146,6 +149,7 @@ class Nuclei:
             self._cache_manager.save_result(result)
 
     def __check_batch(self, dtos_batch: List[HeadRequestDTO], counter):
+
         txt_filepath = f"{self._tool_result_dir}/{self._cache_key}_{counter}.txt"
         if os.path.exists(txt_filepath):
             print(f"File found: {txt_filepath}")

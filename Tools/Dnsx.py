@@ -10,7 +10,7 @@ class Dnsx:
         self._domain = domain
         self._tool_name = self.__class__.__name__
         self._cache_manager = CacheHelper(self._tool_name, domain)
-        self._domain_folder = f'{os.environ.get("app_result_path")}{self._tool_name}/{self._domain}'
+        self._domain_folder = f'{os.environ.get("app_cache_result_path")}{self._tool_name}/{self._domain}'
 
     def get_ips(self, subdomains) -> set:
 

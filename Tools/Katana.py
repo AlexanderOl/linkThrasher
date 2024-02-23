@@ -24,7 +24,7 @@ class Katana:
             re.IGNORECASE)
         self._result: List[HeadRequestDTO] = []
         self._get_dtos: List[GetRequestDTO] = []
-        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
+        self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'
         self._checked_hrefs = set()
 
     def get_requests_dtos(self, start_url) -> List[HeadRequestDTO]:

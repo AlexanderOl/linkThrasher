@@ -24,7 +24,7 @@ class Waybackurls:
             re.IGNORECASE)
         self._result: List[HeadRequestDTO] = []
         self._get_dtos: List[GetRequestDTO] = []
-        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
+        self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'
         self._checked_hrefs = set()
         self._waybackurls_out_of_scope_domains = os.environ.get("waybackurls_out_of_scope_domains")
 

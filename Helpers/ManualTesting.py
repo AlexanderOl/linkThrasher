@@ -16,7 +16,7 @@ class ManualTesting:
     def save_urls_for_manual_testing(self, spider_dtos: List[HeadRequestDTO], form_dtos: List[FormRequestDTO]) \
             -> List[HeadRequestDTO]:
 
-        groups = defaultdict(list)
+        groups = defaultdict(List[HeadRequestDTO])
 
         for obj in spider_dtos:
             groups[obj.url] = obj

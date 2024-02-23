@@ -12,7 +12,7 @@ class Knock:
         self._tool_name = self.__class__.__name__
         self._domain = domain
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
+        self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'
 
     def get_subdomains(self, avoid_cache=False) -> set:
         cache_manager = CacheHelper(self._tool_name, self._domain)

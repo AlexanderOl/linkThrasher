@@ -30,7 +30,7 @@ class SsrfManager:
             os.makedirs(self._tool_dir)
 
         if not os.path.exists(self._get_domain_log):
-            cache_manager = CacheHelper('SsrfManager/Get', self._domain)
+            cache_manager = CacheHelper('SsrfManager/Get', self._domain, 'Results')
             results: List[InjectionFoundDTO] = []
             for dto in dtos:
                 self.__check_route_params(dto.url, results)
@@ -39,7 +39,7 @@ class SsrfManager:
     def check_form_requests(self, form_results: List[FormRequestDTO]):
 
         if not os.path.exists(self._form_domain_log):
-            cache_manager = CacheHelper('SsrfManager/Form', self._domain)
+            cache_manager = CacheHelper('SsrfManager/Form', self._domain, 'Results')
             results: List[InjectionFoundDTO] = []
             for item in form_results:
                 self.__send_ssrf_form_request(item, results)

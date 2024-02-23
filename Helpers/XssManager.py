@@ -25,7 +25,7 @@ class XssManager:
 
     def check_get_requests(self, dtos: List[HeadRequestDTO]):
 
-        cache_manager = CacheHelper('XssManager/Get', self._domain)
+        cache_manager = CacheHelper('XssManager/Get', self._domain, 'Results')
         self._result = cache_manager.get_saved_result()
 
         if self._result is None:
@@ -42,7 +42,7 @@ class XssManager:
 
     def check_form_requests(self, form_dtos: List[FormRequestDTO]):
 
-        cache_manager = CacheHelper('XssManager/Form', self._domain)
+        cache_manager = CacheHelper('XssManager/Form', self._domain, 'Results')
         self._result = cache_manager.get_saved_result()
 
         if self._result is None:

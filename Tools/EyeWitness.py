@@ -68,7 +68,7 @@ class EyeWitness:
         try:
             subdomains_filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
 
-            cmd_arr = ['eyewitness', '-f', subdomains_filepath, '--thread', '1', '--web',
+            cmd_arr = ['eyewitness', '-f', subdomains_filepath, '--thread', '3', '--web',
                        '-d', counter_directory_path, '--timeout', '15', '--no-prompt']
 
             pk = ProcessHandler()

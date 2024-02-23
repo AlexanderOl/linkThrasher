@@ -17,7 +17,6 @@ class UrlListManager:
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
         self._request_handler = RequestHandler(cookies='', headers=headers)
         self._tool_name = self.__class__.__name__
-        self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         self._result: List[HeadRequestDTO] = []
         self._cache_keys = str(date.today())
@@ -61,9 +60,6 @@ class UrlListManager:
         out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
 
         if not head_dtos and not isinstance(head_dtos, List):
-
-            for f in os.listdir(self._tool_result_dir):
-                os.remove(os.path.join(self._tool_result_dir, f))
 
             raw_urls = list(set(line.strip() for line in open(file_path)))
             urls = set()

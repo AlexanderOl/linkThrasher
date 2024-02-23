@@ -8,6 +8,7 @@ class LinkFinder:
     def __init__(self, domain, start_url):
         self._tool_name = self.__class__.__name__
         self._domain = domain
+        self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'
         self._start_url = start_url
         self._black_list = ["application/", "text/", "image/", "mm/dd/yyyy", "yyyy/mm/dd", "dd/m/yyyy", "mm/d/yyyy",
                             "request/", "dojo/", "audio/", "video/", "font/", "/x-icon"]
@@ -21,7 +22,7 @@ class LinkFinder:
         if len(script_urls) == 0:
             return result
 
-        tool_directory = f"Results/{self._tool_name}/{self._domain}"
+        tool_directory = f"{self._tool_result_dir}/{self._domain}"
         if not os.path.exists(tool_directory):
             os.makedirs(tool_directory)
 
