@@ -1,3 +1,5 @@
+import os
+
 import requests
 import json
 
@@ -46,8 +48,8 @@ query TeamAssets($handle: String!) {
 
 class HackeroneManager:
     def __init__(self, headers):
-        self._max_program_count = 20
         self._headers = headers
+        self._max_program_count = int(os.environ.get("h1_program_count"))
 
     def run(self):
         targets = self.__hackerone_to_list()
@@ -115,7 +117,8 @@ class HackeroneManager:
                     scope_resp = json.loads(r.text)
                     for e in scope_resp['data']['team']['in_scope_assets']['edges']:
                         node = e['node']
-                        if node['asset_type'] == 'Domain' or node['asset_identifier'].startswith('*') or node['asset_type'] == 'URL':
+                        if node['asset_type'] == 'Domain' or node['asset_identifier'].startswith('*') \
+                                or node['asset_type'] == 'URL':
                             identifier = node['asset_identifier']
                             for i in identifier.split(','):
                                 targets['domains'].append(i)
@@ -123,5 +126,3 @@ class HackeroneManager:
                                 if bounty is True:
                                     targets['with_bounty'].append(i)
         return targets['with_bounty']
-
-
