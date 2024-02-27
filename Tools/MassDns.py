@@ -19,8 +19,8 @@ class MassDns:
             print(f'{self._domain} out of scope massdns')
             return set()
 
-        res = get_tld(f"http://{self._domain}", as_object=True)
-        if res.fld != self._domain:
+        top_domain_res = get_tld(f"http://{self._domain}", as_object=True)
+        if top_domain_res.fld != self._domain:
             return set()
 
         cache_manager = CacheHelper(self._tool_name, self._domain)
@@ -44,14 +44,17 @@ class MassDns:
                     with open(massdns_result_file) as file:
                         for line in file:
                             subdomain = str(line.split(' ')[0]).strip('.').lower()
+                            subdomain = subdomain.replace('*.', '')
                             subdomains.add(subdomain)
 
             os.remove(massdns_result_file)
             cache_manager.save_result(subdomains)
 
         if len(subdomains) > 1000000:
-            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} failed! Found too many items.')
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) '
+                  f'{self._tool_name} failed! Found too many items.')
             return set()
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} found {len(subdomains)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) '
+              f'{self._tool_name} found {len(subdomains)} items')
         return subdomains
 

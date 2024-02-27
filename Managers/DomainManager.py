@@ -83,6 +83,7 @@ class DomainManager:
         if not validators.domain(domain):
             print(f'{domain} is not a domain')
             return
+
         amass = Amass(domain)
         amass_subdomains = amass.get_subdomains()
 
