@@ -14,7 +14,9 @@ class InjectionType(Enum):
     Xss_PostForm = 9,
     Xss_Stored = 10,
     Open_Redirect_PostForm = 11,
-    Open_Redirect_Get = 12
+    Open_Redirect_Get = 12,
+    Lfi_Get = 12,
+    Lfi_PostForm = 12,
 
 
 class InjectionFoundDTO:

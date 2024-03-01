@@ -13,7 +13,7 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
 class SstiManager:
-    def __init__(self, domain, cookies='', headers={}):
+    def __init__(self, domain, headers, cookies=''):
         self.errors_500 = []
         self._result = None
         self._domain = domain

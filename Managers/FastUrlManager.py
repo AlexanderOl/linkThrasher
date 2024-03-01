@@ -8,6 +8,7 @@ from Common.RequestChecker import RequestChecker
 from Common.S500Handler import S500Handler
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
+from Helpers.LfiManager import LfiManager
 from Helpers.SqliManager import SqliManager
 from Helpers.SsrfManager import SsrfManager
 from Helpers.SstiManager import SstiManager
@@ -82,6 +83,10 @@ class FastUrlManager:
             ssrf_manager.check_get_requests(head_dtos)
             ssrf_manager.check_form_requests(form_dtos)
 
+            lfi_manager = LfiManager(domain=cache_key, headers=self._headers)
+            lfi_manager.check_get_requests(head_dtos)
+            lfi_manager.check_form_requests(form_dtos)
+
             sqli_manager = SqliManager(domain=cache_key, headers=self._headers)
             sqli_manager.check_get_requests(head_dtos)
             sqli_manager.check_form_requests(form_dtos)
@@ -122,7 +127,7 @@ class FastUrlManager:
             thread_man.run_all(self.__check_url, filtered_urls, debug_msg='check_url')
 
             cache_manager.save_result({head_key: self._head_dtos, form_key: self._form_dtos},
-                cleanup_prev_results=True)
+                                      cleanup_prev_results=True)
         else:
             out_of_scope = set([x for x in self._out_of_scope_urls.split(';') if x])
             self._head_dtos = list([dto for dto in dtos[head_key]

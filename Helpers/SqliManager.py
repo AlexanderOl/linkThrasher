@@ -14,8 +14,8 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
 class SqliManager:
-    def __init__(self, domain, cookies='', headers={}):
-        self._result = None
+    def __init__(self, domain, headers, cookies=''):
+        self._result: List[InjectionFoundDTO] = []
         self._domain = domain
         self._false_positives = ['malformed request syntax',
                                  'script tag to avoid syntax errors'

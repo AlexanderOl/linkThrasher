@@ -6,6 +6,7 @@ from urllib3 import exceptions, disable_warnings
 from Common.RequestHandler import RequestHandler
 from Common.S500Handler import S500Handler
 from Helpers.CookieHelper import CookieHelper
+from Helpers.LfiManager import LfiManager
 from Helpers.ManualTesting import ManualTesting
 from Helpers.Spider import Spider
 from Helpers.SqliManager import SqliManager
@@ -89,19 +90,23 @@ class SingleUrlManager:
         else:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) will run {len(head_dtos)} dtos')
 
-        xss_manager = XssManager(domain, self._headers, cookies)
+        xss_manager = XssManager(domain, headers=self._headers, cookies=cookies)
         xss_manager.check_get_requests(head_dtos)
         xss_manager.check_form_requests(all_form_dtos)
 
-        ssrf_manager = SsrfManager(domain, cookies, self._headers)
+        ssrf_manager = SsrfManager(domain, headers=self._headers, cookies=cookies)
         ssrf_manager.check_get_requests(head_dtos)
         ssrf_manager.check_form_requests(all_form_dtos)
 
-        sqli_manager = SqliManager(domain, cookies, self._headers)
+        lfi_manager = LfiManager(domain, headers=self._headers, cookies=cookies)
+        lfi_manager.check_get_requests(head_dtos)
+        lfi_manager.check_form_requests(form_dtos)
+
+        sqli_manager = SqliManager(domain, headers=self._headers, cookies=cookies)
         sqli_manager.check_get_requests(head_dtos)
         sqli_manager.check_form_requests(all_form_dtos)
 
-        ssti_manager = SstiManager(domain, cookies, self._headers)
+        ssti_manager = SstiManager(domain, headers=self._headers, cookies=cookies)
         ssti_manager.check_get_requests(head_dtos)
         ssti_manager.check_form_requests(all_form_dtos)
 
