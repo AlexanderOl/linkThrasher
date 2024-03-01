@@ -9,12 +9,13 @@ class ProcessHandler:
     def __init__(self):
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
-    def run_temp_process(self, cmd_arr, cache_key, timeout=1200) -> List[str]:
+    def run_temp_process(self, cmd_arr, cache_key=None, timeout=1200) -> List[str]:
 
         proc = subprocess.Popen(cmd_arr, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         try:
 
-            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({cache_key}) Process started cmd - {" ".join(cmd_arr)}')
+            if cache_key:
+                print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({cache_key}) Process started cmd - {" ".join(cmd_arr)}')
 
             outs, errs = proc.communicate(timeout=timeout)
             lines = list(filter(None, outs.decode('utf-8').strip().split('\n')))
@@ -24,7 +25,8 @@ class ProcessHandler:
             else:
                 result = [errs.decode()]
 
-            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({cache_key}) Process finished with code - {proc.returncode}')
+            if cache_key:
+                print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({cache_key}) Process finished with code - {proc.returncode}')
 
             return result
 

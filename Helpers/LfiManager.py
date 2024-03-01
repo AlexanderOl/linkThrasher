@@ -1,6 +1,7 @@
 import os
 import urllib.parse as urlparse
 from copy import deepcopy
+from datetime import datetime
 from typing import List
 from Common.ProcessHandler import ProcessHandler
 from Helpers.CacheHelper import CacheHelper
@@ -61,7 +62,9 @@ class LfiManager:
             for dto in dtos:
                 self.__check_path(dto.url, result)
                 self.__check_route_params(dto.url, result)
+
             cache_manager.save_result(result, has_final_result=True)
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found GET LFI: {len(result)}')
 
     def check_form_requests(self, form_results: List[FormRequestDTO]):
         cache_manager = CacheHelper('LfiManager/Form', self._domain, 'Results')
@@ -71,7 +74,9 @@ class LfiManager:
             results: List[InjectionFoundDTO] = []
             for item in form_results:
                 self.__send_lfi_form_request(item, result)
+
             cache_manager.save_result(results, has_final_result=True)
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found Form LFI: {len(result)}')
 
     def __check_path(self, url: str, result: List[InjectionFoundDTO]):
         parsed = urlparse.urlparse(url)
@@ -98,7 +103,7 @@ class LfiManager:
     def __check_lfi_payloads(self, payload_url: str, original_url: str, result: List[InjectionFoundDTO]):
         cmd_arr = ['curl', payload_url, "--path-as-is"]
         pk = ProcessHandler()
-        bash_outputs = pk.run_temp_process(cmd_arr, self._domain, timeout=1200)
+        bash_outputs = pk.run_temp_process(cmd_arr, timeout=1200)
         for keyword in self._expected:
             for output in bash_outputs:
                 if keyword in output:
