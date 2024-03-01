@@ -6,6 +6,8 @@
       <w>dnsx</w>
       <w>dtos</w>
       <w>feroxbuster</w>
+      <w>fetc</w>
+      <w>fpasswd</w>
       <w>gobuster</w>
       <w>hackerone</w>
       <w>hackrawler</w>
@@ -24,6 +26,7 @@
       <w>subbrute</w>
       <w>sublister</w>
       <w>substr</w>
+      <w>waitfor</w>
       <w>waybackurls</w>
     </words>
   </dictionary>

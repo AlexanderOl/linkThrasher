@@ -36,8 +36,9 @@ class CsvManager:
         for ip in self._ips:
             domain_man.check_ip(ip)
 
-        multiple_man = UrlListManager(self._headers)
-        multiple_man.run(self._urls)
+        if len(self._urls):
+            multiple_man = UrlListManager(self._headers)
+            multiple_man.run(self._urls)
 
     def __parse_csv(self):
 

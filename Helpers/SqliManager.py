@@ -33,8 +33,10 @@ class SqliManager:
              'True2Pld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(6)) OR \''},
         ]
         self._bool_based_payloads = [
-            {'TruePld': '\'OR(1=1)OR\'', 'FalsePld': '\'OR(1=2)OR\'', 'True2Pld': '\'OR(2=2)OR\'', 'False2Pld': '\'OR(1=3)OR\'', 'True3Pld': '\'OR(3=3)OR\''},
-            {'TruePld': '"OR(1=1)OR"', 'FalsePld': '"OR(1=2)OR"', 'True2Pld': '"OR(2=2)OR"', 'False2Pld': '"OR(1=3)OR"', 'True3Pld': '"OR(3=3)OR"'}
+            {'TruePld': '\'OR(1=1)OR\'', 'FalsePld': '\'OR(1=2)OR\'', 'True2Pld': '\'OR(2=2)OR\'',
+             'False2Pld': '\'OR(1=3)OR\'', 'True3Pld': '\'OR(3=3)OR\''},
+            {'TruePld': '"OR(1=1)OR"', 'FalsePld': '"OR(1=2)OR"', 'True2Pld': '"OR(2=2)OR"',
+             'False2Pld': '"OR(1=3)OR"', 'True3Pld': '"OR(3=3)OR"'}
         ]
         self._bool_diff_rate = 0.05
         self._delay_in_seconds = 5
@@ -59,7 +61,8 @@ class SqliManager:
             cache_manager.save_result(self._result, has_final_result=True)
 
         print(
-            f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SqliManager GET found {len(self._result)} items')
+            f'[{datetime.now().strftime("%H:%M:%S")}]: '
+            f'({self._domain}) SqliManager GET found {len(self._result)} items')
 
     def check_form_requests(self, form_dtos: List[FormRequestDTO]):
 
@@ -219,7 +222,8 @@ class SqliManager:
 
     def __check_get_params(self, dto: HeadRequestDTO):
 
-        error_based_payloads_urls = self._request_checker.get_param_payloads(dto.url, self._error_based_payloads, 'sqliE')
+        error_based_payloads_urls = self._request_checker.get_param_payloads(
+            dto.url, self._error_based_payloads, 'sqliE')
         time_based_payloads_urls = self.__get_param_payloads(dto.url, self._time_based_payloads, 'sqliT')
         bool_based_payloads_urls = self.__get_param_payloads(dto.url, self._bool_based_payloads, 'sqliB')
 
@@ -314,7 +318,8 @@ class SqliManager:
                 if false2_status == 403 or false2_status == 429:
                     return
 
-                if abs(true2_length - false2_length) / true2_length > self._bool_diff_rate and true2_length != false2_status:
+                if (abs(true2_length - false2_length) / true2_length > self._bool_diff_rate
+                        and true2_length != false2_status):
 
                     msg_payload = 'BOOL_BASED'
                     if url:
@@ -334,7 +339,8 @@ class SqliManager:
                     if true3_status == 403 or true3_status == 429:
                         return
 
-                    if abs(true2_length - true3_length) / true2_length < self._bool_diff_rate or true2_length == true3_length:
+                    if (abs(true2_length - true3_length) / true2_length < self._bool_diff_rate or
+                            true2_length == true3_length):
                         msg = f"SQLiManager bool PARAM length! TRUE:{payloads['TruePld']}; FALSE:{payloads['FalsePld']}"
                         print(msg)
 
@@ -465,9 +471,9 @@ class SqliManager:
                         self._request_handler.handle_request(url, post_data=copy_form_params)
                         t2 = datetime.now() - t1
                         if t2.total_seconds() >= self._delay_in_seconds:
-                            msg = f"SqliManager FORM delay FOUND! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
+                            msg = (f"SqliManager FORM delay FOUND! TRUE:{payloads['TruePld']}; "
+                                   f"FALSE:{payloads['FalsePld']}")
                             print(msg)
                             self._result.append(
                                 InjectionFoundDTO(InjectionType.Sqli_PostForm_Time, url, copy_form_params,
                                                   response2.text, msg))
-

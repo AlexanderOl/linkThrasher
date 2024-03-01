@@ -113,9 +113,9 @@ class LfiManager:
                     last_index = substr_index + 50 if substr_index + 50 < len(output) else substr_index + len(
                         output) - substr_index - 1
                     details = output[start_index:last_index].replace('/n', '').replace('/r', '').strip()
-                    log_header_msg = f'injFOUND: {keyword};' \
-                                     f'URL: {payload_url};' \
-                                     f'DETAILS: {details};'
+                    log_header_msg = f'injFOUND: {keyword}; ' \
+                                     f'URL: {payload_url}; ' \
+                                     f'DETAILS: {details}'
                     curr_resp_length = len(output)
                     if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg
                                for dto in result):
