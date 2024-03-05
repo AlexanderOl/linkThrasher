@@ -1,8 +1,9 @@
 import os
 from dotenv import load_dotenv
+
+from Managers.BbManager import BbManager
 from Managers.CsvManager import CsvManager
 from Managers.DomainManager import DomainManager
-from Managers.HackeroneManager import HackeroneManager
 from Managers.TrackerManager import TrackerManager
 from Managers.FastUrlManager import FastUrlManager
 from Managers.UrlListManager import UrlListManager
@@ -49,6 +50,6 @@ if __name__ == '__main__':
         fast_man = FastUrlManager(headers)
         fast_man.run()
 
-    elif check_mode == 'H1':
-        fast_man = HackeroneManager(headers)
+    elif check_mode == 'BB':
+        fast_man = BbManager()
         fast_man.run()
