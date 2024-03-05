@@ -64,7 +64,7 @@ class LfiManager:
                 self.__check_route_params(dto.url, result)
 
             cache_manager.save_result(result, has_final_result=True)
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found GET LFI: {len(result)}')
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found GET LFI: {len(result)}')
 
     def check_form_requests(self, form_results: List[FormRequestDTO]):
         cache_manager = CacheHelper('LfiManager/Form', self._domain, 'Results')
@@ -76,7 +76,7 @@ class LfiManager:
                 self.__send_lfi_form_request(item, result)
 
             cache_manager.save_result(results, has_final_result=True)
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found Form LFI: {len(result)}')
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found Form LFI: {len(result)}')
 
     def __check_path(self, url: str, result: List[InjectionFoundDTO]):
         parsed = urlparse.urlparse(url)
