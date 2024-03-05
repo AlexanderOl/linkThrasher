@@ -48,6 +48,7 @@ class LfiManager:
         self._expected = ['; for 16-bit app support', 'root:x:0:0:root:']
         self._tool_dir = f'Results/LfiManager'
         self._request_handler = RequestHandler(cookies, headers)
+        self._checked_path = set()
 
     def check_get_requests(self, dtos: List[HeadRequestDTO]):
 
@@ -64,23 +65,27 @@ class LfiManager:
                 self.__check_route_params(dto.url, result)
 
             cache_manager.save_result(result, has_final_result=True)
-            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found GET LFI: {len(result)}')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found GET LFI: {len(result)}')
 
     def check_form_requests(self, form_results: List[FormRequestDTO]):
         cache_manager = CacheHelper('LfiManager/Form', self._domain, 'Results')
         result = cache_manager.get_saved_result()
 
         if not result and not isinstance(result, List):
-            results: List[InjectionFoundDTO] = []
+            result: List[InjectionFoundDTO] = []
             for item in form_results:
                 self.__send_lfi_form_request(item, result)
 
-            cache_manager.save_result(results, has_final_result=True)
-            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found Form LFI: {len(result)}')
+            cache_manager.save_result(result, has_final_result=True)
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found Form LFI: {len(result)}')
 
     def __check_path(self, url: str, result: List[InjectionFoundDTO]):
         parsed = urlparse.urlparse(url)
         basic_url = f'{parsed.scheme}://{parsed.netloc}/'
+        if basic_url not in self._checked_path:
+            self._checked_path.add(basic_url)
+        else:
+            return
         payload_urls = set()
         for payload in self._lfi_path_payloads:
             payload_urls.add(f'{basic_url}{payload}')
