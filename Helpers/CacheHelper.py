@@ -3,9 +3,12 @@ import pickle
 import shutil
 from datetime import datetime
 
+from Helpers.Slack import Slack
+
 
 class CacheHelper:
     def __init__(self, tool_name, domain: str, folder="CacheResults"):
+        self._result_folder = folder
         self._tool_result_dir = f"{folder}/{tool_name}"
         self._result_filepath = f"{self._tool_result_dir}/{domain.replace(':', '_')}.json"
         self._txt_result_filepath = f"{self._tool_result_dir}/{domain.replace(':', '_')}.txt"
@@ -37,8 +40,11 @@ class CacheHelper:
 
         if len(result) > 0:
             txt_file = open(self._txt_result_filepath, 'a')
+            slack = Slack()
             for item in result:
-                txt_file.write("%s\n" % str(item))
+                if has_final_result:
+                    slack.send_msg(str(item))
+                txt_file.write(f"{item}\n")
             txt_file.close()
 
             if has_final_result:

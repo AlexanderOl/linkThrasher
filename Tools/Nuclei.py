@@ -103,7 +103,7 @@ class Nuclei:
 
             self.__cleanup(len(batches))
 
-            self._cache_manager.save_result(report_lines)
+            self._cache_manager.save_result(report_lines, has_final_result=True)
 
     def __divide_chunks(self, items):
         items_to_split = list(items)
@@ -146,7 +146,7 @@ class Nuclei:
                         result.add(encoded_line)
                 print(line)
 
-            self._cache_manager.save_result(result)
+            self._cache_manager.save_result(result, has_final_result=True)
 
     def __check_batch(self, dtos_batch: List[HeadRequestDTO], counter):
 
