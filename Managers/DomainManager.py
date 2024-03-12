@@ -66,20 +66,18 @@ class DomainManager:
             request_helper = RequestHandler(cookies='', headers=self._headers)
             counter = len(domains)
             for domain in domains:
-
+                print(f'Checking {domain} domain. Counter: {counter}')
+                counter -= 1
                 resp = request_helper.send_head_request(f'http://{domain}')
                 if not resp:
                     continue
-
-                print(f'Checking {domain} domain. Counter: {counter}')
                 self.check_domain(domain)
-                counter -= 1
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{self._targets_domains_file} is missing')
 
     def check_domain(self, domain):
-
+        domain = domain.replace('www.', '')
         if not validators.domain(domain):
             print(f'{domain} is not a domain')
             return

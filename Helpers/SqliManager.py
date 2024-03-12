@@ -342,11 +342,12 @@ class SqliManager:
                     if (abs(true2_length - true3_length) / true2_length < self._bool_diff_rate or
                             true2_length == true3_length):
                         msg = f"SQLiManager bool PARAM length! TRUE:{payloads['TruePld']}; FALSE:{payloads['FalsePld']}"
-                        print(msg)
-
-                        return self._result.append(
-                            InjectionFoundDTO(InjectionType.Sqli_Get_Bool, url or payloads["TruePld"],
-                                              msg_payload, 'RESPONSE1 is NONE', msg))
+                        if not any(dto.response_length == len(true2_response.text) and dto.details_msg == msg
+                                   for dto in self._result):
+                            print(msg)
+                            self._result.append(InjectionFoundDTO(InjectionType.Sqli_Get_Bool,
+                                                                  url or payloads["TruePld"],
+                                                                  msg_payload, 'RESPONSE1 is NONE', msg))
         if true_status != false_status:
             msg_payload = 'BOOL_BASED'
             if url:
@@ -360,10 +361,11 @@ class SqliManager:
             true2_status = true2_response.status_code
             if true_status == true2_status:
                 msg = f"SQLiManager bool PARAM status_code! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
-                print(msg)
-                return self._result.append(
-                    InjectionFoundDTO(InjectionType.Sqli_Get_Bool, url or payloads["TruePld"],
-                                      msg_payload, 'RESPONSE1 is NONE', msg))
+                if not any(dto.response_length == len(true2_response.text) and dto.details_msg == msg
+                           for dto in self._result):
+                    print(msg)
+                    self._result.append(InjectionFoundDTO(InjectionType.Sqli_Get_Bool, url or payloads["TruePld"],
+                                                          msg_payload, 'RESPONSE1 is NONE', msg))
 
     def __send_time_based_request(self, true_payload, false_payload, true_2payload):
         t1 = datetime.now()
@@ -386,11 +388,12 @@ class SqliManager:
                         self._request_handler.handle_request(true_payload)
                         t2 = datetime.now() - t1
                         if t2.total_seconds() >= self._delay_in_seconds:
-                            msg = f"SQLiManager delay FOUND! TRUE:{true_payload} ; FALSE:{false_payload}"
-                            print(msg)
-                            return self._result.append(
-                                InjectionFoundDTO(InjectionType.Sqli_Get_Time, true_payload, 'TIME_BASED',
-                                                  'RESPONSE1 is NONE', msg))
+                            log_header_msg = f"SQLiManager delay FOUND! TRUE:{true_payload} ; FALSE:{false_payload}"
+                            if not any(dto.details_msg == log_header_msg for dto in self._result):
+                                print(log_header_msg)
+                                self._result.append(InjectionFoundDTO(
+                                    InjectionType.Sqli_Get_Time, true_payload, 'TIME_BASED',
+                                    'RESPONSE1 is NONE', log_header_msg))
 
     def __check_keywords(self, response, url_payload, inj_type: InjectionType,
                          post_payload=None,
@@ -471,9 +474,12 @@ class SqliManager:
                         self._request_handler.handle_request(url, post_data=copy_form_params)
                         t2 = datetime.now() - t1
                         if t2.total_seconds() >= self._delay_in_seconds:
-                            msg = (f"SqliManager FORM delay FOUND! TRUE:{payloads['TruePld']}; "
+                            log_header_msg = (f"SqliManager FORM delay FOUND! TRUE:{payloads['TruePld']}; "
                                    f"FALSE:{payloads['FalsePld']}")
-                            print(msg)
-                            self._result.append(
-                                InjectionFoundDTO(InjectionType.Sqli_PostForm_Time, url, copy_form_params,
-                                                  response2.text, msg))
+                            curr_resp_length = len(response2.text)
+                            if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg
+                                       for dto in self._result):
+                                print(log_header_msg)
+                                self._result.append(
+                                    InjectionFoundDTO(InjectionType.Sqli_PostForm_Time, url, copy_form_params,
+                                                      response2.text, log_header_msg))

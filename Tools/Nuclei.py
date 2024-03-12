@@ -133,7 +133,9 @@ class Nuclei:
                       f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/display-via-header.yaml " \
                       f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-x-frame-options.yaml " \
                       f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/detect-dns-over-https.yaml " \
-                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/tabnabbing-check.yaml "
+                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/tabnabbing-check.yaml " \
+                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/email-extractor.yaml " \
+                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/google-floc-disabled.yaml "
 
             stream = os.popen(command)
             bash_outputs = stream.readlines()
@@ -164,8 +166,11 @@ class Nuclei:
 
         command = f"nuclei --list {filepath} " \
                   f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing " \
+                  f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing " \
                   f"-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
                   f"-t /root/Desktop/TOOLs/nuclei-templates/miscellaneous " \
+                  f"-t /root/Desktop/TOOLs/nuclei-templates/exposures " \
+                  f"-t /root/Desktop/TOOLs/nuclei-templates/takeovers " \
                   f"-t /root/Desktop/TOOLs/nuclei-templates/cves " \
                   f"-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
                   f"-et /root/Desktop/TOOLs/nuclei-templates/cves/2022/CVE-2022-45362.yaml " \
@@ -174,7 +179,9 @@ class Nuclei:
                   f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/display-via-header.yaml " \
                   f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-x-frame-options.yaml " \
                   f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/detect-dns-over-https.yaml " \
-                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/tabnabbing-check.yaml "
+                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/tabnabbing-check.yaml " \
+                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/email-extractor.yaml " \
+                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/google-floc-disabled.yaml "
 
         stream = os.popen(command)
         bash_outputs = stream.readlines()

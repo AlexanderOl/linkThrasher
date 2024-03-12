@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 from tld import get_tld
-
 from Helpers.CacheHelper import CacheHelper
 
 
@@ -20,7 +19,8 @@ class MassDns:
             return set()
 
         top_domain_res = get_tld(f"http://{self._domain}", as_object=True)
-        if top_domain_res.fld != self._domain:
+        if top_domain_res.fld != self._domain.replace('www.', ''):
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) is not a root domain')
             return set()
 
         cache_manager = CacheHelper(self._tool_name, self._domain)

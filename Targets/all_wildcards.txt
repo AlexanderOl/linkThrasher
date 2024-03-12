@@ -1,5 +1,4 @@
-*.*
-console.truelayer[-sandbox].com
+console.truelayer[-sandbox]truelayer.com
 https://ws-{application_id}.sendbird.com
 *.wu.*
 api.truelayer[-sandbox].com

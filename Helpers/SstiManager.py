@@ -17,7 +17,7 @@ class SstiManager:
         self.errors_500 = []
         self._result = None
         self._domain = domain
-        self._payloads = ['{{888*888}}', '{888*888}', '@(888*888)', '${888*888}']
+        self._payloads = ['{{888*888}}', '{888*888}', '@(888*888)', '${888*888}', '%0a888*888']
         self._double_check = '777*777'
         self._expected = '788544'
         self._double_check_expected = '603729'
