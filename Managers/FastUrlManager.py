@@ -151,7 +151,7 @@ class FastUrlManager:
             return
 
         if len(response.text) > 1000000:
-            print(f'Url: ({url}) response too long')
+            print(f'Url ({url}) response too long')
             return
 
         if any(dto.response_length == len(response.text) and

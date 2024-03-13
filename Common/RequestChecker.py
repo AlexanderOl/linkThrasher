@@ -1,9 +1,7 @@
 from copy import deepcopy
 from typing import List
 from urllib.parse import urlparse
-
 from bs4 import BeautifulSoup
-
 from Models.FormRequestDTO import FormDetailsDTO, FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
 
@@ -60,7 +58,7 @@ class RequestChecker:
 
     def is_get_param_checked(self, original_url, param_k_v, salt) -> bool:
         if '=' not in param_k_v:
-            print(f'Url: {original_url} query param without "=" {param_k_v}')
+            print(f'Url {original_url} query param without "=" {param_k_v}')
             return True
         main_url_split = original_url.split(param_k_v)
         key = f'{main_url_split[0]};{param_k_v.split("=")[0]}{salt}'

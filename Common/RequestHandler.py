@@ -31,7 +31,7 @@ class RequestHandler:
                     (head_response.headers['Content-Type'] == 'application/octet-stream' or
                      head_response.headers['Content-Type'] == 'application/x-gzip' or
                      head_response.headers['Content-Type'] == 'video/mp4'):
-                print(f'Url: ({url}) content type - {head_response.headers["Content-Type"]}')
+                print(f'Url ({url}) content type - {head_response.headers["Content-Type"]}')
                 return
             if 'content-disposition' in head_response.headers \
                     and 'attachment' in head_response.headers['content-disposition']:
@@ -63,7 +63,7 @@ class RequestHandler:
                 response = self.__send_prepared_request('GET', url, {}, timeout)
 
             if len(response.text) > 1000000:
-                print(f'Url: ({url}) response too long')
+                print(f'Url ({url}) response too long')
                 return
 
             return response
