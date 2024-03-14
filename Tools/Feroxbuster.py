@@ -93,6 +93,7 @@ class Feroxbuster:
         cmd = ["feroxbuster", "--url", url, "-w", f"{self._app_wordlists_path}directories.txt", "-o", output_file,
                # "-x", "txt conf config bak bkp cache swp old db aspx aspx~ asp asp~ py py~ rb rb~ jsp jsp~ php php~ cgi csv html inc jar js json lock log rar sql sql~ swp swp~ tar tar.gz wadl zip",
                "--insecure", "--no-state", "--threads", str(self._threads), "--auto-bail"]
+
         if len(self._raw_cookies) > 0:
             cmd.append("-b")
             cmd.append(self._raw_cookies)
@@ -101,37 +102,33 @@ class Feroxbuster:
 
         pk = ProcessHandler()
         pk.run_temp_process(cmd, url)
-        report_lines = []
-        if os.path.exists(output_file):
-            main_txt_file = open(output_file, 'r')
-            report_lines = main_txt_file.readlines()
-            if os.path.getsize(output_file) == 0:
-                os.remove(output_file)
 
-        result_lines = []
-        unique_keys = {}
-        for line in report_lines:
-            split = list(filter(None, line.split(' ')))
-            if len(split) > 4:
-                key = f"{split[0]}_{split[1]}_{split[2]}_{split[3]}"
-                if key not in unique_keys:
-                    unique_keys[key] = 0
-                if unique_keys[key] >= 5:
-                    continue
-                unique_keys[key] += 1
-                result_lines.append(line)
+        result_lines = self._parse_output(output_file)
 
-        if os.path.exists(output_file):
-            os.remove(output_file)
-        if len(result_lines) == 0:
-            return []
+        cewl_file = f'{self._tool_result_dir}/CEWL_{self._domain.replace(":", "_")}.txt'
 
-        txt_file = open(output_file, 'w')
-        for line in result_lines:
-            txt_file.write(line)
-        txt_file.close()
+        command = f"cewl {url} -d 5 > {cewl_file}"
+        stream = os.popen(command)
+        stream.read()
+
+        output_file = f'{self._tool_result_dir}/RAW_CEWL_{self._domain.replace(":", "_")}.txt'
+        cmd = ["feroxbuster", "--url", url, "-w", cewl_file, "-o", output_file,
+               "-x", "txt conf config bak bkp cache swp old db aspx aspx~ asp asp~ py py~ rb rb~ jsp jsp~ php php~ cgi csv html inc jar js json lock log rar sql sql~ swp swp~ tar tar.gz wadl zip",
+               "--insecure", "--no-state", "--threads", str(self._threads), "--auto-bail"]
+        pk = ProcessHandler()
+        pk.run_temp_process(cmd, url)
+
+        cewl_lines = self._parse_output(output_file)
+        result_lines.update(cewl_lines)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) Feroxbuster finished!')
+
+        if len(result_lines) > 0:
+            txt_file = open(f'{self._tool_result_dir}/{self._domain.replace(":", "_")}.txt', 'w')
+            for line in result_lines:
+                txt_file.write(line)
+            txt_file.close()
+
         return result_lines
 
     def __get_ready_urls(self, report_lines: List[str], already_exist_dtos: List[HeadRequestDTO]) -> set:
@@ -179,3 +176,31 @@ class Feroxbuster:
         self._had_found_too_many_urls = len(ready_urls) > 1000
 
         return ready_urls
+
+    def _parse_output(self, output_file) -> set:
+
+        report_lines = []
+        if os.path.exists(output_file):
+            main_txt_file = open(output_file, 'r')
+            report_lines = main_txt_file.readlines()
+            if os.path.getsize(output_file) == 0:
+                os.remove(output_file)
+
+        result_lines = set()
+        unique_keys = {}
+        for line in report_lines:
+            split = list(filter(None, line.split(' ')))
+            if len(split) > 4:
+                key = f"{split[0]}_{split[1]}_{split[2]}_{split[3]}"
+                if key not in unique_keys:
+                    unique_keys[key] = 0
+                if unique_keys[key] >= 5:
+                    continue
+                unique_keys[key] += 1
+                result_lines.add(line)
+
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        return result_lines
+

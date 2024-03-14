@@ -30,10 +30,9 @@ class Gobuster:
                 if not os.path.exists(self._tool_result_dir):
                     os.makedirs(self._tool_result_dir)
 
-                output_file = f'{self._tool_result_dir}/RAW_{self._domain.replace(":","_")}.txt'
+                output_file = f'{self._tool_result_dir}/{self._domain.replace(":","_")}.txt'
                 cmd_arr = ["gobuster", "dir",
                            "-b", "400-429",
-                           # "-x", ".txt, .conf, .config, .bak, .bkp, .backup, .cache, .swp, .old, .db, .aspx, .aspx~, .asp, .asp~, .py, .py~, .rb, .rb~, .jsp, .jsp~, .php, .php~, .cgi, .csv, .html, .jar, .js, .json, .lock, .log, .rar, .sql, .sql~, .swp, .swp~, .tar, .tar.gz, .wadl, .zip",
                            "-u", base_url,
                            "-w", f"{self._app_wordlists_path}gobuster.txt",
                            "-H", f"User-Agent:{self._headers['User-Agent']}",
