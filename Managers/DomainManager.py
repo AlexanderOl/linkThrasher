@@ -77,7 +77,7 @@ class DomainManager:
             print(f'{self._targets_domains_file} is missing')
 
     def check_domain(self, domain):
-        domain = domain.replace('www.', '')
+        domain = domain.lower().replace('www.', '')
         if not validators.domain(domain):
             print(f'{domain} is not a domain')
             return

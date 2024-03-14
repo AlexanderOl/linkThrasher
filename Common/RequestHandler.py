@@ -62,7 +62,7 @@ class RequestHandler:
             else:
                 response = self.__send_prepared_request('GET', url, {}, timeout)
 
-            if len(response.text) > 1000000:
+            if len(response.text) > 5000000:
                 print(f'Url ({url}) response too long')
                 return
 
