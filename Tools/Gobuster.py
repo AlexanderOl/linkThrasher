@@ -27,6 +27,9 @@ class Gobuster:
 
                 print(f'[{then.strftime("%H:%M:%S")}]: Gobuster {base_url} start...')
 
+                if not os.path.exists(self._tool_result_dir):
+                    os.makedirs(self._tool_result_dir)
+
                 output_file = f'{self._tool_result_dir}/RAW_{self._domain.replace(":","_")}.txt'
                 cmd_arr = ["gobuster", "dir",
                            "-b", "400-429",

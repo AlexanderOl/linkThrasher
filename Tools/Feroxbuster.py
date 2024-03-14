@@ -86,6 +86,9 @@ class Feroxbuster:
 
     def __run_tool_cmd(self, url) -> [str]:
 
+        if not os.path.exists(self._tool_result_dir):
+            os.makedirs(self._tool_result_dir)
+
         output_file = f'{self._tool_result_dir}/RAW_{self._domain.replace(":", "_")}.txt'
         cmd = ["feroxbuster", "--url", url, "-w", f"{self._app_wordlists_path}directories.txt", "-o", output_file,
                # "-x", "txt conf config bak bkp cache swp old db aspx aspx~ asp asp~ py py~ rb rb~ jsp jsp~ php php~ cgi csv html inc jar js json lock log rar sql sql~ swp swp~ tar tar.gz wadl zip",
