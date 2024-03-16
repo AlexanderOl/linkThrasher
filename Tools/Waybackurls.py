@@ -1,5 +1,6 @@
 import os
 import re
+import uuid
 from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
@@ -122,6 +123,8 @@ class Waybackurls:
             for part in split_path:
                 if part.isdigit():
                     path_key += 'numb'
+                elif self.__is_valid_uuid(part):
+                    path_key += 'guid'
                 else:
                     path_key += part
             if path_key in path_without_digits:
@@ -137,3 +140,10 @@ class Waybackurls:
             urls.add(url)
 
         return urls
+
+    def __is_valid_uuid(self, uuid_string):
+        try:
+            uuid_obj = uuid.UUID(uuid_string)
+            return str(uuid_obj) == uuid_string
+        except ValueError:
+            return False
