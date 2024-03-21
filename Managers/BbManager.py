@@ -48,8 +48,6 @@ class BbManager:
         command = f"bbscope immunefi -b -o tc | grep 'websites_and_applications' > {self._res_file}"
         self._parse_cmd(command)
 
-
-
         txt_file = open(f'{self._targets_path}all_domains.txt', 'w')
         for line in self._domains:
             txt_file.write(f"{line}\n")
