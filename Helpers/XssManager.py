@@ -32,9 +32,9 @@ class XssManager:
             self._result: List[InjectionFoundDTO] = []
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_route, dtos, debug_msg='XssManager/Get/Route')
+            thread_man.run_all(self.__check_route, dtos, debug_msg=f'XssManager/Get/Route ({self._domain})')
             dtos_with_params = list([dto for dto in dtos if len(dto.query_params) > 0])
-            thread_man.run_all(self.__check_params, dtos_with_params, debug_msg='XssManager/Get/Param')
+            thread_man.run_all(self.__check_params, dtos_with_params, debug_msg=f'XssManager/Get/Param ({self._domain})')
 
             cache_manager.save_result(self._result, has_final_result=True)
 
@@ -49,7 +49,7 @@ class XssManager:
             self._result: List[InjectionFoundDTO] = []
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_form, form_dtos, debug_msg='XssManager/Form')
+            thread_man.run_all(self.__check_form, form_dtos, debug_msg=f'XssManager/Form ({self._domain})')
 
             cache_manager.save_result(self._result, has_final_result=True)
 

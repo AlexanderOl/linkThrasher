@@ -34,7 +34,7 @@ class SubdomainChecker:
                 [subdomain for subdomain in all_subdomains if all(oos not in subdomain for oos in out_of_scope)])
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_subdomain, subdomains, debug_msg=self._tool_name)
+            thread_man.run_all(self.__check_subdomain, subdomains, debug_msg=f'{self._tool_name} ({self._domain})')
 
             if len(self._checked_subdomains) > 2:
                 origin = next((s for s in self._checked_subdomains if f'/{self._domain}/' in s.url), None)

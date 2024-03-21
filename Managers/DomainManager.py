@@ -54,7 +54,7 @@ class DomainManager:
 
         single_url_man = SingleUrlManager(self._headers)
         thread_man = ThreadManager()
-        thread_man.run_all(single_url_man.do_run, start_urls_dtos)
+        thread_man.run_all(single_url_man.do_run, start_urls_dtos, f' ({ip})')
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: DomainFlowManager done with ip ({ip})')
 

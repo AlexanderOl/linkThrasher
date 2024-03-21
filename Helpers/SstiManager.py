@@ -33,10 +33,11 @@ class SstiManager:
             self._result: List[InjectionFoundDTO] = []
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_url, dtos, debug_msg='SstiManager/Get/Route')
+            thread_man.run_all(self.__check_url, dtos, debug_msg=f'SstiManager/Get/Route ({self._domain})')
 
             dtos_with_params = list([dto for dto in dtos if len(dto.query_params) > 0])
-            thread_man.run_all(self.__check_get_params, dtos_with_params, debug_msg='SstiManager/Get/Param')
+            thread_man.run_all(self.__check_get_params, dtos_with_params,
+                               debug_msg=f'SstiManager/Get/Param ({self._domain})')
 
             cache_manager.save_result(self._result, has_final_result=True)
 
@@ -70,7 +71,7 @@ class SstiManager:
             self._result: List[InjectionFoundDTO] = []
 
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_form_request, form_dtos, debug_msg='SstiManager/Form')
+            thread_man.run_all(self.__check_form_request, form_dtos, debug_msg=f'SstiManager/Form ({self._domain})')
 
             cache_manager.save_result(self._result, has_final_result=True)
 

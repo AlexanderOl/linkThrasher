@@ -21,7 +21,7 @@ class Waybackurls:
         self._request_handler = RequestHandler(cookies, headers)
         self._url_ignore_ext_regex = re.compile(
             '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
-            '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$',
+            '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$|\.webp$',
             re.IGNORECASE)
         self._result: List[HeadRequestDTO] = []
         self._get_dtos: List[GetRequestDTO] = []
@@ -63,7 +63,7 @@ class Waybackurls:
         urls = self.__filter_urls(href_urls)
 
         tm = ThreadManager()
-        tm.run_all(self.__check_href_urls, urls, debug_msg=self._tool_name)
+        tm.run_all(self.__check_href_urls, urls, debug_msg=f'{self._tool_name} ({self._domain})')
 
         return self._result
 
@@ -98,7 +98,7 @@ class Waybackurls:
 
         for href_url in href_urls:
             parsed_parts = urlparse(href_url)
-            url_without_params = f'{parsed_parts.scheme}://{parsed_parts.netloc}{parsed_parts.path}'
+            url_without_params = f'{parsed_parts.scheme}://{parsed_parts.netloc}{parsed_parts.path}'.lower()
             query_params = {}
             if self._url_ignore_ext_regex.search(parsed_parts.path):
                 continue
@@ -125,6 +125,8 @@ class Waybackurls:
                     path_key += 'numb'
                 elif self.__is_valid_uuid(part):
                     path_key += 'guid'
+                elif self.__is_date(part):
+                    path_key += 'date'
                 else:
                     path_key += part
             if path_key in path_without_digits:
@@ -146,4 +148,13 @@ class Waybackurls:
             uuid_obj = uuid.UUID(uuid_string)
             return str(uuid_obj) == uuid_string
         except ValueError:
+            return False
+
+    def __is_date(self, string):
+        try:
+            # Attempt to parse the string into a datetime object
+            datetime.strptime(string, '%Y-%m-%d')
+            return True
+        except ValueError:
+            # If parsing fails, it's not a valid date
             return False

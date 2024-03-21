@@ -38,7 +38,8 @@ class Nmap:
 
             self._existing_get_dtos = get_dtos
             thread_man = ThreadManager()
-            thread_man.run_all(self.__check_url_with_port, url_with_ports)
+            thread_man.run_all(self.__check_url_with_port, url_with_ports,
+                               debug_msg=f'{self._tool_name} ({self._domain})')
 
             self._cache_manager.save_result(self._port_head_dtos)
 

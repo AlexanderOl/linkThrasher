@@ -69,7 +69,7 @@ class Hakrawler:
         href_urls.update(get_urls_from_js)
 
         tm = ThreadManager()
-        tm.run_all(self.__check_href_urls, href_urls, debug_msg=self._tool_name)
+        tm.run_all(self.__check_href_urls, href_urls, debug_msg=f'{self._tool_name} ({self._domain})')
 
         return self._result
 
