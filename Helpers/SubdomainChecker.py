@@ -75,8 +75,9 @@ class SubdomainChecker:
                                                            timeout=5)
 
         if response is not None:
-            if (len(response.history) > 0 and str(response.history[0].status_code).startswith('3') and
-                  'Location' in response.history[0].headers):
+            if (len(response.history) > 0
+                    and str(response.history[0].status_code).startswith('3')
+                    and 'Location' in response.history[0].headers):
                 redirect = response.history[0].headers['Location']
                 self.__check_redirect_urls(url, redirect)
 

@@ -24,6 +24,7 @@ class Feroxbuster:
         self._cache_manager = CacheHelper(self._tool_name, domain)
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
+        self._max_depth = int(f'{os.environ.get("max_depth")}')
         self._threads = f'{os.environ.get("threads")}'
         self._request_handler = RequestHandler(cookies, headers)
         self._request_checker = RequestChecker()
@@ -91,7 +92,6 @@ class Feroxbuster:
 
         output_file = f'{self._tool_result_dir}/RAW_{self._domain.replace(":", "_")}.txt'
         cmd = ["feroxbuster", "--url", url, "-w", f"{self._app_wordlists_path}directories.txt", "-o", output_file,
-               # "-x", "txt conf config bak bkp cache swp old db aspx aspx~ asp asp~ py py~ rb rb~ jsp jsp~ php php~ cgi csv html inc jar js json lock log rar sql sql~ swp swp~ tar tar.gz wadl zip",
                "--insecure", "--no-state", "--threads", str(self._threads), "--auto-bail"]
 
         if len(self._raw_cookies) > 0:
@@ -107,9 +107,10 @@ class Feroxbuster:
 
         cewl_file = f'{self._tool_result_dir}/CEWL_{self._domain.replace(":", "_")}.txt'
 
-        command = f"cewl {url} -d 5 > {cewl_file}"
-        stream = os.popen(command)
-        stream.read()
+        cmd = ["cewl",  url, "-d", str(self._max_depth), "-w", cewl_file]
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) CEWL starts...')
+        pk = ProcessHandler()
+        pk.run_temp_process(cmd, url)
 
         output_file = f'{self._tool_result_dir}/RAW_CEWL_{self._domain.replace(":", "_")}.txt'
         cmd = ["feroxbuster", "--url", url, "-w", cewl_file, "-o", output_file,
