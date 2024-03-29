@@ -34,6 +34,10 @@ class Nuclei:
         if os.path.isfile(self._main_txt_fuzzing_filepath):
             return
 
+        report_lines = self._cache_manager.get_saved_result()
+        if report_lines:
+            return
+
         get_result = set()
         checked_urls = set()
         for dto in head_dtos:
@@ -75,6 +79,11 @@ class Nuclei:
                     main_txt_file.write(f"{encoded_line}")
             print(line)
         main_txt_file.close()
+
+        if os.path.exists(self._main_txt_fuzzing_filepath):
+            main_txt_file = open(self._main_txt_fuzzing_filepath, 'r')
+            report_lines = main_txt_file.readlines()
+            self._cache_manager.save_result(report_lines, has_final_result=True)
 
         if os.path.exists(filepath):
             os.remove(filepath)

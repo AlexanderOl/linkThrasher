@@ -68,19 +68,19 @@ class TrackerManager:
         start_urls_dtos = subdomain_checker.check_all_subdomains(all_subdomains, avoid_cache=False)
 
         mysql_repo = MysqlRepository()
-        prev_urls = mysql_repo.get_tracked_subdomains(domain)
+        prev_domains = mysql_repo.get_tracked_subdomains(domain)
 
-        filtered_urls = set([dto.url for dto in start_urls_dtos if all(url != dto.url for url in prev_urls)])
+        filtered_domains = set([dto.url for dto in start_urls_dtos if all(url != dto.url for url in prev_domains)])
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: '
-              f'TackerManager done with {domain} and found new urls {len(filtered_urls)}')
+              f'TackerManager done with {domain} and found new urls {len(filtered_domains)}')
 
-        if len(filtered_urls) > 0:
-            prev_urls.update(filtered_urls)
-            mysql_repo.save_tracker_result(domain, prev_urls)
-            print_urls = "\n".join([url for url in filtered_urls])
+        if len(filtered_domains) > 0:
+            prev_domains.update(filtered_domains)
+            mysql_repo.save_tracker_domains_result(domain, prev_domains)
+            print_urls = "\n".join([url for url in filtered_domains])
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: Urls {print_urls}')
 
             single_url_man = SingleUrlManager(self._headers)
             thread_man = ThreadManager()
-            thread_man.run_all(single_url_man.do_run, filtered_urls)
+            thread_man.run_all(single_url_man.do_run, filtered_domains)

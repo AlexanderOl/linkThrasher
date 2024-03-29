@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 
+from Dal.MysqlRepository import MysqlRepository
 from Managers.BbManager import BbManager
 from Managers.CsvManager import CsvManager
 from Managers.DomainManager import DomainManager
@@ -20,6 +21,9 @@ load_dotenv('config.env')
 if __name__ == '__main__':
     check_mode = os.environ.get('check_mode')
     print(f'Running - {check_mode} mode')
+
+    mysql_repo = MysqlRepository()
+    mysql_repo.init_tables()
 
     if check_mode == 'SC':
         csv_man = CsvManager(headers)

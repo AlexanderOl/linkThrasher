@@ -52,6 +52,8 @@ class LinkFinder:
                         result.add(found)
                     else:
                         continue
+                elif not found:
+                    continue
                 elif found[0] == '/':
                     result.add(f'{self._start_url}{found[1:]}')
                 else:
