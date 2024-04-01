@@ -185,7 +185,10 @@ class Spider:
 
         for url in urls:
             try:
-                url_part = str(url.get(attr)).replace(' ', '')
+                href = url.get(attr)
+                if not href:
+                    continue
+                url_part = str(href).replace(' ', '')
                 is_valid_href = self.__check_href(url_part, target_url)
                 if is_valid_href:
                     if url_part.startswith('/'):

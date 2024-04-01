@@ -44,3 +44,5 @@ class Httracker:
                 os.remove(output_file)
 
             shutil.rmtree(domain_dir, ignore_errors=True)
+
+            self._cache_manager.save_result([f'{self._tool_name} finished'])
