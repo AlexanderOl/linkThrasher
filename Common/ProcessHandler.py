@@ -42,3 +42,5 @@ class ProcessHandler:
 
         except Exception as inst:
             print(f'ProcessHandler exception: {inst}')
+
+        return []

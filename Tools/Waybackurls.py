@@ -28,6 +28,7 @@ class Waybackurls:
         self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'
         self._checked_hrefs = set()
         self._waybackurls_out_of_scope_domains = os.environ.get("waybackurls_out_of_scope_domains")
+        self._wayback_max_size = 50000
 
     def get_requests_dtos(self) -> List[HeadRequestDTO]:
         cache_manager = CacheHelper(self._tool_name, self._domain)
@@ -141,7 +142,20 @@ class Waybackurls:
                 url += f'{key}={params[key]}'
             urls.add(url)
 
-        return urls
+        if len(urls) > self._wayback_max_size:
+            urls_with_params = set()
+            for url_without_params in added_url_params:
+                params = added_url_params[url_without_params]
+                if len(params) == 0:
+                    continue
+                url = url_without_params
+                for key in params:
+                    url += f'{key}={params[key]}'
+                urls_with_params.add(url)
+
+            return urls_with_params
+        else:
+            return urls
 
     def __is_valid_uuid(self, uuid_string):
         try:
