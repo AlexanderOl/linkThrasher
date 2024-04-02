@@ -124,7 +124,7 @@ class Waybackurls:
             for part in split_path:
                 if part.isdigit():
                     path_key += 'numb'
-                elif self.__is_valid_uuid(part):
+                elif self.__is_valid_hash(part):
                     path_key += 'guid'
                 elif self.__is_date(part):
                     path_key += 'date'
@@ -157,18 +157,21 @@ class Waybackurls:
         else:
             return urls
 
-    def __is_valid_uuid(self, uuid_string):
-        try:
-            uuid_obj = uuid.UUID(uuid_string)
-            return str(uuid_obj) == uuid_string
-        except ValueError:
-            return False
-
     def __is_date(self, string):
         try:
-            # Attempt to parse the string into a datetime object
             datetime.strptime(string, '%Y-%m-%d')
             return True
         except ValueError:
-            # If parsing fails, it's not a valid date
+            return False
+
+    def __is_valid_hash(self, string):
+
+        if re.match(r'^[a-f0-9]{32}$', string):
+            return True
+        if re.match(r'^[a-f0-9]{16}$', string):
+            return True
+        try:
+            uuid_obj = uuid.UUID(string)
+            return str(uuid_obj) == string
+        except ValueError:
             return False
