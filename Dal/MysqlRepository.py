@@ -12,11 +12,12 @@ class MysqlRepository:
 
     def init_tables(self):
         self.__init_connection()
+
         self._cursor.execute("CREATE TABLE IF NOT EXISTS TrackDomains "
-                             "(id INT AUTO_INCREMENT PRIMARY KEY, domain VARCHAR(255), found_domains VARCHAR(10000))")
+                             "(id INT AUTO_INCREMENT PRIMARY KEY, domain VARCHAR(255), found_domains TEXT)")
 
         self._cursor.execute("CREATE TABLE IF NOT EXISTS TrackUrls "
-                             "(id INT AUTO_INCREMENT PRIMARY KEY, domain VARCHAR(255), found_urls VARCHAR(10000))")
+                             "(id INT AUTO_INCREMENT PRIMARY KEY, domain VARCHAR(255), found_urls TEXT)")
         self._cnx.commit()
         self.__close_connection()
 
@@ -62,7 +63,7 @@ class MysqlRepository:
         found_domains = ";".join(new_domains)
 
         self.__init_connection()
-        self._cursor.execute(f"INSERT INTO TrackDomains (domain, found_domains) VALUES ('{domain}', '{found_domains}');")
+        self._cursor.execute(f"INSERT INTO TrackDomains (domain,found_domains) VALUES ('{domain}','{found_domains}');")
         self._cnx.commit()
         self.__close_connection()
 
@@ -70,7 +71,7 @@ class MysqlRepository:
         found_urls = ";".join(new_urls)
 
         self.__init_connection()
-        self._cursor.execute(f"INSERT INTO TrackUrls (domain, found_urls) VALUES ('{domain}', '{found_urls}');")
+        self._cursor.execute(f"INSERT INTO TrackUrls (domain,found_urls) VALUES ('{domain}','{found_urls}');")
         self._cnx.commit()
         self.__close_connection()
 
