@@ -34,19 +34,19 @@ class BbManager:
 
         command = (f"bbscope h1 -t {self._h1_api_key} -u {self._h1_user} -b -p -o tc | "
                    f"grep -e ' URL' -e ' WILDCARD' > {self._res_file}")
-        self._parse_cmd(command)
+        self._parse_cmd(command, '---H1---')
 
         command = f"bbscope bc -t {self._bc_session_id} -b -o tc | grep -e ' website' -e ' api'  > {self._res_file}"
-        self._parse_cmd(command)
+        self._parse_cmd(command,'---BC---')
 
         command = f"bbscope it -t {self._it_id} -b -o tc | grep -e ' Url' > {self._res_file}"
-        self._parse_cmd(command)
+        self._parse_cmd(command,'---Intigriti---')
 
         command = f"bbscope ywh -t {self._ywh_id} -b -o tc | grep -e ' web-application' -e ' api' > {self._res_file}"
-        self._parse_cmd(command)
+        self._parse_cmd(command,'---YWH---')
 
         command = f"bbscope immunefi -b -o tc | grep 'websites_and_applications' > {self._res_file}"
-        self._parse_cmd(command)
+        self._parse_cmd(command,'---IMMUNEFI---')
 
         txt_file = open(f'{self._targets_path}all_domains.txt', 'w')
         for line in self._domains:
@@ -63,10 +63,12 @@ class BbManager:
             txt_file.write(f"{line}\n")
         txt_file.close()
 
-    def _parse_cmd(self, command: str):
+    def _parse_cmd(self, command: str, platform: str):
         stream = os.popen(command)
         stream.read()
-
+        self._domains.add(platform)
+        self._wildcards.add(platform)
+        self._urls.add(platform)
         text_file = open(self._res_file, 'r')
         lines = text_file.readlines()
 

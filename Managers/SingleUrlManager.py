@@ -38,10 +38,12 @@ class SingleUrlManager:
 
     def do_run(self, head_dto: HeadRequestDTO):
 
+        start_url = head_dto.url
         if 403 <= head_dto.status_code < 500:
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: '
+                  f'SingleUrlFlowManager done with ({start_url}) - status: {head_dto.status_code}')
             return
 
-        start_url = head_dto.url
         domain = urlparse(start_url).netloc
 
         main_domain = '.'.join(domain.split('.')[-2:])

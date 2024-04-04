@@ -31,7 +31,7 @@ class Gobuster:
                     os.makedirs(self._tool_result_dir)
 
                 output_file = f'{self._tool_result_dir}/{self._domain.replace(":","_")}.txt'
-                cmd_arr = ["gobuster", "dir"
+                cmd_arr = ["gobuster", "dir",
                            "-b", "400-429",
                            "-u", base_url,
                            "-w", f"{self._app_wordlists_path}gobuster.txt",
