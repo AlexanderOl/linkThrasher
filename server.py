@@ -1,6 +1,9 @@
 import os
+import time
+
 from dotenv import load_dotenv
 
+from Common.ThreadBucket import ThreadBucket
 from Dal.MysqlRepository import MysqlRepository
 from Managers.BbManager import BbManager
 from Managers.CsvManager import CsvManager
@@ -18,7 +21,10 @@ headers = {
 
 load_dotenv('config.env')
 
+
+
 if __name__ == '__main__':
+
     check_mode = os.environ.get('check_mode')
     print(f'Running - {check_mode} mode')
 

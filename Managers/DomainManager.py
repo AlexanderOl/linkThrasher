@@ -4,6 +4,7 @@ from datetime import datetime
 from urllib3 import exceptions, disable_warnings
 
 from Common.RequestHandler import RequestHandler
+from Common.ThreadBucket import ThreadBucket
 from Dal.MysqlRepository import MysqlRepository
 from Managers.SingleUrlManager import SingleUrlManager
 from Helpers.SubdomainChecker import SubdomainChecker
@@ -25,6 +26,7 @@ class DomainManager:
         self._check_mode = os.environ.get('check_mode')
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
         self._targets_domains_file = 'Targets/domains.txt'
+        self._tool_name = self.__class__.__name__
         disable_warnings(exceptions.InsecureRequestWarning)
 
     def check_ip(self, ip):
@@ -71,18 +73,20 @@ class DomainManager:
         if os.path.exists(self._targets_domains_file):
             domains = list(set(line.strip() for line in open(self._targets_domains_file)))
 
-            request_helper = RequestHandler(cookies='', headers=self._headers)
-            counter = len(domains)
-            for domain in domains:
-                print(f'Checking {domain} domain. Counter: {counter}')
-                counter -= 1
-                resp = request_helper.send_head_request(f'http://{domain}')
-                if not resp:
-                    continue
-                self.check_domain(domain)
+            thread_man = ThreadBucket()
+            thread_man.run_all(self.__check_batch_domains, domains, debug_msg=self._tool_name)
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{self._targets_domains_file} is missing')
+
+    def __check_batch_domains(self, domain):
+        request_helper = RequestHandler(cookies='', headers=self._headers)
+        print(f'Checking {domain} domain...')
+        resp = request_helper.send_head_request(f'http://{domain}')
+        if not resp:
+            return
+        self.check_domain(domain)
+        print(f'Check {domain} finished!')
 
     def check_domain(self, domain):
         domain = domain.lower().replace('www.', '')
