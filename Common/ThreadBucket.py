@@ -6,7 +6,7 @@ import time
 
 class ThreadBucket:
     def __init__(self):
-        self.batch_size = int(os.environ.get('batch_size'))
+        self.batch_size = int(os.environ.get('bucket_size'))
 
     def run_all(self, action, items, debug_msg=False):
         random.shuffle(list(items))

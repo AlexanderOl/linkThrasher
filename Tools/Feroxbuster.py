@@ -114,13 +114,15 @@ class Feroxbuster:
 
         output_file = f'{self._tool_result_dir}/RAW_CEWL_{self._domain.replace(":", "_")}.txt'
         cmd = ["feroxbuster", "--url", url, "-w", cewl_file, "-o", output_file,
-               "-x", "txt conf config bak bkp cache swp old db aspx aspx~ asp asp~ py py~ rb rb~ jsp jsp~ php php~ cgi csv html inc jar js json lock log rar sql sql~ swp swp~ tar tar.gz wadl zip",
+               "-x", "asmx ashx txt conf config bak bkp cache swp old db aspx aspx~ asp asp~ py py~ rb rb~ jsp jsp~ php php~ cgi csv html inc jar js json lock log rar sql sql~ swp swp~ tar tar.gz wsdl wadl zip xml",
                "--insecure", "--no-state", "--threads", str(self._threads), "--auto-bail"]
         pk = ProcessHandler()
         pk.run_temp_process(cmd, url)
 
         cewl_lines = self._parse_output(output_file)
         result_lines.update(cewl_lines)
+
+        os.remove(cewl_file)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) Feroxbuster finished!')
 
