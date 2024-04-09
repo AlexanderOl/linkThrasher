@@ -14,7 +14,7 @@ class ThreadBucket:
         to_process_items = items
         threads = []
 
-        while len(to_process_items) > 0:
+        while len(to_process_items) > 0 or len(threads) > 0:
             print(f'---===TM msg: {debug_msg}; counter: {round(len(to_process_items), 1)} left ===---')
 
             finished_threads = [thread for thread in threads if not thread.is_alive()]
