@@ -83,8 +83,9 @@ class DomainManager:
         request_helper = RequestHandler(cookies='', headers=self._headers)
         print(f'Checking {domain} domain...')
         resp = request_helper.send_head_request(f'http://{domain}')
-        if not resp:
+        if resp is None:
             return
+        print(f'Domain {domain} init status - {resp.status_code}')
         self.check_domain(domain)
         print(f'Check {domain} finished!')
 
@@ -106,7 +107,7 @@ class DomainManager:
         massdns_subdomains = set()
         if self._check_mode != 'DL':
             massdns = MassDns(domain)
-            massdns_subdomains = massdns.get_subdomains()
+            # massdns_subdomains = massdns.get_subdomains()
 
         all_subdomains = amass_subdomains \
             .union(knock_subdomains) \
@@ -114,8 +115,7 @@ class DomainManager:
             .union(massdns_subdomains)
 
         dnsx = Dnsx(domain)
-        ips = dnsx.get_ips(all_subdomains)
-        all_subdomains.update(ips)
+        dnsx.get_dnsx_report(all_subdomains)
 
         if domain not in all_subdomains:
             all_subdomains.add(domain)

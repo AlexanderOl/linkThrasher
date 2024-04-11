@@ -9,13 +9,13 @@ class Dnsx:
     def __init__(self, domain):
         self._domain = domain
         self._tool_name = self.__class__.__name__
-        self._cache_manager = CacheHelper(self._tool_name, domain)
+        self._cache_manager = CacheHelper(self._tool_name, domain, 'Results')
         self._domain_folder = f'{os.environ.get("app_cache_result_path")}{self._tool_name}/{self._domain}'
 
-    def get_ips(self, subdomains) -> set:
+    def get_dnsx_report(self, subdomains) -> set:
 
-        ips = self._cache_manager.get_saved_result()
-        if not ips and not isinstance(ips, set):
+        lines = self._cache_manager.get_saved_result()
+        if not lines and not isinstance(lines, set):
 
             if not os.path.exists(self._domain_folder):
                 os.makedirs(self._domain_folder)
@@ -26,17 +26,15 @@ class Dnsx:
                 json_file.write(f"{subdomain}\n")
             json_file.close()
 
-            cmd_arr = ['dnsx', '-l', subs_file, '-silent', '-a', '-resp-only']
+            cmd_arr = ['dnsx', '-l', subs_file, '-recon']
             pk = ProcessHandler()
             bash_outputs = pk.run_temp_process(cmd_arr, self._domain, timeout=1200)
 
-            ips = set()
+            lines = set()
 
             for output in bash_outputs:
-                ips.add(output)
+                lines.add(output)
 
             shutil.rmtree(self._domain_folder, ignore_errors=True)
 
-            self._cache_manager.save_result(ips)
-
-        return ips
+            self._cache_manager.save_result(lines)

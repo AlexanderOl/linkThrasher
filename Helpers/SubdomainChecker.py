@@ -67,6 +67,9 @@ class SubdomainChecker:
                 return
         except socket.gaierror:
             return
+        except Exception as inst:
+            print(f'Domain ({subdomain} - __check_subdomain) - Exception: {inst}')
+            return
 
         url = f'https://{subdomain}'
         response = self._request_handler.send_head_request(url=url,
