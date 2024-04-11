@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
 
+from Common.RequestChecker import RequestChecker
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Helpers.CacheHelper import CacheHelper
@@ -20,7 +21,7 @@ class Waybackurls:
         self._tool_name = self.__class__.__name__
         self._request_handler = RequestHandler(cookies, headers)
         self._url_ignore_ext_regex = re.compile(
-            '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
+            '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
             '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$|\.webp$',
             re.IGNORECASE)
         self._result: List[HeadRequestDTO] = []
@@ -29,6 +30,7 @@ class Waybackurls:
         self._checked_hrefs = set()
         self._waybackurls_out_of_scope_domains = os.environ.get("waybackurls_out_of_scope_domains")
         self._wayback_max_size = 50000
+        self._request_checker = RequestChecker()
 
     def get_requests_dtos(self) -> List[HeadRequestDTO]:
         cache_manager = CacheHelper(self._tool_name, self._domain)
@@ -94,65 +96,21 @@ class Waybackurls:
 
     def __filter_urls(self, href_urls) -> set:
         urls = set()
-        path_without_digits = set()
-        added_url_params = {}
+        checked_key = set()
 
         for href_url in href_urls:
             parsed_parts = urlparse(href_url)
-            url_without_params = f'{parsed_parts.scheme}://{parsed_parts.netloc}{parsed_parts.path}'.lower()
-            query_params = {}
             if self._url_ignore_ext_regex.search(parsed_parts.path):
                 continue
-            if '?' in href_url:
-                params = parsed_parts.query.split('&')
-                for param in params:
-                    split = param.split('=')
-                    if len(split) == 2:
-                        query_params[split[0]] = split[1]
 
-            if url_without_params in added_url_params:
-                added_url_params[url_without_params].update(query_params)
-            else:
-                added_url_params[url_without_params] = query_params
-
-        for url_without_params in added_url_params:
-            params = added_url_params[url_without_params]
-            url = url_without_params
-
-            split_path = url_without_params.split('/')
-            path_key = ''
-            for part in split_path:
-                if part.isdigit():
-                    path_key += 'numb'
-                elif self.__is_valid_hash(part):
-                    path_key += 'guid'
-                elif self.__is_date(part):
-                    path_key += 'date'
-                else:
-                    path_key += part
-            if path_key in path_without_digits:
+            key = self._request_checker.get_url_key(href_url)
+            if key in checked_key:
                 continue
-            else:
-                path_without_digits.add(path_key)
-
-            if len(params) > 0:
-                url += '?'
-
-            for key in params:
-                url += f'{key}={params[key]}'
-            urls.add(url)
+            checked_key.add(key)
+            urls.add(href_url)
 
         if len(urls) > self._wayback_max_size:
-            urls_with_params = set()
-            for url_without_params in added_url_params:
-                params = added_url_params[url_without_params]
-                if len(params) == 0:
-                    continue
-                url = url_without_params
-                for key in params:
-                    url += f'{key}={params[key]}'
-                urls_with_params.add(url)
-
+            urls_with_params = set([url for url in urls if '?' in urls])
             return urls_with_params
         else:
             return urls

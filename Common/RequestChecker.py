@@ -1,4 +1,7 @@
+import re
+import uuid
 from copy import deepcopy
+from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
@@ -140,8 +143,7 @@ class RequestChecker:
                 form_details.append(FormDetailsDTO(action_tag.strip(), params, method))
             return FormRequestDTO(target_url, form_details, dto)
 
-    @staticmethod
-    def get_url_key(url):
+    def get_url_key(self, url: str):
         query_params = []
         parsed = urlparse(url)
         params = parsed.query.split('&')
@@ -150,5 +152,37 @@ class RequestChecker:
             split = param.split('=')
             if len(split) == 2:
                 query_params.append(split[1])
-        key = f'{parsed.netloc};{parsed.path};{"&".join(query_params)}'
+
+        split_path = f'{parsed.netloc};{parsed.path}'.split('/')
+        path_key = ''
+        for part in split_path:
+            if part.isdigit():
+                path_key += 'numb'
+            elif self.__is_valid_hash(part):
+                path_key += 'guid'
+            elif self.__is_date(part):
+                path_key += 'date'
+            else:
+                path_key += part
+
+    def __is_date(self, string: str):
+        try:
+            datetime.strptime(string, '%Y-%m-%d')
+            return True
+        except ValueError:
+            return False
+
+    def __is_valid_hash(self, string: str):
+
+        if re.match(r'^[a-f0-9]{32}$', string):
+            return True
+        if re.match(r'^[a-f0-9]{16}$', string):
+            return True
+        try:
+            uuid_obj = uuid.UUID(string)
+            return str(uuid_obj) == string
+        except ValueError:
+            return False
+
+        key = f'{path_key};{"&".join(query_params)}'
         return key

@@ -171,7 +171,7 @@ class Feroxbuster:
         ready_urls = set()
         checked_keys = set()
         for url in filtered_output:
-            key = RequestChecker.get_url_key(url)
+            key = self._request_checker.get_url_key(url)
             if key not in already_exist_keys and key not in checked_keys:
                 checked_keys.add(key)
                 ready_urls.add(url)

@@ -8,7 +8,7 @@ from Common.RequestChecker import RequestChecker
 class HeadRequestDTO:
     def __init__(self, response: Response):
         self._url = response.url
-        self._key = RequestChecker.get_url_key(self._url)
+        self._key = RequestChecker().get_url_key(self._url)
         parsed = urlparse(self._url)
         self._query_params = list([r for r in parsed.query.split('&') if r.strip()])
 
