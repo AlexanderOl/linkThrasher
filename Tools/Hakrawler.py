@@ -74,13 +74,17 @@ class Hakrawler:
         return self._result
 
     def __check_href_urls(self, url: str):
-        url_parts = urlparse(url)
-        if url_parts.path in self._checked_hrefs or self._url_ignore_ext_regex.search(url):
-            return
-        else:
-            self._checked_hrefs.add(url_parts.path)
-        check = self._request_handler.send_head_request(url)
-        if check is None:
+        try:
+            url_parts = urlparse(url)
+            if url_parts.path in self._checked_hrefs or self._url_ignore_ext_regex.search(url):
+                return
+            else:
+                self._checked_hrefs.add(url_parts.path)
+            check = self._request_handler.send_head_request(url)
+            if check is None:
+                return
+        except:
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Unable to parse url - {url}')
             return
         response = self._request_handler.handle_request(url, timeout=5)
         if response is None:
