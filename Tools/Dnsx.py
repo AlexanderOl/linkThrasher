@@ -12,7 +12,7 @@ class Dnsx:
         self._cache_manager = CacheHelper(self._tool_name, domain, 'Results')
         self._domain_folder = f'{os.environ.get("app_cache_result_path")}{self._tool_name}/{self._domain}'
 
-    def get_dnsx_report(self, subdomains) -> set:
+    def get_dnsx_report(self, subdomains):
 
         lines = self._cache_manager.get_saved_result()
         if not lines and not isinstance(lines, set):
