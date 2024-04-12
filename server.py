@@ -4,7 +4,6 @@ from Dal.MysqlRepository import MysqlRepository
 from Managers.BbManager import BbManager
 from Managers.CsvManager import CsvManager
 from Managers.DomainManager import DomainManager
-from Managers.TrackerManager import TrackerManager
 from Managers.FastUrlManager import FastUrlManager
 from Managers.UrlListManager import UrlListManager
 from Managers.SingleUrlManager import SingleUrlManager
@@ -37,10 +36,6 @@ if __name__ == '__main__':
     elif check_mode == 'DL':
         domain_man = DomainManager(headers)
         domain_man.check_multiple_domains()
-
-    elif check_mode == 'TR':
-        domain_man = TrackerManager(headers)
-        domain_man.track_domains()
 
     elif check_mode == 'U':
         single_url_man = SingleUrlManager(headers)
