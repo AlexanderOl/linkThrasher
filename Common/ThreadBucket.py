@@ -2,6 +2,7 @@ import os
 import threading
 import random
 import time
+from copy import deepcopy
 
 
 class ThreadBucket:
@@ -9,9 +10,8 @@ class ThreadBucket:
         self.batch_size = int(os.environ.get('bucket_size'))
 
     def run_all(self, action, items, debug_msg=False):
-        random.shuffle(list(items))
-
-        to_process_items = items
+        to_process_items = deepcopy(items)
+        random.shuffle(list(to_process_items))
         threads = []
 
         while len(to_process_items) > 0 or len(threads) > 0:

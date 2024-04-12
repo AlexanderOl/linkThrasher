@@ -25,9 +25,11 @@ class FastUrlManager:
         self._headers = headers
         self._tool_name = self.__class__.__name__
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
+        self._fast_urls_size = int(os.environ.get("fast_urls_size"))
         self._request_handler = RequestHandler(cookies='', headers=headers)
         disable_warnings(exceptions.InsecureRequestWarning)
         self._target_file_path = 'Targets/fast_urls.txt'
+        self._all_file_path = 'Targets/all_fast_urls.txt'
         self._res_500_error_key_path = 'Results/500_error_keys.json'
         self._res_500_error_urls_path = 'Results/500_error_urls.txt'
         self._request_checker = RequestChecker()
@@ -39,15 +41,15 @@ class FastUrlManager:
             if not result:
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: FU finished...')
                 break
-            all_file_path = 'Targets/all_fast_urls.txt'
-            if os.path.exists(all_file_path):
+
+            if os.path.exists(self._all_file_path):
                 target_urls = []
                 can_add_targets = False
-                with open(all_file_path) as infile:
+                with open(self._all_file_path) as infile:
                     for line in infile:
                         if can_add_targets:
                             target_urls.append(line.strip())
-                        if len(target_urls) > 1000:
+                        if len(target_urls) > self._fast_urls_size:
                             break
                         if result == line.strip():
                             can_add_targets = True
@@ -58,7 +60,7 @@ class FastUrlManager:
                         txt_file.write(f"{line}\n")
                 txt_file.close()
             else:
-                print(f'FU stopped. {all_file_path} is missing')
+                print(f'FU stopped. {self._all_file_path} is missing')
                 break
 
     def __process_targets(self):
@@ -102,7 +104,7 @@ class FastUrlManager:
 
             last_url = raw_urls[len(raw_urls) - 1]
             print(f'Last URL was processed - {last_url}')
-            return raw_urls[len(raw_urls) - 1]
+            return last_url
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
             print(f'{self._target_file_path} is missing')

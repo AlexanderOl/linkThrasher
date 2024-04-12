@@ -25,7 +25,9 @@ class DomainManager:
         self._headers = headers
         self._check_mode = os.environ.get('check_mode')
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
+        self._domain_batch_size = int(os.environ.get("domain_batch_size"))
         self._targets_domains_file = 'Targets/domains.txt'
+        self._targets_domains_part_file = 'Targets/domains_part.txt'
         self._tool_name = self.__class__.__name__
         disable_warnings(exceptions.InsecureRequestWarning)
 
@@ -70,16 +72,36 @@ class DomainManager:
 
     def check_multiple_domains(self):
 
-        if os.path.exists(self._targets_domains_file):
-            domains = list(set(line.strip() for line in open(self._targets_domains_file)))
+        while True:
+            last_domain = self.__process_targets()
+            if not last_domain:
+                print(f'[{datetime.now().strftime("%H:%M:%S")}]: DL finished...')
+                break
 
-            thread_man = ThreadBucket()
-            thread_man.run_all(self.__check_batch_domains, domains, debug_msg=self._tool_name)
-        else:
-            print(os.path.dirname(os.path.realpath(__file__)))
-            print(f'{self._targets_domains_file} is missing')
+            if os.path.exists(self._targets_domains_file):
+                target_domains = []
+                can_add_targets = False
+                with open(self._targets_domains_file) as infile:
+                    for line in infile:
+                        if can_add_targets:
+                            target_domains.append(line.strip())
+                        if len(target_domains) > self._domain_batch_size:
+                            break
+                        if last_domain == line.strip():
+                            can_add_targets = True
+                infile.close()
+
+                with open(self._targets_domains_part_file, "w") as txt_file:
+                    for line in target_domains:
+                        txt_file.write(f"{line}\n")
+                txt_file.close()
+
+            else:
+                print(f'DL stopped. {self._targets_domains_file} is missing')
+                break
 
     def __check_batch_domains(self, domain):
+
         request_helper = RequestHandler(cookies='', headers=self._headers)
         print(f'Checking {domain} domain...')
         resp = request_helper.send_head_request(f'http://{domain}')
@@ -162,3 +184,22 @@ class DomainManager:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: DomainFlowManager done with ({domain})')
 
         mysql_repo.save_tracker_domains_result(domain, db_subdomains)
+
+    def __process_targets(self):
+        if os.path.exists(self._targets_domains_part_file):
+            domains = list(line.strip() for line in open(self._targets_domains_part_file))
+            if len(domains) == 0:
+                print(f'No fast urls found - {self._targets_domains_part_file}')
+                return
+
+            thread_man = ThreadBucket()
+            thread_man.run_all(self.__check_batch_domains, domains, debug_msg=self._tool_name)
+
+            last_domain = domains[len(domains) - 1]
+            print(f'Last URL was processed - {last_domain}')
+            return last_domain
+
+        else:
+            print(os.path.dirname(os.path.realpath(__file__)))
+            print(f'{self._targets_domains_part_file} is missing')
+            return
