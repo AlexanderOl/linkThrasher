@@ -39,7 +39,7 @@ class SingleUrlManager:
     def do_run(self, head_dto: HeadRequestDTO):
 
         start_url = head_dto.url
-        if 403 <= head_dto.status_code < 500:
+        if 404 <= head_dto.status_code < 500:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: '
                   f'SingleUrlFlowManager done with ({start_url}) - status: {head_dto.status_code}')
             return
