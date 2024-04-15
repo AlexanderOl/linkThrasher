@@ -21,9 +21,6 @@ class BbManager:
         self._app_cache_result_path = f'{os.environ.get("app_cache_result_path")}'
         self._res_file = f'{self._app_cache_result_path}{self.__class__.__name__}.txt'
         self._targets_path = os.environ.get("app_targets_path")
-        self._urls = set()
-        self._domains = set()
-        self._wildcards = set()
         self._black_list = ['github.com', 'google.com', 'immunefi.com', 'linkedin.com', 'apple.com']
         self._wildcards_match = ['.*', '[', '}', '[', '{', '|']
 
@@ -37,38 +34,26 @@ class BbManager:
         self._parse_cmd(command, '---H1---')
 
         command = f"bbscope bc -t {self._bc_session_id} -b -o tc | grep -e ' website' -e ' api'  > {self._res_file}"
-        self._parse_cmd(command,'---BC---')
+        self._parse_cmd(command, '---BC---')
 
         command = f"bbscope it -t {self._it_id} -b -o tc | grep -e ' Url' > {self._res_file}"
-        self._parse_cmd(command,'---Intigriti---')
+        self._parse_cmd(command, '---Intigriti---')
 
         command = f"bbscope ywh -t {self._ywh_id} -b -o tc | grep -e ' web-application' -e ' api' > {self._res_file}"
-        self._parse_cmd(command,'---YWH---')
+        self._parse_cmd(command, '---YWH---')
 
         command = f"bbscope immunefi -b -o tc | grep 'websites_and_applications' > {self._res_file}"
-        self._parse_cmd(command,'---IMMUNEFI---')
+        self._parse_cmd(command, '---IMMUNEFI---')
 
-        txt_file = open(f'{self._targets_path}all_domains.txt', 'w')
-        for line in self._domains:
-            txt_file.write(f"{line}\n")
-        txt_file.close()
-
-        txt_file = open(f'{self._targets_path}all_urls.txt', 'w')
-        for line in self._urls:
-            txt_file.write(f"{line}\n")
-        txt_file.close()
-
-        txt_file = open(f'{self._targets_path}all_wildcards.txt', 'w')
-        for line in self._wildcards:
-            txt_file.write(f"{line}\n")
-        txt_file.close()
-
-    def _parse_cmd(self, command: str, platform: str):
+    def _parse_cmd(self, command: str, header_msg: str):
         stream = os.popen(command)
         stream.read()
-        self._domains.add(platform)
-        self._wildcards.add(platform)
-        self._urls.add(platform)
+        domains = set()
+        wildcards = set()
+        urls = set()
+        domains.add(header_msg)
+        wildcards.add(header_msg)
+        urls.add(header_msg)
         text_file = open(self._res_file, 'r')
         lines = text_file.readlines()
 
@@ -78,18 +63,18 @@ class BbManager:
                 continue
             split = line.split(' ', 1)[0]
             if any(word in split for word in self._wildcards_match):
-                self._wildcards.add(split)
+                wildcards.add(split)
                 continue
             if split.startswith('http'):
                 if '*.' in line:
                     index = line.find('*.')
                     if index != -1:
-                        self._domains.add(split[index + 2:].rstrip('/').replace('*', ''))
+                        domains.add(split[index + 2:].rstrip('/').replace('*', ''))
                         continue
                 else:
                     parsed = _try_parse_url(split)
                     if parsed:
-                        self._urls.add(f'{parsed.scheme}://{parsed.netloc}')
+                        urls.add(f'{parsed.scheme}://{parsed.netloc}')
                     continue
             elif '/' in split:
                 index = split.find('/')
@@ -102,14 +87,29 @@ class BbManager:
                     domain = split[index + 2:]
                 else:
                     domain = split
-                self._domains.add(domain.replace('*', ''))
+                domains.add(domain.replace('*', ''))
             elif '.' in split:
-                self._domains.add(split.replace('*', ''))
+                domains.add(split.replace('*', ''))
 
         if os.path.exists(self._res_file):
             os.remove(self._res_file)
 
+        txt_file = open(f'{self._targets_path}all_domains.txt', 'w')
+        for line in domains:
+            txt_file.write(f"{line}\n")
+        txt_file.close()
+
+        txt_file = open(f'{self._targets_path}all_urls.txt', 'w')
+        for line in urls:
+            txt_file.write(f"{line}\n")
+        txt_file.close()
+
+        txt_file = open(f'{self._targets_path}all_wildcards.txt', 'w')
+        for line in wildcards:
+            txt_file.write(f"{line}\n")
+        txt_file.close()
+
         print(f'CMD done - {command}')
-        print(f'WILDCARD found - {len(self._wildcards)}')
-        print(f'URL found - {len(self._urls)}')
-        print(f'DOMAIN found - {len(self._domains)}')
+        print(f'WILDCARD found - {len(wildcards)}')
+        print(f'URL found - {len(urls)}')
+        print(f'DOMAIN found - {len(domains)}')

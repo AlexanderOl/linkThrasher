@@ -3,6 +3,7 @@ import validators
 from datetime import datetime
 from urllib3 import exceptions, disable_warnings
 
+from Common.RequestChecker import RequestChecker
 from Common.RequestHandler import RequestHandler
 from Common.ThreadBucket import ThreadBucket
 from Dal.MysqlRepository import MysqlRepository
@@ -129,7 +130,7 @@ class DomainManager:
         massdns_subdomains = set()
         if self._check_mode != 'DL':
             massdns = MassDns(domain)
-            # massdns_subdomains = massdns.get_subdomains()
+            massdns_subdomains = massdns.get_subdomains()
 
         all_subdomains = amass_subdomains \
             .union(knock_subdomains) \
@@ -162,8 +163,11 @@ class DomainManager:
             nmap_get_dtos = nmap.check_ports(start_urls_dtos)
             start_urls_dtos += nmap_get_dtos
 
+            req_checker = RequestChecker()
             db_urls = mysql_repo.get_tracked_urls(domain)
-            filtered_urls = list([dto for dto in start_urls_dtos if all(db_url != dto.url for db_url in db_urls)])
+            filtered_urls = list(
+                [dto for dto in start_urls_dtos
+                 if all(req_checker.get_url_key(db_url) != req_checker.get_url_key(dto.url) for db_url in db_urls)])
 
             if len(filtered_urls) == 0:
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) No live urls found')
