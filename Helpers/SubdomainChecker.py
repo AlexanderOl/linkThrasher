@@ -21,8 +21,8 @@ class SubdomainChecker:
         cookies = cookie_manager.get_cookies_dict(raw_cookies)
         self._request_handler = RequestHandler(cookies, headers)
         self._out_of_scope_domains = os.environ.get("out_of_scope_domains")
-        self._checked_ips = set()
         self._chunk_size = 100
+        self._checked_ips = set()
 
     def check_all_subdomains(self, all_subdomains: set, avoid_cache=False) -> List[HeadRequestDTO]:
         cache_manager = CacheHelper(self._tool_name, self._domain)
@@ -58,18 +58,14 @@ class SubdomainChecker:
             return filtered_subdomains
 
     def __check_subdomain(self, subdomain):
-
         try:
             ip = socket.gethostbyname(subdomain)
             if ip not in self._checked_ips:
                 self._checked_ips.add(ip)
             else:
                 return
-        except socket.gaierror:
-            return
         except Exception as inst:
             print(f'Domain ({subdomain} - __check_subdomain) - Exception: {inst}')
-            return
 
         url = f'https://{subdomain}'
         response = self._request_handler.send_head_request(url=url,

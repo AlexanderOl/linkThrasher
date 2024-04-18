@@ -1,5 +1,4 @@
 import re
-import ipaddress
 from datetime import datetime
 
 from Common.ProcessHandler import ProcessHandler

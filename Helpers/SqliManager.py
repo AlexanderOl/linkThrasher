@@ -36,7 +36,9 @@ class SqliManager:
             {'TruePld': '\'OR(1=1)OR\'', 'FalsePld': '\'OR(1=2)OR\'', 'True2Pld': '\'OR(2=2)OR\'',
              'False2Pld': '\'OR(1=3)OR\'', 'True3Pld': '\'OR(3=3)OR\''},
             {'TruePld': '"OR(1=1)OR"', 'FalsePld': '"OR(1=2)OR"', 'True2Pld': '"OR(2=2)OR"',
-             'False2Pld': '"OR(1=3)OR"', 'True3Pld': '"OR(3=3)OR"'}
+             'False2Pld': '"OR(1=3)OR"', 'True3Pld': '"OR(3=3)OR"'},
+            {'TruePld': '\'|| \'1\'==\'1', 'FalsePld': '\'|| \'1\'==\'2', 'True2Pld': '\'|| \'2\'==\'2',
+             'False2Pld': '\'|| \'1\'==\'3', 'True3Pld': '\'|| \'3\'==\'3'}
         ]
         self._bool_diff_rate = 0.05
         self._delay_in_seconds = 5
