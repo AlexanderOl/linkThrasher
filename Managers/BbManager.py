@@ -29,31 +29,37 @@ class BbManager:
         if not os.path.exists(self._app_cache_result_path):
             os.makedirs(self._app_cache_result_path)
 
-        command = (f"bbscope h1 -t {self._h1_api_key} -u {self._h1_user} -b -p -o tc | "
-                   f"grep -e ' URL' -e ' WILDCARD' > {self._res_file}")
-        self._parse_cmd(command, '---H1---')
+        if os.path.exists(self._res_file):
+            os.remove(self._res_file)
 
-        command = f"bbscope bc -t {self._bc_session_id} -b -o tc | grep -e ' website' -e ' api'  > {self._res_file}"
-        self._parse_cmd(command, '---BC---')
-
-        command = f"bbscope it -t {self._it_id} -b -o tc | grep -e ' Url' > {self._res_file}"
-        self._parse_cmd(command, '---Intigriti---')
-
-        command = f"bbscope ywh -t {self._ywh_id} -b -o tc | grep -e ' web-application' -e ' api' > {self._res_file}"
-        self._parse_cmd(command, '---YWH---')
-
-        command = f"bbscope immunefi -b -o tc | grep 'websites_and_applications' > {self._res_file}"
-        self._parse_cmd(command, '---IMMUNEFI---')
-
-    def _parse_cmd(self, command: str, header_msg: str):
+        command = (f"bbscope h1 -t {self._h1_api_key} -u {self._h1_user} -b -p -o tcu | "
+                   f"grep -e ' URL' -e ' WILDCARD' >> {self._res_file}")
         stream = os.popen(command)
         stream.read()
+
+        command = f"bbscope bc -t {self._bc_session_id} -b -o tcu | grep -e ' website' -e ' api' >> {self._res_file}"
+        stream = os.popen(command)
+        stream.read()
+
+        command = f"bbscope it -t {self._it_id} -b -o tcu | grep -e ' Url' >> {self._res_file}"
+        stream = os.popen(command)
+        stream.read()
+
+        command = f"bbscope ywh -t {self._ywh_id} -b -o tcu | grep -e ' web-application' -e ' api' >> {self._res_file}"
+        stream = os.popen(command)
+        stream.read()
+
+        command = f"bbscope immunefi -b -o tcu | grep 'websites_and_applications' >> {self._res_file}"
+        stream = os.popen(command)
+        stream.read()
+
+        self._parse_cmd()
+
+    def _parse_cmd(self):
+
         domains = set()
         wildcards = set()
         urls = set()
-        domains.add(header_msg)
-        wildcards.add(header_msg)
-        urls.add(header_msg)
         text_file = open(self._res_file, 'r')
         lines = text_file.readlines()
 
@@ -91,9 +97,6 @@ class BbManager:
             elif '.' in split:
                 domains.add(split.replace('*', ''))
 
-        if os.path.exists(self._res_file):
-            os.remove(self._res_file)
-
         txt_file = open(f'{self._targets_path}all_domains.txt', 'w')
         for line in domains:
             txt_file.write(f"{line}\n")
@@ -109,7 +112,6 @@ class BbManager:
             txt_file.write(f"{line}\n")
         txt_file.close()
 
-        print(f'CMD done - {command}')
         print(f'WILDCARD found - {len(wildcards)}')
         print(f'URL found - {len(urls)}')
         print(f'DOMAIN found - {len(domains)}')
