@@ -84,7 +84,8 @@ class SubdomainChecker:
                 redirect = response.headers['Location']
                 self.__check_redirect_urls(url, redirect)
             elif all(urlparse(dto.url).netloc.replace('www.', '') !=
-                     urlparse(url).netloc.replace('www.', '') for dto in self._checked_subdomains):
+                     urlparse(url).netloc.replace('www.', '')
+                     for dto in self._checked_subdomains):
                 self._checked_subdomains.append(HeadRequestDTO(response))
             else:
                 print(f'({url}) url already added')
