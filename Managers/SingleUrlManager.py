@@ -29,6 +29,7 @@ class SingleUrlManager:
         self._ngrok_url = os.environ.get('ngrok_url')
         self._check_mode = os.environ.get('check_mode')
         self._single_url = os.environ.get('single_url')
+        self._severity = int(os.environ.get('severity'))
         disable_warnings(exceptions.InsecureRequestWarning)
 
     def run(self):
@@ -92,9 +93,10 @@ class SingleUrlManager:
         else:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) will run {len(head_dtos)} dtos')
 
-        xss_manager = XssManager(domain, headers=self._headers, cookies=cookies)
-        xss_manager.check_get_requests(head_dtos)
-        xss_manager.check_form_requests(all_form_dtos)
+        if self._severity == 1:
+            xss_manager = XssManager(domain, headers=self._headers, cookies=cookies)
+            xss_manager.check_get_requests(head_dtos)
+            xss_manager.check_form_requests(all_form_dtos)
 
         ssrf_manager = SsrfManager(domain, headers=self._headers, cookies=cookies)
         ssrf_manager.check_get_requests(head_dtos)

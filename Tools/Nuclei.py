@@ -16,6 +16,7 @@ class Nuclei:
         self._cache_key = cache_key.replace(':', '_')
         self._headers = headers
         self._raw_cookies = raw_cookies
+        self._severity = int(os.environ.get("severity"))
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._tool_result_fuzzing_dir = f'{self._tool_result_dir}_fuzzing'
         self._cache_manager = CacheHelper(self._tool_name, cache_key, 'Results')
@@ -66,7 +67,10 @@ class Nuclei:
         txt_file.close()
 
         filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
-        command = f"nuclei --list {filepath} -t /root/Desktop/TOOLs/fuzzing-templates"
+        command = f"nuclei --list {filepath} -t /root/Desktop/TOOLs/fuzzing-templates "
+
+        if self._severity > 1:
+            command += "-s high,critical "
 
         stream = os.popen(command)
         bash_outputs = stream.readlines()
@@ -144,6 +148,9 @@ class Nuclei:
                       f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/email-extractor.yaml " \
                       f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/google-floc-disabled.yaml "
 
+            if self._severity > 1:
+                command += "-s high,critical "
+
             stream = os.popen(command)
             bash_outputs = stream.readlines()
 
@@ -189,6 +196,9 @@ class Nuclei:
                   f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/tabnabbing-check.yaml " \
                   f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/email-extractor.yaml " \
                   f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/google-floc-disabled.yaml "
+
+        if self._severity > 1:
+            command += "-s high,critical "
 
         stream = os.popen(command)
         bash_outputs = stream.readlines()
