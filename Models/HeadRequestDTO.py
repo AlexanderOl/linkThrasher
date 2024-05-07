@@ -10,7 +10,7 @@ class HeadRequestDTO:
         self._url = response.url
         self._key = RequestChecker().get_url_key(self._url)
         parsed = urlparse(self._url)
-        self._query_params = list([r for r in parsed.query.split('&') if r.strip()])
+        self._query_params = list([r.split('=')[0] for r in parsed.query.split('&') if r.strip()])
 
         self._status_code = response.status_code
         if 'Content-Type' in response.headers:

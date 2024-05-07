@@ -33,8 +33,13 @@ class XssManager:
 
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_route, dtos, debug_msg=f'XssManager/Get/Route ({self._domain})')
-            dtos_with_params = list([dto for dto in dtos if len(dto.query_params) > 0])
-            thread_man.run_all(self.__check_params, dtos_with_params, debug_msg=f'XssManager/Get/Param ({self._domain})')
+            dtos_with_params = {}
+            for dto in dtos:
+                if ";".join(dto.query_params) not in dtos_with_params:
+                    dtos_with_params[";".join(dto.query_params)] = [dto]
+
+            thread_man.run_all(self.__check_params, dtos_with_params.items(),
+                               debug_msg=f'XssManager/Get/Param ({self._domain})')
 
             cache_manager.save_result(self._result, has_final_result=True)
 
