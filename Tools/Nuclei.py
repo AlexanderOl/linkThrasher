@@ -84,12 +84,10 @@ class Nuclei:
             main_txt_file = open(self._main_txt_fuzzing_filepath, 'r')
             report_lines = main_txt_file.readlines()
             self._cache_manager.save_result(report_lines, has_final_result=True)
+            os.remove(self._main_txt_fuzzing_filepath)
 
         if os.path.exists(filepath):
             os.remove(filepath)
-
-        if os.path.getsize(self._main_txt_fuzzing_filepath) == 0:
-            os.remove(self._main_txt_fuzzing_filepath)
 
     def check_multiple_uls(self, get_dtos: List[HeadRequestDTO]):
 
