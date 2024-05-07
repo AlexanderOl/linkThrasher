@@ -98,9 +98,9 @@ class SingleUrlManager:
             xss_manager.check_get_requests(head_dtos)
             xss_manager.check_form_requests(all_form_dtos)
 
-        ssrf_manager = SsrfManager(domain, headers=self._headers, cookies=cookies)
-        ssrf_manager.check_get_requests(head_dtos)
-        ssrf_manager.check_form_requests(all_form_dtos)
+            ssrf_manager = SsrfManager(domain, headers=self._headers, cookies=cookies)
+            ssrf_manager.check_get_requests(head_dtos)
+            ssrf_manager.check_form_requests(all_form_dtos)
 
         lfi_manager = LfiManager(domain, headers=self._headers, cookies=cookies)
         lfi_manager.check_get_requests(head_dtos)

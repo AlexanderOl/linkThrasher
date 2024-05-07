@@ -25,6 +25,7 @@ class FastUrlManager:
         self._headers = headers
         self._tool_name = self.__class__.__name__
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
+        self._severity = int(os.environ.get("severity"))
         self._fast_urls_size = int(os.environ.get("fast_urls_size"))
         self._request_handler = RequestHandler(cookies='', headers=headers)
         disable_warnings(exceptions.InsecureRequestWarning)
@@ -77,13 +78,14 @@ class FastUrlManager:
             nuclei = Nuclei(cache_key, self._headers)
             nuclei.fuzz_batch(head_dtos)
 
-            xss_manager = XssManager(domain=cache_key, headers=self._headers)
-            xss_manager.check_get_requests(head_dtos)
-            xss_manager.check_form_requests(form_dtos)
+            if self._severity == 1:
+                xss_manager = XssManager(domain=cache_key, headers=self._headers)
+                xss_manager.check_get_requests(head_dtos)
+                xss_manager.check_form_requests(form_dtos)
 
-            ssrf_manager = SsrfManager(domain=cache_key, headers=self._headers)
-            ssrf_manager.check_get_requests(head_dtos)
-            ssrf_manager.check_form_requests(form_dtos)
+                ssrf_manager = SsrfManager(domain=cache_key, headers=self._headers)
+                ssrf_manager.check_get_requests(head_dtos)
+                ssrf_manager.check_form_requests(form_dtos)
 
             lfi_manager = LfiManager(domain=cache_key, headers=self._headers)
             lfi_manager.check_get_requests(head_dtos)
