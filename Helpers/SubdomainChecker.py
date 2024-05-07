@@ -83,7 +83,8 @@ class SubdomainChecker:
             elif str(response.status_code).startswith('3') and 'Location' in response.headers:
                 redirect = response.headers['Location']
                 self.__check_redirect_urls(url, redirect)
-            elif all(dto.url != url for dto in self._checked_subdomains):
+            elif all(urlparse(dto.url).netloc.replace('www.', '') !=
+                     urlparse(url).netloc.replace('www.', '') for dto in self._checked_subdomains):
                 self._checked_subdomains.append(HeadRequestDTO(response))
             else:
                 print(f'({url}) url already added')
@@ -108,5 +109,7 @@ class SubdomainChecker:
                                                             except_ssl_action=self.__except_ssl_action,
                                                             except_ssl_action_args=[base_url],
                                                             timeout=5)
-        if response2 is not None and all(dto.url != redirect_url for dto in self._checked_subdomains):
+        if response2 is not None and all(urlparse(dto.url).netloc.replace('www.', '') !=
+                                         urlparse(redirect_url).netloc.replace('www.', '')
+                                         for dto in self._checked_subdomains):
             self._checked_subdomains.append(HeadRequestDTO(response2))
