@@ -61,7 +61,7 @@ class SqliManager:
             dtos_with_params = {}
             for dto in dtos:
                 if ";".join(dto.query_params) not in dtos_with_params:
-                    dtos_with_params[";".join(dto.query_params)] = [dto]
+                    dtos_with_params[";".join(dto.query_params)] = dto
 
             thread_man.run_all(self.__check_get_params, list(dtos_with_params.items()),
                                debug_msg=f'SqliManager/Get/Params ({self._domain})')
