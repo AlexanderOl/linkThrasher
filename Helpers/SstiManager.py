@@ -40,7 +40,7 @@ class SstiManager:
                 if ";".join(dto.query_params) not in dtos_with_params:
                     dtos_with_params[";".join(dto.query_params)] = [dto]
 
-            thread_man.run_all(self.__check_get_params, dtos_with_params.items(),
+            thread_man.run_all(self.__check_get_params, list(dtos_with_params.items()),
                                debug_msg=f'SstiManager/Get/Param ({self._domain})')
 
             cache_manager.save_result(self._result, has_final_result=True)
