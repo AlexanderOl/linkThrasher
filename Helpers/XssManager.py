@@ -38,7 +38,7 @@ class XssManager:
                 if ";".join(dto.query_params) not in dtos_with_params:
                     dtos_with_params[";".join(dto.query_params)] = [dto]
 
-            thread_man.run_all(self.__check_params, dtos_with_params.items(),
+            thread_man.run_all(self.__check_params, list(dtos_with_params.items()),
                                debug_msg=f'XssManager/Get/Param ({self._domain})')
 
             cache_manager.save_result(self._result, has_final_result=True)
@@ -60,7 +60,7 @@ class XssManager:
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found FORM XSS: {len(self._result)}')
 
-    def __check_params(self, dto: GetRequestDTO):
+    def __check_params(self, dto: HeadRequestDTO):
 
         payloads_urls = self._request_checker.get_param_payloads(dto.url, self._injections_to_check, 'XSS')
 
