@@ -45,7 +45,7 @@ class CacheHelper:
             res = f'[{datetime.now().strftime("%H:%M:%S")}]: {self._result_filepath} found {len(result)} \n'
             file.write(res)
 
-    def save_lines(self, result: List[str]):
+    def save_lines(self, result: set[str]):
 
         self.cache_result(result)
 
@@ -58,7 +58,9 @@ class CacheHelper:
             res = f'[{datetime.now().strftime("%H:%M:%S")}]: {self._result_filepath} found {len(result)} \n'
             file.write(res)
 
-    def cache_result(self, result):
+    def cache_result(self, result, cleanup_prev_results=False):
+        if cleanup_prev_results:
+            shutil.rmtree(self._tool_result_dir, ignore_errors=True)
 
         if not os.path.exists(self._tool_result_dir):
             os.makedirs(self._tool_result_dir)
@@ -72,4 +74,3 @@ class CacheHelper:
             for item in result:
                 txt_file.write(f"{item}\n")
             txt_file.close()
-

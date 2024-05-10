@@ -37,4 +37,4 @@ class Dnsx:
 
             shutil.rmtree(self._domain_folder, ignore_errors=True)
 
-            self._cache_manager.save_result(lines)
+            self._cache_manager.cache_result(lines)

@@ -38,7 +38,7 @@ class SsrfManager:
             results: List[InjectionFoundDTO] = []
             for dto in dtos:
                 self.__check_route_params(dto.url, results)
-            cache_manager.save_result(results, has_final_result=True)
+            cache_manager.save_dtos(results)
 
     def check_form_requests(self, form_results: List[FormRequestDTO]):
 
@@ -47,7 +47,7 @@ class SsrfManager:
             results: List[InjectionFoundDTO] = []
             for item in form_results:
                 self.__send_ssrf_form_request(item, results)
-            cache_manager.save_result(results, has_final_result=True)
+            cache_manager.save_dtos(results)
 
     def __check_route_params(self, url, results: List[InjectionFoundDTO]):
         payloads_urls = set()

@@ -43,7 +43,7 @@ class SstiManager:
             thread_man.run_all(self.__check_get_params, list(dtos_with_params.values()),
                                debug_msg=f'SstiManager/Get/Param ({self._domain})')
 
-            cache_manager.save_result(self._result, has_final_result=True)
+            cache_manager.save_dtos(self._result)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SstiManager GET found {len(self._result)} items')
 
@@ -77,7 +77,7 @@ class SstiManager:
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_form_request, form_dtos, debug_msg=f'SstiManager/Form ({self._domain})')
 
-            cache_manager.save_result(self._result, has_final_result=True)
+            cache_manager.save_dtos(self._result)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SstiManager FORM SSTI: {len(self._result)}')
 

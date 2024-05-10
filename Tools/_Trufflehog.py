@@ -35,7 +35,7 @@ class Trufflehog:
                     os.remove(output_file)
 
                 duration = datetime.now() - then
-                self._cache_manager.save_result([f'Trufflehog finished in {duration.total_seconds()} seconds'])
+                self._cache_manager.cache_result([f'Trufflehog finished in {duration.total_seconds()} seconds'])
 
             finally:
                 if my_timer.is_alive():

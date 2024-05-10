@@ -97,6 +97,6 @@ class Gobuster:
 
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: Gobuster {url} finished.')
                 duration = datetime.now() - then
-                self._cache_manager.save_result([f'Gobuster finished in {duration.total_seconds()} seconds'])
+                self._cache_manager.cache_result([f'Gobuster finished in {duration.total_seconds()} seconds'])
             except Exception as inst:
-                self._cache_manager.save_result([f'Gobuster finished with ERRORS in ({inst})'])
+                self._cache_manager.cache_result([f'Gobuster finished with ERRORS in ({inst})'])

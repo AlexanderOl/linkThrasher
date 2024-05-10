@@ -66,7 +66,7 @@ class SqliManager:
             thread_man.run_all(self.__check_get_params, list(dtos_with_params.values()),
                                debug_msg=f'SqliManager/Get/Params ({self._domain})')
 
-            cache_manager.save_result(self._result, has_final_result=True)
+            cache_manager.save_dtos(self._result)
 
         print(
             f'[{datetime.now().strftime("%H:%M:%S")}]: '
@@ -83,7 +83,7 @@ class SqliManager:
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_form, form_dtos, debug_msg=f'SqliManager/Form ({self._domain})')
 
-            cache_manager.save_result(self._result, has_final_result=True)
+            cache_manager.save_dtos(self._result)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found FORM SQLi: {len(self._result)}')
 

@@ -130,7 +130,7 @@ class FastUrlManager:
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_url, filtered_urls, debug_msg='check_url')
 
-            cache_manager.save_result({head_key: self._head_dtos, form_key: self._form_dtos},
+            cache_manager.cache_result({head_key: self._head_dtos, form_key: self._form_dtos},
                                       cleanup_prev_results=True)
         else:
             out_of_scope = set([x for x in self._out_of_scope_urls.split(';') if x])

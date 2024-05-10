@@ -45,4 +45,4 @@ class Httracker:
 
             shutil.rmtree(domain_dir, ignore_errors=True)
 
-            self._cache_manager.save_result([f'{self._tool_name} finished'])
+            self._cache_manager.cache_result([f'{self._tool_name} finished'])

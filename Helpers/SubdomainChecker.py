@@ -51,7 +51,7 @@ class SubdomainChecker:
                         len(list(filter(lambda dto: dto.status_code == curr_status_code, filtered_dtos))) < 10:
                     filtered_dtos.append(item)
 
-            cache_manager.save_result(filtered_dtos)
+            cache_manager.cache_result(filtered_dtos)
             return filtered_dtos
         else:
             filtered_subdomains = [dto for dto in checked_subdomains if all(oos not in dto.url for oos in out_of_scope)]
