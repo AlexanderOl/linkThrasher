@@ -39,7 +39,7 @@ class Dirb:
 
                 filtered_output = list(filter(lambda line: 'CODE:2' in line or 'DIRECTORY:' in line, report_lines))
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: Dirb {url} finished. Found {len(filtered_output)}')
-                self._cache_manager.cache_result(filtered_output)
+                self._cache_manager.save_result(filtered_output)
 
             finally:
                 if my_timer.is_alive():

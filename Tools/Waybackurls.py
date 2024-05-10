@@ -42,7 +42,7 @@ class Waybackurls:
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) out of scope waybackurls')
                 return []
             result = self.__get_urls()
-            cache_manager.cache_result(result)
+            cache_manager.save_result(result)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} found {len(result)} items')
         return result

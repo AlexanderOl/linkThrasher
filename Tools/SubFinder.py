@@ -20,7 +20,7 @@ class SubFinder:
             for line in bash_outputs:
                 if self.__domain in line:
                     subdomains.add(line.replace('\n', ''))
-            cache_manager.cache_result(subdomains)
+            cache_manager.save_result(subdomains)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self.__domain}) {self.__tool_name} found {len(subdomains)} items')
         return subdomains

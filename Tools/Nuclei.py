@@ -86,8 +86,8 @@ class Nuclei:
 
         if os.path.exists(self._main_txt_fuzzing_filepath):
             main_txt_file = open(self._main_txt_fuzzing_filepath, 'r')
-            report_lines: List[str] = main_txt_file.readlines()
-            self._cache_manager.save_lines(report_lines)
+            report_lines = main_txt_file.readlines()
+            self._cache_manager.save_result(report_lines, has_final_result=True)
             os.remove(self._main_txt_fuzzing_filepath)
 
         if os.path.exists(filepath):
@@ -114,7 +114,7 @@ class Nuclei:
 
             self.__cleanup(len(batches))
 
-            self._cache_manager.save_lines(report_lines)
+            self._cache_manager.save_result(report_lines, has_final_result=True)
 
     def __divide_chunks(self, items):
         items_to_split = list(items)
@@ -162,7 +162,7 @@ class Nuclei:
                         result.add(encoded_line)
                 print(line)
 
-            self._cache_manager.save_lines(report_lines)
+            self._cache_manager.save_result(result, has_final_result=True)
 
     def __check_batch(self, dtos_batch: List[HeadRequestDTO], counter):
 

@@ -41,7 +41,7 @@ class Nmap:
             thread_man.run_all(self.__check_url_with_port, url_with_ports,
                                debug_msg=f'{self._tool_name} ({self._domain})')
 
-            self._cache_manager.cache_result(self._port_head_dtos)
+            self._cache_manager.save_result(self._port_head_dtos)
 
             end = time.time()
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: Nmap finished in {(end - start) / 60} minutes. '

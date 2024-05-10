@@ -51,10 +51,10 @@ class Spider:
         if head_found is None or form_found is None:
             current_depth = 0
             self.__recursive_search(start_url, current_depth)
-            head_cache_manager.cache_result(self._head_dtos)
-            form_cache_manager.cache_result(self._form_dtos)
+            head_cache_manager.save_result(self._head_dtos)
+            form_cache_manager.save_result(self._form_dtos)
             file_cache_manager = CacheHelper('Spider/File', self._current_domain)
-            file_cache_manager.cache_result(self._file_get_DTOs)
+            file_cache_manager.save_result(self._file_get_DTOs)
         else:
             self._head_dtos = head_found
             self._form_dtos = form_found

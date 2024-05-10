@@ -48,7 +48,7 @@ class MassDns:
                             subdomains.add(subdomain)
 
             os.remove(massdns_result_file)
-            cache_manager.cache_result(subdomains)
+            cache_manager.save_result(subdomains)
 
         if len(subdomains) > 1000000:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) '

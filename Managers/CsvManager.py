@@ -85,7 +85,7 @@ class CsvManager:
         thread_man.run_all(self.__ping_url, urls)
         thread_man.run_all(self.__ping_ip, ips)
 
-        cache_man.cache_result({'urls': self._urls, 'domains': self._domains, 'ips': self._ips})
+        cache_man.save_result({'urls': self._urls, 'domains': self._domains, 'ips': self._ips})
 
     def __ping_domain(self, domain):
         url = f'http://{domain}'
