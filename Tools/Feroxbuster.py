@@ -49,7 +49,7 @@ class Feroxbuster:
             thread_man.run_all(self.__check_url, ready_urls, debug_msg=f'{self._tool_name} ({self._domain})')
 
             self._head_dtos.extend(already_exist_head_dtos)
-            self._cache_manager.save_result({'head_dtos': self._head_dtos, 'form_dtos': self._form_dtos})
+            self._cache_manager.cache_result({'head_dtos': self._head_dtos, 'form_dtos': self._form_dtos})
 
         else:
             self._head_dtos = dtos['head_dtos']

@@ -76,7 +76,7 @@ class UrlListManager:
             thread_man = ThreadManager()
             thread_man.run_all(self.__send_request, filtered_urls, debug_msg=self._tool_name)
 
-            cache_manager.save_result(self._result)
+            cache_manager.cache_result(self._result)
             head_dtos = self._result
         else:
             out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]

@@ -2,8 +2,10 @@ import os
 import pickle
 import shutil
 from datetime import datetime
+from typing import List
 
 from Helpers.Slack import Slack
+from Models import InjectionFoundDTO
 
 
 class CacheHelper:
@@ -27,9 +29,36 @@ class CacheHelper:
             if os.path.exists(self._result_filepath):
                 os.remove(self._result_filepath)
 
-    def save_result(self, result, has_final_result=False, cleanup_prev_results=False):
-        if cleanup_prev_results:
-            shutil.rmtree(self._tool_result_dir, ignore_errors=True)
+    def save_dtos(self, result: List[InjectionFoundDTO]):
+
+        self.cache_result(result)
+
+        if len(result) > 0:
+            slack = Slack()
+            checked_msgs = set()
+            for item in result:
+                if item.details_msg in checked_msgs:
+                    slack.send_msg(str(item))
+                    checked_msgs.add(item.details_msg)
+
+            file = open('Results/Final.txt', 'a')
+            res = f'[{datetime.now().strftime("%H:%M:%S")}]: {self._result_filepath} found {len(result)} \n'
+            file.write(res)
+
+    def save_lines(self, result: List[str]):
+
+        self.cache_result(result)
+
+        if len(result) > 0:
+            slack = Slack()
+            for item in result:
+                slack.send_msg(str(item))
+
+            file = open('Results/Final.txt', 'a')
+            res = f'[{datetime.now().strftime("%H:%M:%S")}]: {self._result_filepath} found {len(result)} \n'
+            file.write(res)
+
+    def cache_result(self, result):
 
         if not os.path.exists(self._tool_result_dir):
             os.makedirs(self._tool_result_dir)
@@ -40,14 +69,7 @@ class CacheHelper:
 
         if len(result) > 0:
             txt_file = open(self._txt_result_filepath, 'a')
-            slack = Slack()
             for item in result:
-                if has_final_result:
-                    slack.send_msg(str(item))
                 txt_file.write(f"{item}\n")
             txt_file.close()
 
-            if has_final_result:
-                file = open('Results/Final.txt', 'a')
-                res = f'[{datetime.now().strftime("%H:%M:%S")}]: {self._result_filepath} found {len(result)} \n'
-                file.write(res)

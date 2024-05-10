@@ -41,7 +41,7 @@ class XssManager:
             thread_man.run_all(self.__check_params, list(dtos_with_params.values()),
                                debug_msg=f'XssManager/Get/Param ({self._domain})')
 
-            cache_manager.save_result(self._result, has_final_result=True)
+            cache_manager.save_dtos(self._result)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found GET XSS: {len(self._result)}')
 
@@ -56,7 +56,7 @@ class XssManager:
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_form, form_dtos, debug_msg=f'XssManager/Form ({self._domain})')
 
-            cache_manager.save_result(self._result, has_final_result=True)
+            cache_manager.save_dtos(self._result)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found FORM XSS: {len(self._result)}')
 

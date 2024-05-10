@@ -39,7 +39,7 @@ class Knock:
 
             shutil.rmtree(res_dir, ignore_errors=True)
 
-            cache_manager.save_result(subdomains)
+            cache_manager.cache_result(subdomains)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} found {len(subdomains)} items')
         return subdomains

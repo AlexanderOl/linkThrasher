@@ -34,7 +34,7 @@ class Hakrawler:
         result = cache_manager.get_saved_result()
         if result is None:
             result = self.__get_urls(start_url)
-            cache_manager.save_result(result)
+            cache_manager.cache_result(result)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} found {len(result)} items')
         return result
