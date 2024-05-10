@@ -58,7 +58,9 @@ class CacheHelper:
             res = f'[{datetime.now().strftime("%H:%M:%S")}]: {self._result_filepath} found {len(result)} \n'
             file.write(res)
 
-    def cache_result(self, result):
+    def cache_result(self, result, cleanup_prev_results=False):
+        if cleanup_prev_results:
+            shutil.rmtree(self._tool_result_dir, ignore_errors=True)
 
         if not os.path.exists(self._tool_result_dir):
             os.makedirs(self._tool_result_dir)
