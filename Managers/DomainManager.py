@@ -42,32 +42,32 @@ class DomainManager:
         out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
         start_urls_dtos = [dto for dto in start_urls_dtos if all(oos not in dto.url for oos in out_of_scope)]
 
-        mysql_repo = MysqlRepository()
-        db_urls = mysql_repo.get_tracked_urls(ip)
-        filtered_urls = list([dto for dto in start_urls_dtos if all(db_sub != dto.url for db_sub in db_urls)])
+        # mysql_repo = MysqlRepository()
+        # db_urls = mysql_repo.get_tracked_urls(ip)
+        # filtered_urls = list([dto for dto in start_urls_dtos if all(db_sub != dto.url for db_sub in db_urls)])
 
-        if len(filtered_urls) == 0:
+        if len(start_urls_dtos) == 0:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({ip}) No live urls found at ip')
             return
         else:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({ip}) Found {len(start_urls_dtos)} start urls at ip')
 
         nmap = Nmap(ip, self._headers)
-        nmap_get_dtos = nmap.check_ports(filtered_urls)
-        filtered_urls += nmap_get_dtos
+        nmap_get_dtos = nmap.check_ports(start_urls_dtos)
+        start_urls_dtos += nmap_get_dtos
 
         eyewitness = EyeWitness(ip, self._headers)
-        eyewitness.visit_dtos(filtered_urls)
+        eyewitness.visit_dtos(start_urls_dtos)
 
         nuclei = Nuclei(ip, self._headers)
-        nuclei.check_multiple_uls(filtered_urls)
+        nuclei.check_multiple_uls(start_urls_dtos)
 
         single_url_man = SingleUrlManager(self._headers)
         thread_man = ThreadManager()
-        thread_man.run_all(single_url_man.do_run, filtered_urls, f' ({ip})')
+        thread_man.run_all(single_url_man.do_run, start_urls_dtos, f' ({ip})')
 
-        db_urls.update(set([dto.url for dto in filtered_urls]))
-        mysql_repo.save_tracker_urls_result(ip, db_urls)
+        # db_urls.update(set([dto.url for dto in filtered_urls]))
+        # mysql_repo.save_tracker_urls_result(ip, db_urls)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: DomainFlowManager done with ip ({ip})')
 
@@ -163,27 +163,27 @@ class DomainManager:
             nmap_get_dtos = nmap.check_ports(start_urls_dtos)
             start_urls_dtos += nmap_get_dtos
 
-            req_checker = RequestChecker()
-            db_urls = mysql_repo.get_tracked_urls(domain)
-            filtered_urls = list(
-                [dto for dto in start_urls_dtos
-                 if all(req_checker.get_url_key(db_url) != req_checker.get_url_key(dto.url) for db_url in db_urls)])
+            # req_checker = RequestChecker()
+            # db_urls = mysql_repo.get_tracked_urls(domain)
+            # filtered_urls = list(
+            #     [dto for dto in start_urls_dtos
+            #      if all(req_checker.get_url_key(db_url) != req_checker.get_url_key(dto.url) for db_url in db_urls)])
 
-            if len(filtered_urls) == 0:
+            if len(start_urls_dtos) == 0:
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) No live urls found')
             else:
                 eyewitness = EyeWitness(domain, self._headers)
-                eyewitness.visit_dtos(filtered_urls)
+                eyewitness.visit_dtos(start_urls_dtos)
 
                 nuclei = Nuclei(domain, self._headers)
-                nuclei.check_multiple_uls(filtered_urls)
+                nuclei.check_multiple_uls(start_urls_dtos)
 
                 single_url_man = SingleUrlManager(self._headers)
                 thread_man = ThreadManager()
-                thread_man.run_all(single_url_man.do_run, filtered_urls)
+                thread_man.run_all(single_url_man.do_run, start_urls_dtos)
 
-                db_urls.update(set([dto.url for dto in filtered_urls]))
-                mysql_repo.save_tracker_urls_result(domain, db_urls)
+                # db_urls.update(set([dto.url for dto in filtered_urls]))
+                # mysql_repo.save_tracker_urls_result(domain, db_urls)
 
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: DomainFlowManager done with ({domain})')
 

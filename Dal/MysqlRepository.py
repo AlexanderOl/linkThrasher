@@ -14,10 +14,10 @@ class MysqlRepository:
         self.__init_connection()
 
         self._cursor.execute("CREATE TABLE IF NOT EXISTS TrackDomains "
-                             "(id INT AUTO_INCREMENT PRIMARY KEY, domain VARCHAR(255), found_domains TEXT)")
+                             "(id INT AUTO_INCREMENT PRIMARY KEY, domain VARCHAR(255), found_domains MEDIUMTEXT)")
 
-        self._cursor.execute("CREATE TABLE IF NOT EXISTS TrackUrls "
-                             "(id INT AUTO_INCREMENT PRIMARY KEY, domain VARCHAR(255), found_urls TEXT)")
+        # self._cursor.execute("CREATE TABLE IF NOT EXISTS TrackUrls "
+        #                      "(id INT AUTO_INCREMENT PRIMARY KEY, domain VARCHAR(255), found_urls MEDIUMTEXT)")
         self._cnx.commit()
         self.__close_connection()
 
@@ -40,24 +40,24 @@ class MysqlRepository:
 
         return found_domains
 
-    def get_tracked_urls(self, domain) -> set:
-        self.__init_connection()
-
-        self._cursor.execute(f"SELECT found_urls FROM TrackUrls WHERE domain = '{domain}'")
-
-        found_urls = set()
-        for row in self._cursor.fetchall():
-            found_urls.update(set(str(row)
-                                  .replace("(", "")
-                                  .replace(",)", "")
-                                  .replace("\"", "")
-                                  .replace("\'", "")
-                                  .split(';')))
-
-        self._cnx.commit()
-        self.__close_connection()
-
-        return found_urls
+    # def get_tracked_urls(self, domain) -> set:
+    #     self.__init_connection()
+    #
+    #     self._cursor.execute(f"SELECT found_urls FROM TrackUrls WHERE domain = '{domain}'")
+    #
+    #     found_urls = set()
+    #     for row in self._cursor.fetchall():
+    #         found_urls.update(set(str(row)
+    #                               .replace("(", "")
+    #                               .replace(",)", "")
+    #                               .replace("\"", "")
+    #                               .replace("\'", "")
+    #                               .split(';')))
+    #
+    #     self._cnx.commit()
+    #     self.__close_connection()
+    #
+    #     return found_urls
 
     def save_tracker_domains_result(self, domain: str, new_domains: set):
         found_domains = ";".join(new_domains)
