@@ -86,7 +86,7 @@ class DomainManager:
                     for line in infile:
                         if can_add_targets:
                             target_domains.append(line.strip())
-                        if len(target_domains) > self._domain_batch_size:
+                        if len(target_domains) > self._domain_batch_size - 1:
                             break
                         if last_domain == line.strip():
                             can_add_targets = True
