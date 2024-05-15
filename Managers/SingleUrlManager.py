@@ -119,7 +119,7 @@ class SingleUrlManager:
         s500.save_server_errors(errors)
 
         if self._check_mode == 'UL':
-            with open("Targets/urls.txt", "r") as f:
+            with open("Targets/urls.txt", "r", encoding='utf-8', errors='ignore') as f:
                 lines = f.readlines()
             with open("Targets/urls.txt", "w") as f:
                 for line in lines:

@@ -29,7 +29,7 @@ class CookieHelper:
 
         if found_cookie_file:
             cookies = {}
-            with open(found_cookie_file, 'r') as fp:
+            with open(found_cookie_file, 'r', encoding='utf-8', errors='ignore') as fp:
                 for line in fp:
                     if not re.match(r'^\#', line):
                         line_fields = line.strip().split('\t')

@@ -1,15 +1,15 @@
 import os
-import validators
 from datetime import datetime
+
+import validators
 from urllib3 import exceptions, disable_warnings
 
-from Common.RequestChecker import RequestChecker
 from Common.RequestHandler import RequestHandler
 from Common.ThreadBucket import ThreadBucket
-from Dal.MysqlRepository import MysqlRepository
-from Managers.SingleUrlManager import SingleUrlManager
-from Helpers.SubdomainChecker import SubdomainChecker
 from Common.ThreadManager import ThreadManager
+from Dal.MysqlRepository import MysqlRepository
+from Helpers.SubdomainChecker import SubdomainChecker
+from Managers.SingleUrlManager import SingleUrlManager
 from Tools.Amass import Amass
 from Tools.Dnsx import Dnsx
 from Tools.EyeWitness import EyeWitness
@@ -42,10 +42,6 @@ class DomainManager:
         out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
         start_urls_dtos = [dto for dto in start_urls_dtos if all(oos not in dto.url for oos in out_of_scope)]
 
-        # mysql_repo = MysqlRepository()
-        # db_urls = mysql_repo.get_tracked_urls(ip)
-        # filtered_urls = list([dto for dto in start_urls_dtos if all(db_sub != dto.url for db_sub in db_urls)])
-
         if len(start_urls_dtos) == 0:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({ip}) No live urls found at ip')
             return
@@ -65,9 +61,6 @@ class DomainManager:
         single_url_man = SingleUrlManager(self._headers)
         thread_man = ThreadManager()
         thread_man.run_all(single_url_man.do_run, start_urls_dtos, f' ({ip})')
-
-        # db_urls.update(set([dto.url for dto in filtered_urls]))
-        # mysql_repo.save_tracker_urls_result(ip, db_urls)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: DomainFlowManager done with ip ({ip})')
 

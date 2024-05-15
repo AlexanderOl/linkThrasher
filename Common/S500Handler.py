@@ -32,7 +32,7 @@ class S500Handler:
             txt_file.close()
             new_errors_count = len(checked_key_urls)
         else:
-            json_file = open(self._res_500_error_key_path, 'r')
+            json_file = open(self._res_500_error_key_path, 'r', encoding='utf-8', errors='ignore')
             stored_keys = json_file.readlines()
             json_file.close()
             filtered_keys = list([k_v for k_v in checked_key_urls if not f'{k_v}\n' in stored_keys])

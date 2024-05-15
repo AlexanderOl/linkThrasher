@@ -71,7 +71,7 @@ class Gobuster:
                 if os.path.exists(output_file) and os.path.getsize(output_file) == 0:
                     os.remove(output_file)
 
-                main_txt_file = open(output_file, 'r')
+                main_txt_file = open(output_file, 'r', encoding='utf-8', errors='ignore')
                 report_lines = main_txt_file.readlines()
                 result_lines = []
                 unique_keys = {}

@@ -21,7 +21,7 @@ class CacheHelper:
             if not os.path.exists(self._tool_result_dir):
                 os.makedirs(self._tool_result_dir)
             if os.path.exists(self._result_filepath) and os.path.getsize(self._result_filepath) > 0:
-                file = open(self._result_filepath, 'rb')
+                file = open(self._result_filepath, 'rb', encoding='utf-8', errors='ignore')
                 data = pickle.load(file)
                 file.close()
                 return data

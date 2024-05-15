@@ -28,7 +28,7 @@ class Dirb:
                 proc.wait()
                 proc.stderr.read()
 
-                main_txt_file = open(output_file, 'r')
+                main_txt_file = open(output_file, 'r', encoding='utf-8', errors='ignore')
                 report_lines = main_txt_file.readlines()
                 os.remove(output_file)
 

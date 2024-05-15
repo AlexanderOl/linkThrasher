@@ -60,7 +60,7 @@ class BbManager:
         domains = set()
         wildcards = set()
         urls = set()
-        text_file = open(self._res_file, 'r')
+        text_file = open(self._res_file, 'r', encoding='utf-8', errors='ignore')
         lines = text_file.readlines()
 
         for line in lines:

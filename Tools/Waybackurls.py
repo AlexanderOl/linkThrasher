@@ -55,7 +55,7 @@ class Waybackurls:
         stream.read()
 
         href_urls = set()
-        text_file = open(res_file, 'r')
+        text_file = open(res_file, 'r', encoding='utf-8', errors='ignore')
         lines = text_file.readlines()
         for line in lines:
             netloc = urlparse(line).netloc
