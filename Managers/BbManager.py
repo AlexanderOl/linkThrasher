@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from urllib.parse import urlparse
 
 
@@ -36,22 +37,27 @@ class BbManager:
                    f"grep -e ' URL' -e ' WILDCARD' >> {self._res_file}")
         stream = os.popen(command)
         stream.read()
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: H1 done')
 
         command = f"bbscope bc -t {self._bc_session_id} -b -o tcu | grep -e ' website' -e ' api' >> {self._res_file}"
         stream = os.popen(command)
         stream.read()
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Bc done')
 
         command = f"bbscope it -t {self._it_id} -b -o tcu | grep -e ' Url' >> {self._res_file}"
         stream = os.popen(command)
         stream.read()
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Intigrity done')
 
         command = f"bbscope ywh -t {self._ywh_id} -b -o tcu | grep -e ' web-application' -e ' api' >> {self._res_file}"
         stream = os.popen(command)
         stream.read()
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Ywh done')
 
         command = f"bbscope immunefi -b -o tcu | grep 'websites_and_applications' >> {self._res_file}"
         stream = os.popen(command)
         stream.read()
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Immunefi done')
 
         self._parse_cmd()
 
