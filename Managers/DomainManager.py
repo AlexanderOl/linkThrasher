@@ -66,6 +66,12 @@ class DomainManager:
 
     def check_multiple_domains(self):
 
+        if self._domain_batch_size == 0:
+            with open(self._targets_domains_file) as infile:
+                for domain in infile:
+                    self.__check_batch_domains(domain)
+            infile.close()
+            return
         while True:
             last_domain = self.__process_targets()
             if not last_domain:
