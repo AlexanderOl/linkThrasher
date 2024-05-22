@@ -69,7 +69,7 @@ class DomainManager:
         if self._domain_batch_size == 0:
             with open(self._targets_domains_file) as infile:
                 for domain in infile:
-                    self.__check_batch_domains(domain)
+                    self.__check_batch_domains(domain.strip())
             infile.close()
             return
         while True:
