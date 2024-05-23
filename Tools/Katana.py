@@ -26,6 +26,7 @@ class Katana:
         self._get_dtos: List[GetRequestDTO] = []
         self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'
         self._checked_hrefs = set()
+        self._max_depth = int(os.environ.get('max_depth'))
 
     def get_requests_dtos(self, start_url) -> List[HeadRequestDTO]:
         cache_manager = CacheHelper(self._tool_name, self._domain)
@@ -45,7 +46,7 @@ class Katana:
 
         res_file = f'{self._tool_result_dir}/{self._domain.replace(":", "_")}.txt'
 
-        command = f"echo '{start_url}' | katana -d 3 -o {res_file} -jc -mrs 10000000 -kf all {cookie_param}"
+        command = f"echo '{start_url}' | katana -t 3 -d {self._max_depth} -o {res_file} -jc -mrs 10000000 -kf all {cookie_param}"
         stream = os.popen(command)
         stream.read()
 
