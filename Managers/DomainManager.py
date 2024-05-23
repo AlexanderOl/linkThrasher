@@ -27,6 +27,7 @@ class DomainManager:
         self._check_mode = os.environ.get('check_mode')
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
         self._domain_batch_size = int(os.environ.get("domain_batch_size"))
+        self._severity = int(os.environ.get("severity"))
         self._targets_domains_file = 'Targets/domains.txt'
         self._targets_domains_part_file = 'Targets/domains_part.txt'
         self._tool_name = self.__class__.__name__
@@ -127,7 +128,7 @@ class DomainManager:
         subfinder_subdomains = subfinder.get_subdomains()
 
         massdns_subdomains = set()
-        if self._check_mode != 'DL':
+        if self._check_mode != 'DL' and self._severity == 1:
             massdns = MassDns(domain)
             massdns_subdomains = massdns.get_subdomains()
 
