@@ -29,6 +29,9 @@ class Amass:
                     if self._domain in item:
                         subdomains.add(item)
 
+            if len(subdomains) == 0:
+                subdomains.add(self._domain)
+
             cache_manager.cache_result(subdomains)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} found {len(subdomains)} items')

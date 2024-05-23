@@ -37,8 +37,6 @@ class ProcessHandler:
                 lines = timeErr.stdout.decode().strip().split('\n')
                 result = list([self._ansi_escape.sub('', line) for line in lines])
                 return result
-            else:
-                return ['timeout']
 
         except Exception as inst:
             print(f'ProcessHandler exception: {inst}')
