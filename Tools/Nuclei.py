@@ -36,7 +36,7 @@ class Nuclei:
             return
 
         report_lines = self._cache_manager.get_saved_result()
-        if report_lines:
+        if isinstance(report_lines, set):
             return
 
         get_result = set()
@@ -123,7 +123,7 @@ class Nuclei:
 
     def check_single_url(self, url):
         report_lines = self._cache_manager.get_saved_result()
-        if not report_lines and not isinstance(report_lines, list):
+        if not report_lines and not isinstance(report_lines, set):
 
             agent = self._headers['User-Agent']
             header_args = f'-H "User-Agent:{agent})"'

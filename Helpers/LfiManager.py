@@ -73,8 +73,11 @@ class LfiManager:
 
         if not result and not isinstance(result, List):
             result: List[InjectionFoundDTO] = []
+            counter = 0
             for item in form_results:
+                print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) LFI FORM counter ({counter} / {len(form_results)})')
                 self.__send_lfi_form_request(item, result)
+                counter += 1
 
             cache_manager.save_dtos(result)
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found Form LFI: {len(result)}')
