@@ -97,9 +97,9 @@ class Nmap:
 
     def __check_url_with_port(self, url):
         ssl_action_args = [url, False]
-        response = self._request_handler.handle_request(url,
-                                                        except_ssl_action=self.__except_ssl_action,
-                                                        except_ssl_action_args=ssl_action_args)
+        response = self._request_handler.send_head_request(url,
+                                                           except_ssl_action=self.__except_ssl_action,
+                                                           except_ssl_action_args=ssl_action_args)
         if response is not None:
             if str(response.status_code).startswith('3') and 'Location' in response.headers:
                 redirect = response.headers['Location']
@@ -109,7 +109,8 @@ class Nmap:
                     redirect_url = redirect
                 response = self._request_handler.handle_request(redirect_url,
                                                                 except_ssl_action=self.__except_ssl_action,
-                                                                except_ssl_action_args=ssl_action_args)
+                                                                except_ssl_action_args=ssl_action_args,
+                                                                timeout=3)
 
             if 'Server' in response.headers and response.headers['Server'] == 'cloudflare':
                 return

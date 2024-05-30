@@ -18,7 +18,7 @@ class XssManager:
         self._result = None
         self._domain = domain
         self._expected = ['<poc>', '""poc\'\'']
-        self._injections_to_check = ['<poc>', '""poc\'\'']
+        self._injections_to_check = ['<poc>', '""poc\'\'', '%22%22poc%27%27']
         self._false_positives = ['malformed request syntax', 'eval|internal|range|reference|syntax|type']
         self._request_handler = RequestHandler(cookies, headers)
         self._request_checker = RequestChecker()
