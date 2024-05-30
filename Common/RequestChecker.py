@@ -32,6 +32,14 @@ class RequestChecker:
                 new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
                 route_url_payloads.append(new_url)
 
+            if index == len(route_parts) - 1:
+                for injection in injections:
+                    payload_part = f'{part}?{injection}'
+                    new_route_parts = deepcopy(route_parts)
+                    new_route_parts[index] = payload_part
+                    new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}{parsed.query}'
+                    route_url_payloads.append(new_url)
+
         return route_url_payloads
 
     def is_route_checked(self, url, url_part) -> bool:
