@@ -65,7 +65,7 @@ class SubdomainChecker:
             else:
                 return
         except Exception as inst:
-            print(f'Domain ({subdomain} - __check_subdomain) - Exception: {inst}')
+            print(f'Domain ({subdomain} - check_subdomain) - Exception: {inst}')
 
         url = f'https://{subdomain}'
         response = self._request_handler.send_head_request(url=url,
@@ -110,7 +110,10 @@ class SubdomainChecker:
                                                             except_ssl_action=self.__except_ssl_action,
                                                             except_ssl_action_args=[base_url],
                                                             timeout=5)
-        if response2 is not None and all(urlparse(dto.url).netloc.replace('www.', '') !=
-                                         urlparse(redirect_url).netloc.replace('www.', '')
-                                         for dto in self._checked_subdomains):
+        if str(response2.status_code).startswith('3') and 'Location' in response2.headers:
+            redirect2 = response2.headers['Location']
+            self.__check_redirect_urls(base_url, redirect2)
+        elif response2 is not None and all(urlparse(dto.url).netloc.replace('www.', '') !=
+                                           urlparse(redirect_url).netloc.replace('www.', '')
+                                           for dto in self._checked_subdomains):
             self._checked_subdomains.append(HeadRequestDTO(response2))

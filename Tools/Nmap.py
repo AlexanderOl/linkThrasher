@@ -107,6 +107,7 @@ class Nmap:
                     redirect_url = f"{url}{redirect}"
                 else:
                     redirect_url = redirect
+
                 response = self._request_handler.handle_request(redirect_url,
                                                                 except_ssl_action=self.__except_ssl_action,
                                                                 except_ssl_action_args=ssl_action_args,
@@ -114,6 +115,11 @@ class Nmap:
 
             if 'Server' in response.headers and response.headers['Server'] == 'cloudflare':
                 return
+            if str(response.status_code).startswith('3') and 'Location' in response.headers:
+                redirect = response.headers['Location']
+                if redirect[0] != '/' and self._domain not in redirect:
+                    return
+
             resp_length = len(response.text)
             netloc = str(urlparse(url).netloc.split(':', 1)[0])
             if (not any(dto for dto in self._existing_get_dtos if netloc in dto.url)
