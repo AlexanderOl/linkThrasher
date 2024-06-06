@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
@@ -29,9 +30,11 @@ class Feroxbuster:
         self._request_handler = RequestHandler(cookies, headers)
         self._request_checker = RequestChecker()
         self._raw_cookies = raw_cookies
-        self._had_found_too_many_urls = False
+        self._url_ignore_ext_regex = re.compile(
+            '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
+            '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$',
+            re.IGNORECASE)
         self._valid_statuses = [200, 204, 301, 302, 307, 308, 401, 403, 405, 500]
-        self._default_timeout = 5
 
     def check_single_url(self, url,
                          already_exist_head_dtos: List[HeadRequestDTO],
@@ -58,20 +61,22 @@ class Feroxbuster:
         return self._head_dtos, self._form_dtos
 
     def __check_url(self, url):
-        timeout = self._default_timeout
-        if self._had_found_too_many_urls:
-            timeout = 3
+        if self._url_ignore_ext_regex.search(url):
+            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({url}) Feroxbuster ignored')
+            return
+
         check = self._request_handler.send_head_request(url)
         if check is None:
             return
-        response = self._request_handler.handle_request(url, timeout=timeout)
+
+        response = self._request_handler.handle_request(url, timeout=5)
         if response is None:
             return
 
-        if self._had_found_too_many_urls and (any(dto for dto in self._get_dtos if
-                                                  dto.status_code == response.status_code and
-                                                  dto.response_length == len(response.text)) or
-                                              'captcha' in response.text.lower()):
+        if (any(dto for dto in self._get_dtos
+                if dto.status_code == response.status_code
+                   and dto.response_length == len(response.text))
+                or 'captcha' in response.text.lower()):
             return
 
         if response.status_code not in self._valid_statuses:
@@ -176,8 +181,6 @@ class Feroxbuster:
             if key not in already_exist_keys and key not in checked_keys:
                 checked_keys.add(key)
                 ready_urls.add(url)
-
-        self._had_found_too_many_urls = len(ready_urls) > 1000
 
         return ready_urls
 

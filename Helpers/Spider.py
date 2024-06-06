@@ -195,6 +195,8 @@ class Spider:
                         html_urls.add(main_url + url_part)
                     elif url_part.startswith('./'):
                         html_urls.add(main_url + url_part[1:])
+                    elif url_part.startswith('#'):
+                        continue
                     elif url_part.startswith('http'):
                         html_urls.add(url_part)
                     elif url_part.startswith('..') or url_part.startswith('\t'):

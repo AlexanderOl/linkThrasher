@@ -163,12 +163,6 @@ class DomainManager:
             nmap_get_dtos = nmap.check_ports(start_urls_dtos)
             start_urls_dtos += nmap_get_dtos
 
-            # req_checker = RequestChecker()
-            # db_urls = mysql_repo.get_tracked_urls(domain)
-            # filtered_urls = list(
-            #     [dto for dto in start_urls_dtos
-            #      if all(req_checker.get_url_key(db_url) != req_checker.get_url_key(dto.url) for db_url in db_urls)])
-
             if len(start_urls_dtos) == 0:
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) No live urls found')
             else:
