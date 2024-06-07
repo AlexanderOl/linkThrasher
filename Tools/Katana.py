@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Helpers.CacheHelper import CacheHelper
+from Models.Constants import VALID_STATUSES, URL_IGNORE_EXT_REGEX
 from Models.GetRequestDTO import GetRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
 
@@ -15,13 +16,8 @@ class Katana:
     def __init__(self, domain, raw_cookies, headers, cookies):
         self._domain = domain
         self._raw_cookies = raw_cookies
-        self._social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "intercom", "atlassian"]
         self._tool_name = self.__class__.__name__
         self._request_handler = RequestHandler(cookies, headers)
-        self._url_ignore_ext_regex = re.compile(
-            '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
-            '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$',
-            re.IGNORECASE)
         self._result: List[HeadRequestDTO] = []
         self._get_dtos: List[GetRequestDTO] = []
         self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'
@@ -66,7 +62,7 @@ class Katana:
 
     def __check_href_urls(self, url: str):
         url_parts = urlparse(url)
-        if url_parts.path in self._checked_hrefs or self._url_ignore_ext_regex.search(url):
+        if url_parts.path in self._checked_hrefs or URL_IGNORE_EXT_REGEX.search(url):
             return
         else:
             self._checked_hrefs.add(url_parts.path)
@@ -82,7 +78,7 @@ class Katana:
                                            dto.status_code == response.status_code):
             return
 
-        if response.status_code < 400 or response.status_code == 500:
+        if response.status_code in VALID_STATUSES:
             self._get_dtos.append(GetRequestDTO(url, response))
             self._result.append(HeadRequestDTO(response))
 

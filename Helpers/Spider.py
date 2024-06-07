@@ -1,5 +1,4 @@
 import os
-import re
 from datetime import datetime
 from typing import List, Tuple
 from bs4 import BeautifulSoup
@@ -8,6 +7,7 @@ from urllib.parse import urlparse
 from Common.RequestChecker import RequestChecker
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
+from Models.Constants import SOCIAL_MEDIA, URL_IGNORE_EXT_REGEX
 from Models.GetRequestDTO import GetRequestDTO
 from Models.FormRequestDTO import FormRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
@@ -18,8 +18,6 @@ class Spider:
         self._current_domain = current_domain
         self._main_domain = main_domain
         self._max_depth = int(os.environ.get('max_depth'))
-        self._social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "intercom", "atlassian",
-                              "instagram", "github", "letgo", "yahoo"]
         self._checked_urls = set()
         self._checked_hrefs = set()
         self._urls_counter = 0
@@ -28,10 +26,6 @@ class Spider:
         self._get_dtos: List[GetRequestDTO] = []
         self._head_dtos: List[HeadRequestDTO] = []
         self._file_get_DTOs: List[GetRequestDTO] = []
-        self._url_ignore_ext_regex = re.compile(
-            '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
-            '|\.docx$|\.m4v$|\.pptx$|\.ppt$',
-            re.IGNORECASE)
         self._request_handler = RequestHandler(cookies, headers)
         self._request_checker = RequestChecker()
         self._allowed_content_types = [
@@ -136,11 +130,11 @@ class Spider:
             if '#' in href:
                 href = href[1:]
             if len(href) > 2 \
-                    and href not in self._social_media \
+                    and href not in SOCIAL_MEDIA \
                     and href not in self._checked_hrefs \
                     and target_url[len(target_url) - len(href):] != href \
                     and href not in target_url \
-                    and not self._url_ignore_ext_regex.search(href):
+                    and not URL_IGNORE_EXT_REGEX.search(href):
                 self._checked_hrefs.add(href)
                 result = True
 
@@ -150,7 +144,7 @@ class Spider:
 
         parsed = urlparse(url)
         if url in self._checked_urls \
-                or any(word in url for word in self._social_media) \
+                or any(word in url for word in SOCIAL_MEDIA) \
                 or self._current_domain not in parsed.netloc:
             return
 

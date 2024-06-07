@@ -1,5 +1,4 @@
 import os
-import re
 from urllib.parse import urlparse
 from datetime import datetime
 from typing import List
@@ -7,6 +6,7 @@ from typing import List
 from Common.ThreadManager import ThreadManager
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
+from Models.Constants import SOCIAL_MEDIA, URL_IGNORE_EXT_REGEX
 from Models.HeadRequestDTO import HeadRequestDTO
 from Tools.LinkFinder import LinkFinder
 from Models.GetRequestDTO import GetRequestDTO
@@ -18,13 +18,8 @@ class Hakrawler:
         self._raw_cookies = raw_cookies
         self._max_depth = os.environ.get('max_depth')
         self._threads = f'{os.environ.get("threads")}'
-        self._social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "intercom", "atlassian"]
         self._tool_name = self.__class__.__name__
         self._request_handler = RequestHandler(cookies, headers)
-        self._url_ignore_ext_regex = re.compile(
-            '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
-            '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$',
-            re.IGNORECASE)
         self._result: List[HeadRequestDTO] = []
         self._get_dtos: List[GetRequestDTO] = []
         self._checked_hrefs = set()
@@ -57,11 +52,11 @@ class Hakrawler:
                 output = output[:-1]
             if output.startswith('[href] '):
                 output = output.replace('[href] ', '')
-                if not any(word in output for word in self._social_media) and self._domain in output:
+                if not any(word in output for word in SOCIAL_MEDIA) and self._domain in output:
                     href_urls.add(output)
             elif output.startswith('[script] '):
                 output = output.replace('[script] ', '')
-                if not any(word in output for word in self._social_media) and self._domain in output:
+                if not any(word in output for word in SOCIAL_MEDIA) and self._domain in output:
                     script_urls.add(output)
 
         link_finder = LinkFinder(self._domain, start_url)
@@ -76,7 +71,7 @@ class Hakrawler:
     def __check_href_urls(self, url: str):
         try:
             url_parts = urlparse(url)
-            if url_parts.path in self._checked_hrefs or self._url_ignore_ext_regex.search(url):
+            if url_parts.path in self._checked_hrefs or URL_IGNORE_EXT_REGEX.search(url):
                 return
             else:
                 self._checked_hrefs.add(url_parts.path)

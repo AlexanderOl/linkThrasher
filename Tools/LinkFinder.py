@@ -1,7 +1,8 @@
 import os
 import pathlib
-import re
 from datetime import datetime
+
+from Models.Constants import URL_IGNORE_EXT_REGEX
 
 
 class LinkFinder:
@@ -12,9 +13,6 @@ class LinkFinder:
         self._start_url = start_url
         self._black_list = ["application/", "text/", "image/", "mm/dd/yyyy", "yyyy/mm/dd", "dd/m/yyyy", "mm/d/yyyy",
                             "request/", "dojo/", "audio/", "video/", "font/", "/x-icon"]
-        self._url_ignore_ext_regex = re.compile(
-            '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
-            '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$')
 
     def search_urls_in_js(self, script_urls: set) -> set:
 
@@ -40,7 +38,7 @@ class LinkFinder:
         for found in set([x.lower() for x in bash_outputs]):
             if 'linkfinder.py' in found:
                 break
-            if self._url_ignore_ext_regex.search(found) or 'mailto:' in found:
+            if URL_IGNORE_EXT_REGEX.search(found) or 'mailto:' in found:
                 continue
             if found.startswith('./'):
                 found = found[2:]
@@ -58,7 +56,6 @@ class LinkFinder:
                     result.add(f'{self._start_url}{found[1:]}')
                 else:
                     result.add(f'{self._start_url}/{found}')
-
 
         # shutil.rmtree(tool_directory, ignore_errors=True)
 

@@ -9,6 +9,7 @@ from Common.RequestChecker import RequestChecker
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Helpers.CacheHelper import CacheHelper
+from Models.Constants import URL_IGNORE_EXT_REGEX, VALID_STATUSES
 from Models.GetRequestDTO import GetRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
 
@@ -17,13 +18,8 @@ class Waybackurls:
     def __init__(self, domain, raw_cookies, headers, cookies):
         self._domain = domain
         self._raw_cookies = raw_cookies
-        self._social_media = ["facebook", "twitter", "linkedin", "youtube", "google", "intercom", "atlassian"]
         self._tool_name = self.__class__.__name__
         self._request_handler = RequestHandler(cookies, headers)
-        self._url_ignore_ext_regex = re.compile(
-            '\.jpg$|\.jpeg$|\.gif$|\.png$|\.js$|\.zip$|\.pdf$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
-            '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$|\.webp$',
-            re.IGNORECASE)
         self._result: List[HeadRequestDTO] = []
         self._get_dtos: List[GetRequestDTO] = []
         self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'
@@ -72,7 +68,7 @@ class Waybackurls:
 
     def __check_href_urls(self, url: str):
         url_parts = urlparse(url)
-        if url_parts.path in self._checked_hrefs or self._url_ignore_ext_regex.search(url):
+        if url_parts.path in self._checked_hrefs or URL_IGNORE_EXT_REGEX.search(url):
             return
         else:
             self._checked_hrefs.add(url_parts.path)
@@ -90,7 +86,7 @@ class Waybackurls:
                                            dto.status_code == response.status_code):
             return
 
-        if response.status_code < 400 or response.status_code == 500:
+        if response.status_code in VALID_STATUSES:
             self._get_dtos.append(GetRequestDTO(url, response))
             self._result.append(HeadRequestDTO(response))
 
@@ -100,7 +96,7 @@ class Waybackurls:
 
         for href_url in href_urls:
             parsed_parts = urlparse(href_url)
-            if self._url_ignore_ext_regex.search(parsed_parts.path):
+            if URL_IGNORE_EXT_REGEX.search(parsed_parts.path):
                 continue
 
             key = self._request_checker.get_url_key(href_url)
@@ -114,22 +110,3 @@ class Waybackurls:
             return urls_with_params
         else:
             return urls
-
-    def __is_date(self, string):
-        try:
-            datetime.strptime(string, '%Y-%m-%d')
-            return True
-        except ValueError:
-            return False
-
-    def __is_valid_hash(self, string):
-
-        if re.match(r'^[a-f0-9]{32}$', string):
-            return True
-        if re.match(r'^[a-f0-9]{16}$', string):
-            return True
-        try:
-            uuid_obj = uuid.UUID(string)
-            return str(uuid_obj) == string
-        except ValueError:
-            return False

@@ -15,6 +15,7 @@ class Gobuster:
         self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
         self._threads = f'{os.environ.get("threads")}'
         self._cache_manager = CacheHelper(self._tool_name, domain)
+        self._status_codes_to_avoid = ['400', '404', '429']
 
     def check_single_url(self, url):
         report_lines = self._cache_manager.get_saved_result()
@@ -32,7 +33,7 @@ class Gobuster:
 
                 output_file = f'{self._tool_result_dir}/{self._domain.replace(":","_")}.txt'
                 cmd_arr = ["gobuster", "dir",
-                           "-b", "400-429",
+                           "-b", "400,404,429",
                            "-u", base_url,
                            "-w", f"{self._app_wordlists_path}gobuster.txt",
                            "-H", f"User-Agent:{self._headers['User-Agent']}",
@@ -50,14 +51,15 @@ class Gobuster:
 
                         status_code = proc_msg.split(' => ', 1)[1].split(' (', 1)[0]
                         length_to_exclude = proc_msg.split('Length: ', 1)[1].split(')', 1)[0]
-                        if status_code.isdigit() and status_code != '200':
+                        if (status_code.isdigit() and status_code != '200'
+                                and status_code not in self._status_codes_to_avoid):
                             print(f'Gobuster status will be excluded: {status_code}')
                             cmd_arr.append('-b')
-                            cmd_arr.append(f'{status_code},404')
+                            cmd_arr.append(f'{status_code},{",".join(self._status_codes_to_avoid)}')
                         elif length_to_exclude.isdigit():
                             print(f'Gobuster length will be excluded: {length_to_exclude}')
                             cmd_arr.append('-b')
-                            cmd_arr.append('404')
+                            cmd_arr.append(','.join(self._status_codes_to_avoid))
                             cmd_arr.append('--exclude-length')
                             cmd_arr.append(length_to_exclude)
                         else:

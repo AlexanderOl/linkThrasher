@@ -45,7 +45,8 @@ class SstiManager:
 
             cache_manager.save_dtos(self._result)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SstiManager GET found {len(self._result)} items')
+        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) '
+              f'SstiManager GET found {len(self._result)} items')
 
     def __check_url(self, dto: HeadRequestDTO):
 

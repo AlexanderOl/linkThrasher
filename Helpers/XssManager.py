@@ -19,7 +19,6 @@ class XssManager:
         self._domain = domain
         self._expected = ['<poc>', '""poc\'\'']
         self._injections_to_check = ['<poc>', '""poc\'\'']
-        self._false_positives = ['malformed request syntax', 'eval|internal|range|reference|syntax|type']
         self._request_handler = RequestHandler(cookies, headers)
         self._request_checker = RequestChecker()
 
@@ -146,7 +145,7 @@ class XssManager:
         web_page = response.text
         need_to_discard_payload = False
         for keyword in self._injections_to_check:
-            if keyword in web_page and not any(word in web_page for word in self._false_positives):
+            if keyword in web_page:
 
                 if original_url is not None:
                     check_response = self._request_handler.handle_request(original_url)

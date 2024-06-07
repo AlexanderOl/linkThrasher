@@ -3,7 +3,6 @@ import pickle
 import shutil
 from datetime import datetime
 from typing import List
-
 from Helpers.Slack import Slack
 from Models import InjectionFoundDTO
 
