@@ -14,7 +14,7 @@ class MysqlRepository:
         self.__init_connection()
 
         self._cursor.execute("CREATE TABLE IF NOT EXISTS TrackDomains "
-                             "(id INT AUTO_INCREMENT PRIMARY KEY, domain VARCHAR(255), found_domains MEDIUMTEXT)")
+                             "(id INT AUTO_INCREMENT PRIMARY KEY, domain VARCHAR(255), found_domains LONGTEXT)")
 
         # self._cursor.execute("CREATE TABLE IF NOT EXISTS TrackUrls "
         #                      "(id INT AUTO_INCREMENT PRIMARY KEY, domain VARCHAR(255), found_urls MEDIUMTEXT)")

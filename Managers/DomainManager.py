@@ -1,9 +1,7 @@
 import os
-from datetime import datetime
-
 import validators
 from urllib3 import exceptions, disable_warnings
-
+from datetime import datetime
 from Common.RequestHandler import RequestHandler
 from Common.ThreadBucket import ThreadBucket
 from Common.ThreadManager import ThreadManager
@@ -11,7 +9,6 @@ from Dal.MysqlRepository import MysqlRepository
 from Helpers.SubdomainChecker import SubdomainChecker
 from Managers.SingleUrlManager import SingleUrlManager
 from Tools.Amass import Amass
-from Tools.Dnsx import Dnsx
 from Tools.EyeWitness import EyeWitness
 from Tools.Knock import Knock
 from Tools.MassDns import MassDns
@@ -137,8 +134,8 @@ class DomainManager:
             .union(subfinder_subdomains) \
             .union(massdns_subdomains)
 
-        dnsx = Dnsx(domain)
-        dnsx.get_dnsx_report(all_subdomains)
+        # dnsx = Dnsx(domain)
+        # dnsx.get_dnsx_report(all_subdomains)
 
         if domain not in all_subdomains:
             all_subdomains.add(domain)
