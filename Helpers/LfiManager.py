@@ -1,5 +1,6 @@
 import os
 import urllib.parse as urlparse
+from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime
 from typing import List
@@ -48,7 +49,6 @@ class LfiManager:
         self._expected = ['; for 16-bit app support', 'root:x:0:0:root:']
         self._tool_dir = f'Results/LfiManager'
         self._request_handler = RequestHandler(cookies, headers)
-        self._checked_path = set()
 
     def check_get_requests(self, dtos: List[HeadRequestDTO]):
 
@@ -60,9 +60,17 @@ class LfiManager:
 
         if not result and not isinstance(result, List):
             result: List[InjectionFoundDTO] = []
+            grouped_urls = defaultdict(list)
             for dto in dtos:
-                self.__check_path(dto.url, result)
-                self.__check_route_params(dto.url, result)
+                netloc = urlparse.urlparse(dto.url).netloc
+                grouped_urls[netloc].append(dto.url)
+
+            for url in grouped_urls:
+                self.__check_path(url, result)
+
+            for dto in dtos:
+                if '?' in dto.url:
+                    self.__check_route_params(dto.url, result)
 
             cache_manager.save_dtos(result)
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found GET LFI: {len(result)}')
@@ -85,10 +93,6 @@ class LfiManager:
     def __check_path(self, url: str, result: List[InjectionFoundDTO]):
         parsed = urlparse.urlparse(url)
         basic_url = f'{parsed.scheme}://{parsed.netloc}/'
-        if basic_url not in self._checked_path:
-            self._checked_path.add(basic_url)
-        else:
-            return
         payload_urls = set()
         for payload in self._lfi_path_payloads:
             payload_urls.add(f'{basic_url}{payload}')
