@@ -155,12 +155,15 @@ class SqliManager:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
 
-    def __get_route_payloads(self, url: str, injections: []) -> []:
+    def __get_route_payloads(self, url: str, injections: [], salt) -> []:
 
         parsed = urllib.parse.urlparse(url)
         route_parts = [r for r in parsed.path.split('/') if r.strip()]
         result = []
         for index, part in enumerate(route_parts):
+
+            if self._request_checker.is_route_checked(url, part, salt):
+                continue
 
             for payloads in injections:
                 payload_part = f'{part}{payloads["TruePld"]}'
@@ -184,9 +187,9 @@ class SqliManager:
 
     def __check_url(self, dto: HeadRequestDTO):
 
-        route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._error_based_payloads)
-        route_time_based_payloads = self.__get_route_payloads(dto.url, self._time_based_payloads)
-        route_bool_based_payloads = self.__get_route_payloads(dto.url, self._bool_based_payloads)
+        route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._error_based_payloads, 'SqliE')
+        route_time_based_payloads = self.__get_route_payloads(dto.url, self._time_based_payloads, 'SqliT')
+        route_bool_based_payloads = self.__get_route_payloads(dto.url, self._bool_based_payloads, 'SqliB')
 
         for url in route_url_payloads:
             self.__send_error_based_request(url, dto)
@@ -197,8 +200,8 @@ class SqliManager:
         for payloads in route_bool_based_payloads:
             self.__send_bool_based_request(payloads)
 
-    def __get_param_payloads(self, url: str, injections: [], salt) -> set[tuple[str, str, str]]:
-        payloads_urls = list()
+    def __get_param_payloads(self, url: str, injections: [], salt) -> []:
+        payloads_urls = []
         parsed = urlparse.urlparse(url)
         params_key_values = filter(None, parsed.query.split("&"))
 
@@ -228,9 +231,9 @@ class SqliManager:
     def __check_get_params(self, dto: HeadRequestDTO):
 
         error_based_payloads_urls = self._request_checker.get_param_payloads(
-            dto.url, self._error_based_payloads, 'sqliE')
-        time_based_payloads_urls = self.__get_param_payloads(dto.url, self._time_based_payloads, 'sqliT')
-        bool_based_payloads_urls = self.__get_param_payloads(dto.url, self._bool_based_payloads, 'sqliB')
+            dto.url, self._error_based_payloads, 'SqliE')
+        time_based_payloads_urls = self.__get_param_payloads(dto.url, self._time_based_payloads, 'SqliT')
+        bool_based_payloads_urls = self.__get_param_payloads(dto.url, self._bool_based_payloads, 'SqliB')
 
         for payload in error_based_payloads_urls:
             self.__send_error_based_request(payload, dto)

@@ -15,14 +15,14 @@ class RequestChecker:
         self._checked_get_params = set()
         self._checked_form_params = set()
 
-    def get_route_payloads(self, url: str, injections: []) -> List[str]:
+    def get_route_payloads(self, url: str, injections: [], salt='') -> List[str]:
         parsed = urlparse(url)
         route_parts = [r for r in parsed.path.split('/') if r.strip()]
         route_url_payloads = []
 
         for index, part in enumerate(route_parts):
 
-            if self.is_route_checked(url, part):
+            if self.is_route_checked(url, part, salt):
                 continue
 
             for injection in injections:
@@ -42,9 +42,9 @@ class RequestChecker:
 
         return route_url_payloads
 
-    def is_route_checked(self, url, url_part) -> bool:
+    def is_route_checked(self, url, url_part, salt='') -> bool:
         parsed = urlparse(url)
-        key = f'{parsed.netloc};{url_part}'
+        key = f'{parsed.netloc};{url_part}{salt}'
         if key not in self._checked_routes:
             self._checked_routes.add(key)
             return False
