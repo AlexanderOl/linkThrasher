@@ -159,11 +159,8 @@ class SqliManager:
 
         parsed = urllib.parse.urlparse(url)
         route_parts = [r for r in parsed.path.split('/') if r.strip()]
-        payloads = []
+        result = []
         for index, part in enumerate(route_parts):
-
-            if self._request_checker.is_route_checked(url, part):
-                continue
 
             for payloads in injections:
                 payload_part = f'{part}{payloads["TruePld"]}'
@@ -181,9 +178,9 @@ class SqliManager:
                 new_route_parts[index] = payload_part
                 true2_new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
 
-                payloads.append([true_new_url, false_new_url, true2_new_url])
+                result.append([true_new_url, false_new_url, true2_new_url])
 
-        return payloads
+        return result
 
     def __check_url(self, dto: HeadRequestDTO):
 
