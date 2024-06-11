@@ -155,7 +155,7 @@ class SqliManager:
                 print("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
 
-    def __get_route_payloads(self, url: str, injections: []) -> List[List[str]]:
+    def __get_route_payloads(self, url: str, injections: []) -> []:
 
         parsed = urllib.parse.urlparse(url)
         route_parts = [r for r in parsed.path.split('/') if r.strip()]
@@ -178,7 +178,7 @@ class SqliManager:
                 new_route_parts[index] = payload_part
                 true2_new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
 
-                result.append([true_new_url, false_new_url, true2_new_url])
+                result.append({'TruePld': true_new_url, 'FalsePld': false_new_url,'True2Pld': true2_new_url})
 
         return result
 
