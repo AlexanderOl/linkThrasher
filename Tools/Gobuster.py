@@ -80,7 +80,7 @@ class Gobuster:
                 for line in report_lines:
                     split = list(filter(None, line.split('(Status: ')))
                     if len(split) >= 2:
-                        key = f"{split[-1]}"
+                        key = f"{split[-1].split('-->')[0]}"
                         if key not in unique_keys:
                             unique_keys[key] = 0
                         if unique_keys[key] >= 5:
