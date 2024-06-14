@@ -36,7 +36,7 @@ class CacheHelper:
             slack = Slack()
             checked_msgs = set()
             for item in result:
-                if item.details_msg in checked_msgs:
+                if item.details_msg not in checked_msgs:
                     slack.send_msg(str(item))
                     checked_msgs.add(item.details_msg)
 

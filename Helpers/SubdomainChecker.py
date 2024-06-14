@@ -113,7 +113,8 @@ class SubdomainChecker:
         if str(response2.status_code).startswith('3') and 'Location' in response2.headers:
             redirect2 = response2.headers['Location']
             self.__check_redirect_urls(base_url, redirect2)
-        elif response2 is not None and all(urlparse(dto.url).netloc.replace('www.', '') !=
-                                           urlparse(redirect_url).netloc.replace('www.', '')
-                                           for dto in self._checked_subdomains):
+        elif (response2 is not None and self._domain in urlparse(response2.url).netloc and
+              all(urlparse(dto.url).netloc.replace('www.', '') !=
+                  urlparse(response2.url).netloc.replace('www.', '')
+                  for dto in self._checked_subdomains)):
             self._checked_subdomains.append(HeadRequestDTO(response2))
