@@ -99,7 +99,7 @@ class Nuclei:
             os.makedirs(self._tool_result_fuzzing_dir)
 
         report_lines = self._cache_manager.get_saved_result()
-        if not report_lines and not isinstance(report_lines, List):
+        if not report_lines and not isinstance(report_lines, set):
             report_lines = set()
             batches = CollectionUtil.divide_chunks(get_dtos, self._chunk_size)
             counter = len(batches)
