@@ -1,5 +1,5 @@
 import os
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 from datetime import datetime
 from typing import List
 
@@ -62,6 +62,18 @@ class Hakrawler:
         link_finder = LinkFinder(self._domain, start_url)
         get_urls_from_js = link_finder.search_urls_in_js(script_urls)
         href_urls.update(get_urls_from_js)
+
+        result_lines = set()
+        unique_keys = {}
+        for line in href_urls:
+            line_domain = urlparse(line)
+            key = f"{line_domain.path.rstrip('/').count('/')}{''.join(parse_qs(line_domain.query).keys())}"
+            if key not in unique_keys:
+                unique_keys[key] = 0
+            if unique_keys[key] >= 100:
+                continue
+            unique_keys[key] += 1
+            result_lines.add(line)
 
         tm = ThreadManager()
         tm.run_all(self.__check_href_urls, href_urls, debug_msg=f'{self._tool_name} ({self._domain})')
