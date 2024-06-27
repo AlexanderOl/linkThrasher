@@ -76,7 +76,7 @@ class Hakrawler:
             result_lines.add(line)
 
         tm = ThreadManager()
-        tm.run_all(self.__check_href_urls, href_urls, debug_msg=f'{self._tool_name} ({self._domain})')
+        tm.run_all(self.__check_href_urls, result_lines, debug_msg=f'{self._tool_name} ({self._domain})')
 
         return self._result
 
