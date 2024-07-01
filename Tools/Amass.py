@@ -26,8 +26,10 @@ class Amass:
 
                 split = encoded_line.split(' ')
                 for item in split:
-                    if self._domain in item:
+                    if item.endswith(self._domain):
                         subdomains.add(item)
+                    elif self._domain in item:
+                        print(f'{item} amass found not added')
 
             if len(subdomains) == 0:
                 subdomains.add(self._domain)

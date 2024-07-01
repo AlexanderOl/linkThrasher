@@ -33,8 +33,11 @@ class Knock:
                 f = open(file)
                 data = json.load(f)
                 for row in data:
-                    if self._domain in row:
+                    if row.endswith(self._domain):
                         subdomains.add(row)
+                    elif self._domain in row:
+                        print(f'{row} knock found not added')
+
                 f.close()
 
             shutil.rmtree(res_dir, ignore_errors=True)

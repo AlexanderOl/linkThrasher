@@ -110,7 +110,7 @@ class Nuclei:
 
             if os.path.exists(self._main_txt_filepath):
                 main_txt_file = open(self._main_txt_filepath, 'r', encoding='utf-8', errors='ignore')
-                report_lines = main_txt_file.readlines()
+                report_lines = set(main_txt_file.readlines())
 
             self.__cleanup(len(batches))
 
