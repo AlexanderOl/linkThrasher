@@ -7,7 +7,7 @@ class FormDetailsDTO:
     def __init__(self, action: str, params: {}, method_type: str):
         self._action = action
         self._params = params
-        self._method_type = str.upper(method_type)
+        self._method_type = method_type
 
     @property
     def action(self):

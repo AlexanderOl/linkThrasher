@@ -148,8 +148,14 @@ class RequestChecker:
                                 if default_value is None:
                                     default_value = ''
                                 params[param_name] = default_value
-                form_details.append(FormDetailsDTO(action_tag.strip(), params, method))
-            return FormRequestDTO(target_url, form_details, dto)
+
+                if not any(action_tag.strip() in form_detail.action and str.upper(method) == form_detail.method_type
+                           for form_detail in form_details):
+                    form_details.append(FormDetailsDTO(action_tag.strip(), params, str.upper(method)))
+
+            if len(form_details) > 0:
+                return FormRequestDTO(target_url, form_details, dto)
+            return
 
     def get_url_key(self, url: str):
         query_params = []

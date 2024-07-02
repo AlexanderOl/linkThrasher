@@ -168,5 +168,7 @@ class FastUrlManager:
         self._get_dtos.append(get_dto)
         self._head_dtos.append(HeadRequestDTO(response))
         form_dto = self._request_checker.find_forms(url, response.text, get_dto, self._form_dtos)
-        if form_dto:
+        if form_dto and not all(new_from_action in
+                                [item.action for sublist in self._form_dtos for item in sublist.form_params]
+                                for new_from_action in [form_param.action for form_param in form_dto.form_params]):
             self._form_dtos.append(form_dto)
