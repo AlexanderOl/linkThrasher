@@ -115,7 +115,10 @@ class LfiManager:
     def __check_lfi_payloads(self, payload_url: str, original_url: str, result: List[InjectionFoundDTO]):
         cmd_arr = ['curl', payload_url, "--path-as-is"]
         pk = ProcessHandler()
-        bash_outputs = pk.run_temp_process(cmd_arr, timeout=1200)
+        bash_outputs = pk.run_temp_process(cmd_arr, timeout=5)
+
+        if not any(keyword in output for output in bash_outputs for keyword in self._expected):
+            return
         for keyword in self._expected:
             for output in bash_outputs:
                 if keyword in output:

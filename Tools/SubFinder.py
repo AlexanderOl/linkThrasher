@@ -18,7 +18,7 @@ class SubFinder:
             stream = os.popen(command)
             bash_outputs = stream.readlines()
             for line in bash_outputs:
-                if line.endswith(self._domain):
+                if line.replace('\n', '').endswith(self._domain):
                     subdomains.add(line.replace('\n', ''))
                 elif self._domain in line:
                     print(f'{line} subfinder found not added')
