@@ -15,6 +15,7 @@ from Tools.MassDns import MassDns
 from Tools.Nmap import Nmap
 from Tools.Nuclei import Nuclei
 from Tools.SubFinder import SubFinder
+from Tools.Waymore import Waymore
 
 
 class DomainManager:
@@ -124,6 +125,9 @@ class DomainManager:
         subfinder = SubFinder(domain)
         subfinder_subdomains = subfinder.get_subdomains()
 
+        waymore = Waymore(domain, headers=self._headers)
+        waymore_subdomains = waymore.get_domains()
+
         massdns_subdomains = set()
         if self._check_mode != 'DL' and self._severity == 1:
             massdns = MassDns(domain)
@@ -132,7 +136,8 @@ class DomainManager:
         all_subdomains = amass_subdomains \
             .union(knock_subdomains) \
             .union(subfinder_subdomains) \
-            .union(massdns_subdomains)
+            .union(massdns_subdomains) \
+            .union(waymore_subdomains)
 
         # dnsx = Dnsx(domain)
         # dnsx.get_dnsx_report(all_subdomains)

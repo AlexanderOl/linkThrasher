@@ -1,6 +1,4 @@
 import os
-import re
-import uuid
 from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
@@ -15,16 +13,16 @@ from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class Waybackurls:
-    def __init__(self, domain, raw_cookies, headers, cookies):
+
+    def __init__(self, domain, headers, cookies):
         self._domain = domain
-        self._raw_cookies = raw_cookies
         self._tool_name = self.__class__.__name__
         self._request_handler = RequestHandler(cookies, headers)
         self._result: List[HeadRequestDTO] = []
         self._get_dtos: List[GetRequestDTO] = []
         self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'
         self._checked_hrefs = set()
-        self._waybackurls_out_of_scope_domains = os.environ.get("waybackurls_out_of_scope_domains")
+        self._out_of_scope_domains = os.environ.get("out_of_scope_domains")
         self._wayback_max_size = 50000
         self._request_checker = RequestChecker()
 
@@ -33,7 +31,7 @@ class Waybackurls:
         result = cache_manager.get_saved_result()
         if result is None:
 
-            out_of_scope = [x for x in self._waybackurls_out_of_scope_domains.split(';') if x]
+            out_of_scope = [x for x in self._out_of_scope_domains.split(';') if x]
             if any(oos in self._domain for oos in out_of_scope):
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) out of scope waybackurls')
                 return []

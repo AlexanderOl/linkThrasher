@@ -21,6 +21,7 @@ from Tools.Httracker import Httracker
 from Tools.Katana import Katana
 from Tools.Nuclei import Nuclei
 from Tools.Waybackurls import Waybackurls
+from Tools.Waymore import Waymore
 
 
 class SingleUrlManager:
@@ -46,7 +47,6 @@ class SingleUrlManager:
             return
 
         domain = urlparse(start_url).netloc
-
         main_domain = '.'.join(domain.split('.')[-2:])
 
         cookie_manager = CookieHelper(main_domain)
@@ -69,7 +69,10 @@ class SingleUrlManager:
         katana = Katana(domain, raw_cookies, self._headers, cookies)
         katana_dtos = katana.get_requests_dtos(start_url)
 
-        waybackurls = Waybackurls(domain, raw_cookies, self._headers, cookies)
+        waymore = Waymore(domain, self._headers, cookies)
+        waymore_dtos = waymore.get_requests_dtos()
+
+        waybackurls = Waybackurls(domain, self._headers, cookies)
         waybackurls_dtos = waybackurls.get_requests_dtos()
 
         spider = Spider(domain, cookies, self._headers, main_domain)
@@ -78,6 +81,7 @@ class SingleUrlManager:
         get_hakrawler_dtos.extend(get_spider_dtos)
         get_hakrawler_dtos.extend(katana_dtos)
         get_hakrawler_dtos.extend(waybackurls_dtos)
+        get_hakrawler_dtos.extend(waymore_dtos)
 
         feroxbuster = Feroxbuster(domain, cookies, self._headers, raw_cookies)
         all_get_dtos, all_form_dtos = feroxbuster.check_single_url(start_url, get_hakrawler_dtos, form_dtos)
