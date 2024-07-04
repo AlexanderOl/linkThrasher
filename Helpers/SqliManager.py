@@ -162,7 +162,7 @@ class SqliManager:
         result = []
         for index, part in enumerate(route_parts):
 
-            if self._request_checker.is_route_checked(url, part, salt):
+            if self._request_checker.is_route_checked(url, part, salt, check_specific_type=True):
                 continue
 
             for payloads in injections:
@@ -187,7 +187,8 @@ class SqliManager:
 
     def __check_url(self, dto: HeadRequestDTO):
 
-        route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._error_based_payloads, 'SqliE')
+        route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._error_based_payloads, 'SqliE',
+                                                                      check_specific_type=True)
         route_time_based_payloads = self.__get_route_payloads(dto.url, self._time_based_payloads, 'SqliT')
         route_bool_based_payloads = self.__get_route_payloads(dto.url, self._bool_based_payloads, 'SqliB')
 

@@ -13,3 +13,5 @@ colorama
 tld
 slack_sdk
 mysql-connector-python
+termcolor
+pyyaml

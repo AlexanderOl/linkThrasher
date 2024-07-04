@@ -15,14 +15,35 @@ class RequestChecker:
         self._checked_get_params = set()
         self._checked_form_params = set()
 
-    def get_route_payloads(self, url: str, injections: [], salt='') -> List[str]:
+    @staticmethod
+    def is_date(string):
+        try:
+            datetime.strptime(string, '%Y-%m-%d')
+            return True
+        except ValueError:
+            return False
+
+    @staticmethod
+    def is_valid_hash(string):
+
+        if re.match(r'^[a-f0-9]{32}$', string):
+            return True
+        if re.match(r'^[a-f0-9]{16}$', string):
+            return True
+        try:
+            uuid_obj = uuid.UUID(string)
+            return str(uuid_obj) == string
+        except ValueError:
+            return False
+
+    def get_route_payloads(self, url: str, injections: [], salt='', check_specific_type=False) -> List[str]:
         parsed = urlparse(url)
         route_parts = [r for r in parsed.path.split('/') if r.strip()]
         route_url_payloads = []
 
         for index, part in enumerate(route_parts):
 
-            if self.is_route_checked(url, part, salt):
+            if self.is_route_checked(url, part, salt, check_specific_type):
                 continue
 
             for injection in injections:
@@ -42,8 +63,13 @@ class RequestChecker:
 
         return route_url_payloads
 
-    def is_route_checked(self, url, url_part, salt='') -> bool:
+    def is_route_checked(self, url, url_part, salt, check_specific_type=False) -> bool:
         parsed = urlparse(url)
+
+        if check_specific_type:
+            if not (url_part.isdigit() or self.is_date(url_part) or self.is_valid_hash(url_part)):
+                return True
+
         key = f'{parsed.netloc};{url_part}{salt}'
         if key not in self._checked_routes:
             self._checked_routes.add(key)
@@ -172,31 +198,9 @@ class RequestChecker:
         for part in split_path:
             if part.isdigit():
                 path_key += 'numb'
-            elif self.__is_valid_hash(part):
+            elif self.is_valid_hash(part):
                 path_key += 'guid'
-            elif self.__is_date(part):
+            elif self.is_date(part):
                 path_key += 'date'
             else:
                 path_key += part
-
-    def __is_date(self, string: str):
-        try:
-            datetime.strptime(string, '%Y-%m-%d')
-            return True
-        except ValueError:
-            return False
-
-    def __is_valid_hash(self, string: str):
-
-        if re.match(r'^[a-f0-9]{32}$', string):
-            return True
-        if re.match(r'^[a-f0-9]{16}$', string):
-            return True
-        try:
-            uuid_obj = uuid.UUID(string)
-            return str(uuid_obj) == string
-        except ValueError:
-            return False
-
-        key = f'{path_key};{"&".join(query_params)}'
-        return key

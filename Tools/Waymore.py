@@ -1,6 +1,4 @@
 import os
-import re
-import uuid
 from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
@@ -160,9 +158,9 @@ class Waymore:
             for part in split_path:
                 if part.isdigit():
                     path_key += 'numb'
-                elif self.__is_valid_hash(part):
+                elif RequestChecker.is_valid_hash(part):
                     path_key += 'guid'
-                elif self.__is_date(part):
+                elif RequestChecker.is_date(part):
                     path_key += 'date'
                 else:
                     path_key += part
@@ -192,22 +190,3 @@ class Waymore:
             return urls_with_params
         else:
             return urls
-
-    def __is_date(self, string):
-        try:
-            datetime.strptime(string, '%Y-%m-%d')
-            return True
-        except ValueError:
-            return False
-
-    def __is_valid_hash(self, string):
-
-        if re.match(r'^[a-f0-9]{32}$', string):
-            return True
-        if re.match(r'^[a-f0-9]{16}$', string):
-            return True
-        try:
-            uuid_obj = uuid.UUID(string)
-            return str(uuid_obj) == string
-        except ValueError:
-            return False

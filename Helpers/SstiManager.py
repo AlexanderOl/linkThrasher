@@ -50,7 +50,7 @@ class SstiManager:
 
     def __check_url(self, dto: HeadRequestDTO):
 
-        route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._payloads)
+        route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._payloads, check_specific_type=True)
 
         for url in route_url_payloads:
             response = self._request_handler.handle_request(url)
