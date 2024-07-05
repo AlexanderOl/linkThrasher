@@ -10,7 +10,7 @@ class Httracker:
         self._tool_name = self.__class__.__name__
         self._cache_manager = CacheHelper(self._tool_name, domain)
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
-
+        self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
         if not os.path.exists(self._tool_result_dir):
             os.makedirs(self._tool_result_dir)
 
@@ -31,7 +31,7 @@ class Httracker:
 
             output_file = f'{self._tool_result_dir}/{self._domain}.txt'
             command = (f"cd {domain_dir}; httrack {url} --max-size=1000000 {cookies_arg} ; " +
-                       "grep -e 'secret' -e 'passw' -e 'admin' -e 'apikey' -e 'api_key' -e 'accesskey' -e 'token' "
+                       f"grep -f {self._app_wordlists_path}secret-keywords.txt " +
                        "* -r --exclude=hts-log.txt --exclude-dir=hts-cache --exclude=*.css " +
                        "| awk '{print substr($0, 1, 1000)}' " +
                        f"> {output_file}")
