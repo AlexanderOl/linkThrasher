@@ -153,7 +153,7 @@ class Waymore:
             params = added_url_params[url_without_params]
             url = url_without_params
 
-            split_path = url_without_params.split('/')
+            split_path = [item for item in urlparse(url_without_params).path.split('/') if item]
             path_key = ''
             for part in split_path:
                 if part.isdigit():

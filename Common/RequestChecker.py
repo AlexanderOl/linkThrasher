@@ -28,6 +28,8 @@ class RequestChecker:
 
         if re.match(r'^[a-f0-9]{32}$', string):
             return True
+        if re.match(r'^[a-f0-9]{24}$', string):
+            return True
         if re.match(r'^[a-f0-9]{16}$', string):
             return True
         try:
