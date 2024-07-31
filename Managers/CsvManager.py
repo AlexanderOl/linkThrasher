@@ -91,7 +91,7 @@ class CsvManager:
     def __ping_domain(self, domain):
         url = f'http://{domain}'
         response = self._request_handler.send_head_request(url, timeout=10)
-        if response:
+        if response is not None:
             self._domains.add(domain)
 
     def __ping_url(self, url):
