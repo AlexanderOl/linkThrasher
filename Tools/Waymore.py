@@ -86,6 +86,9 @@ class Waymore:
             pk = ProcessHandler()
             pk.run_temp_process(cmd, 'waymore')
 
+        if not os.path.exists(res_file):
+            return self._result
+
         href_urls = set()
         text_file = open(res_file, 'r', encoding='utf-8', errors='ignore')
         lines = text_file.readlines()

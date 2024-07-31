@@ -1,6 +1,5 @@
 import glob
 import ipaddress
-import os
 from csv import reader
 from datetime import date
 from Common.RequestHandler import RequestHandler
@@ -62,9 +61,11 @@ class CsvManager:
                 for row in csv_reader:
 
                     if len(row) >= 5 and row[3] == 'true' and row[4] == 'true' \
-                            and row[1].upper() in ['WILDCARD', 'URL', 'OTHER', 'CIDR']:
+                            and row[1].upper() in ['WILDCARD', 'URL', 'OTHER', 'CIDR', 'IP_ADDRESS']:
                         target = str(row[0])
-                        if target.startswith('http'):
+                        if row[1].upper() == 'IP_ADDRESS':
+                            ips.add(target)
+                        elif target.startswith('http'):
                             urls.add(target)
                         elif '*' in target and '/' in target and row[1].upper() == 'WILDCARD':
                             urls.add(f"https://{target.replace('*', '')}")
