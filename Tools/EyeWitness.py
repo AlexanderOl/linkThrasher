@@ -57,7 +57,7 @@ class EyeWitness:
 
         counter_directory_path = f'{self._tool_result_dir}/{self._cache_key}/{counter}'
         if os.path.exists(counter_directory_path):
-            return f"{counter_directory_path} exits"
+            return f"{counter_directory_path} exists"
 
         txt_filepath = f"{self._tool_dir}/{self._cache_key}_temp.txt"
         txt_file = open(txt_filepath, 'w')

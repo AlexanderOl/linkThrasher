@@ -84,6 +84,7 @@ class RequestHandler:
                                headers=self._headers,
                                cookies=self._cookies,
                                data=post_data)
+
         prep = req.prepare()
         prep.url = url
         response = s.send(prep, verify=False, timeout=timeout)
