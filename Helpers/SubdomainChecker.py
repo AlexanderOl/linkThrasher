@@ -31,7 +31,7 @@ class SubdomainChecker:
         if (not checked_subdomains and not isinstance(checked_subdomains, List)) or avoid_cache:
 
             subdomains = set(
-                [subdomain for subdomain in all_subdomains if all(oos not in subdomain for oos in out_of_scope)])
+                [subdomain.rstrip('.') for subdomain in all_subdomains if all(oos not in subdomain for oos in out_of_scope)])
 
             thread_man = ThreadManager()
             thread_man.run_all(self.__check_subdomain, subdomains, debug_msg=f'{self._tool_name} ({self._domain})')
