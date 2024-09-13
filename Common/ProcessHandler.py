@@ -9,7 +9,7 @@ class ProcessHandler:
     def __init__(self):
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
-    def run_temp_process(self, cmd_arr, cache_key=None, timeout=1200) -> List[str]:
+    def run_temp_process(self, cmd_arr, cache_key=None, timeout=900) -> List[str]:
 
         proc = subprocess.Popen(cmd_arr, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         try:
