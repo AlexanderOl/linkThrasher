@@ -25,6 +25,24 @@ class Nuclei:
         self._main_txt_filepath = f"{self._tool_result_dir}/MAIN_{self._cache_key}.txt"
         self._main_txt_fuzzing_filepath = f"{self._tool_result_fuzzing_dir}/MAIN_{self._cache_key}.txt"
         self._already_added_pathes = {}
+        self._template_args = "-t /root/Desktop/TOOLs/nuclei-templates/fuzzing " \
+                              "-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
+                              "-t /root/Desktop/TOOLs/nuclei-templates/miscellaneous " \
+                              "-t /root/Desktop/TOOLs/nuclei-templates/exposures " \
+                              "-t /root/Desktop/TOOLs/nuclei-templates/takeovers " \
+                              "-t /root/Desktop/TOOLs/nuclei-templates/cves " \
+                              "-t /root/Desktop/TOOLs/nuclei-templates/etc " \
+                              "-t /root/Desktop/TOOLs/nuclei-templates/default-logins " \
+                              "-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
+                              "-et /root/Desktop/TOOLs/nuclei-templates/cves/2022/CVE-2022-45362.yaml " \
+                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-csp.yaml " \
+                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-hsts.yaml " \
+                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/display-via-header.yaml " \
+                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-x-frame-options.yaml " \
+                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/detect-dns-over-https.yaml " \
+                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/tabnabbing-check.yaml " \
+                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/email-extractor.yaml " \
+                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/google-floc-disabled.yaml "
 
     def fuzz_batch(self, head_dtos: List[HeadRequestDTO]):
 
@@ -126,23 +144,7 @@ class Nuclei:
             if len(self._raw_cookies) > 0:
                 header_args += f' -H "Cookies:{self._raw_cookies}"'
 
-            command = f"nuclei -u {url} {header_args} " \
-                      f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing " \
-                      f"-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
-                      f"-t /root/Desktop/TOOLs/nuclei-templates/miscellaneous " \
-                      f"-t /root/Desktop/TOOLs/nuclei-templates/exposures " \
-                      f"-t /root/Desktop/TOOLs/nuclei-templates/takeovers " \
-                      f"-t /root/Desktop/TOOLs/nuclei-templates/cves " \
-                      f"-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
-                      f"-et /root/Desktop/TOOLs/nuclei-templates/cves/2022/CVE-2022-45362.yaml " \
-                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-csp.yaml " \
-                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-hsts.yaml " \
-                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/display-via-header.yaml " \
-                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-x-frame-options.yaml " \
-                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/detect-dns-over-https.yaml " \
-                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/tabnabbing-check.yaml " \
-                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/email-extractor.yaml " \
-                      f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/google-floc-disabled.yaml "
+            command = f"nuclei -u {url} {header_args} {self._template_args}"
 
             stream = os.popen(command)
             bash_outputs = stream.readlines()
@@ -171,24 +173,7 @@ class Nuclei:
 
         filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
 
-        command = f"nuclei --list {filepath} " \
-                  f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing " \
-                  f"-t /root/Desktop/TOOLs/nuclei-templates/fuzzing " \
-                  f"-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
-                  f"-t /root/Desktop/TOOLs/nuclei-templates/miscellaneous " \
-                  f"-t /root/Desktop/TOOLs/nuclei-templates/exposures " \
-                  f"-t /root/Desktop/TOOLs/nuclei-templates/takeovers " \
-                  f"-t /root/Desktop/TOOLs/nuclei-templates/cves " \
-                  f"-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
-                  f"-et /root/Desktop/TOOLs/nuclei-templates/cves/2022/CVE-2022-45362.yaml " \
-                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-csp.yaml " \
-                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-hsts.yaml " \
-                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/display-via-header.yaml " \
-                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-x-frame-options.yaml " \
-                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/detect-dns-over-https.yaml " \
-                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/tabnabbing-check.yaml " \
-                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/email-extractor.yaml " \
-                  f"-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/google-floc-disabled.yaml "
+        command = f"nuclei --list {filepath} {self._template_args}"
 
         stream = os.popen(command)
         bash_outputs = stream.readlines()

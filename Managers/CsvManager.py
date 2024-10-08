@@ -61,7 +61,7 @@ class CsvManager:
                 for row in csv_reader:
 
                     if len(row) >= 5 and row[3] == 'true' and row[4] == 'true' \
-                            and row[1].upper() in ['WILDCARD', 'URL', 'OTHER', 'CIDR', 'IP_ADDRESS']:
+                            and row[1].upper() in ['WILDCARD', 'URL', 'OTHER', 'CIDR', 'IP_ADDRESS', 'API']:
                         target = str(row[0])
                         if row[1].upper() == 'IP_ADDRESS':
                             ips.add(target)
