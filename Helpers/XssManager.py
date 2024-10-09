@@ -14,12 +14,12 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
 class XssManager:
-    def __init__(self, domain, headers, cookies=''):
+    def __init__(self, domain, request_handler):
         self._result = None
         self._domain = domain
         self._expected = ['<poc>', '""poc\'\'']
         self._injections_to_check = ['<poc>', '""poc\'\'']
-        self._request_handler = RequestHandler(cookies, headers)
+        self._request_handler = request_handler
         self._request_checker = RequestChecker()
 
     def check_get_requests(self, dtos: List[HeadRequestDTO]):

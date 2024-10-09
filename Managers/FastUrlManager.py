@@ -27,7 +27,7 @@ class FastUrlManager:
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
         self._severity = int(os.environ.get("severity"))
         self._fast_urls_size = int(os.environ.get("fast_urls_size"))
-        self._request_handler = RequestHandler(cookies='', headers=headers)
+        self._request_handler = RequestHandler(headers=headers)
         disable_warnings(exceptions.InsecureRequestWarning)
         self._target_file_path = 'Targets/fast_urls.txt'
         self._all_file_path = 'Targets/all_fast_urls.txt'
@@ -79,23 +79,23 @@ class FastUrlManager:
             nuclei.fuzz_batch(head_dtos)
 
             if self._severity == 1:
-                xss_manager = XssManager(domain=cache_key, headers=self._headers)
+                xss_manager = XssManager(cache_key, self._request_handler)
                 xss_manager.check_get_requests(head_dtos)
                 xss_manager.check_form_requests(form_dtos)
 
-                ssrf_manager = SsrfManager(domain=cache_key, headers=self._headers)
+                ssrf_manager = SsrfManager(cache_key, self._request_handler)
                 ssrf_manager.check_get_requests(head_dtos)
                 ssrf_manager.check_form_requests(form_dtos)
 
-            lfi_manager = LfiManager(domain=cache_key, headers=self._headers)
+            lfi_manager = LfiManager(cache_key, self._request_handler)
             lfi_manager.check_get_requests(head_dtos)
             lfi_manager.check_form_requests(form_dtos)
 
-            sqli_manager = SqliManager(domain=cache_key, headers=self._headers)
+            sqli_manager = SqliManager(cache_key, self._request_handler)
             sqli_manager.check_get_requests(head_dtos)
             sqli_manager.check_form_requests(form_dtos)
 
-            ssti_manager = SstiManager(domain=cache_key, headers=self._headers)
+            ssti_manager = SstiManager(cache_key, self._request_handler)
             ssti_manager.check_get_requests(head_dtos)
             ssti_manager.check_form_requests(form_dtos)
 

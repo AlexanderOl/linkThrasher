@@ -13,7 +13,7 @@ from Models.InjectionFoundDTO import InjectionFoundDTO, InjectionType
 
 
 class LfiManager:
-    def __init__(self, domain, headers, cookies=''):
+    def __init__(self, domain, request_handler):
         self._domain = domain
         self._url_params = ['cat', 'dir', 'action', 'board', 'date', 'detail', 'file', 'download', 'path', 'folder',
                             'prefix', 'include', 'page', 'inc', 'locate', 'show', 'doc', 'site', 'type', 'view',
@@ -48,7 +48,7 @@ class LfiManager:
 
         self._expected = ['; for 16-bit app support', 'root:x:0:0:root:']
         self._tool_dir = f'Results/LfiManager'
-        self._request_handler = RequestHandler(cookies, headers)
+        self._request_handler = request_handler
 
     def check_get_requests(self, dtos: List[HeadRequestDTO]):
 

@@ -14,7 +14,7 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
 class SqliManager:
-    def __init__(self, domain, headers, cookies=''):
+    def __init__(self, domain, request_handler):
         self._result: List[InjectionFoundDTO] = []
         self._domain = domain
         self._false_positives = ['malformed request syntax',
@@ -46,7 +46,7 @@ class SqliManager:
         ]
         self._bool_diff_rate = 0.05
         self._delay_in_seconds = 5
-        self._request_handler = RequestHandler(cookies, headers)
+        self._request_handler = request_handler
         self._injections_to_check = [' syntax', 'ODBC SQL Server Driver', 'internalerror', 'exception: ']
         self.errors_500 = []
         self._request_checker = RequestChecker()

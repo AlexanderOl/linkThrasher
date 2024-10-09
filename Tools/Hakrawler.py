@@ -13,13 +13,13 @@ from Models.GetRequestDTO import GetRequestDTO
 
 
 class Hakrawler:
-    def __init__(self, domain, raw_cookies='', headers=None, cookies=''):
+    def __init__(self, domain, request_handler: RequestHandler, raw_cookies='', ):
         self._domain = domain
         self._raw_cookies = raw_cookies
         self._max_depth = os.environ.get('max_depth')
         self._threads = f'{os.environ.get("threads")}'
         self._tool_name = self.__class__.__name__
-        self._request_handler = RequestHandler(cookies, headers)
+        self._request_handler = request_handler
         self._result: List[HeadRequestDTO] = []
         self._get_dtos: List[GetRequestDTO] = []
         self._checked_hrefs = set()

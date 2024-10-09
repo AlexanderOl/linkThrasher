@@ -13,7 +13,7 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
 class SstiManager:
-    def __init__(self, domain, headers, cookies=''):
+    def __init__(self, domain, request_handler):
         self.errors_500 = []
         self._result = None
         self._domain = domain
@@ -21,7 +21,7 @@ class SstiManager:
         self._double_check = '777*777'
         self._expected = '788544'
         self._double_check_expected = '603729'
-        self._request_handler = RequestHandler(cookies, headers)
+        self._request_handler = request_handler
         self._request_checker = RequestChecker()
 
     def check_get_requests(self, dtos: List[HeadRequestDTO]):

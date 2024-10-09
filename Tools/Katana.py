@@ -13,11 +13,11 @@ from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class Katana:
-    def __init__(self, domain, raw_cookies, headers, cookies):
+    def __init__(self, domain, raw_cookies, request_handler: RequestHandler):
         self._domain = domain
         self._raw_cookies = raw_cookies
         self._tool_name = self.__class__.__name__
-        self._request_handler = RequestHandler(cookies, headers)
+        self._request_handler = request_handler
         self._result: List[HeadRequestDTO] = []
         self._get_dtos: List[GetRequestDTO] = []
         self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'

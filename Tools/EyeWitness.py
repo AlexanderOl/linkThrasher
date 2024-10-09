@@ -12,13 +12,13 @@ from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class EyeWitness:
-    def __init__(self, cache_key, headers):
+    def __init__(self, cache_key, request_handler: RequestHandler):
         self._tool_name = self.__class__.__name__
         self._cache_key = cache_key
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._chunk_size = 30
         self._tool_dir = f"Results/{self._tool_name}"
-        self._request_handler = RequestHandler('', headers)
+        self._request_handler = request_handler
 
     def visit_dtos(self, dtos: List[HeadRequestDTO]):
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._cache_key}) Eyewitness will visit {len(dtos)} urls')

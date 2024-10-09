@@ -14,13 +14,13 @@ from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class Nmap:
-    def __init__(self, domain, headers, cookies=''):
+    def __init__(self, domain, request_handler: RequestHandler):
         self._tool_name = self.__class__.__name__
         self._domain = domain
         self._port_head_dtos: List[HeadRequestDTO] = []
         self._port_get_dtos: List[GetRequestDTO] = []
         self._cache_manager = CacheHelper(self._tool_name, self._domain, "Results")
-        self._request_handler = RequestHandler(headers, cookies)
+        self._request_handler = request_handler
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._existing_get_dtos: List[GetRequestDTO] = []
         self._batch_size = 5

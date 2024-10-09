@@ -14,7 +14,7 @@ from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class Spider:
-    def __init__(self, current_domain, cookies, headers, main_domain):
+    def __init__(self, current_domain, request_handler: RequestHandler, main_domain):
         self._current_domain = current_domain
         self._main_domain = main_domain
         self._max_depth = int(os.environ.get('max_depth'))
@@ -26,7 +26,7 @@ class Spider:
         self._get_dtos: List[GetRequestDTO] = []
         self._head_dtos: List[HeadRequestDTO] = []
         self._file_get_DTOs: List[GetRequestDTO] = []
-        self._request_handler = RequestHandler(cookies, headers)
+        self._request_handler = request_handler
         self._request_checker = RequestChecker()
         self._allowed_content_types = [
                     'application/json',

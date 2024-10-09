@@ -15,8 +15,7 @@ from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class Feroxbuster:
-    def __init__(self, domain, cookies, headers, raw_cookies):
-        self._headers = headers
+    def __init__(self, domain, request_handler: RequestHandler, raw_cookies):
         self._form_dtos: List[FormRequestDTO] = []
         self._get_dtos: List[GetRequestDTO] = []
         self._head_dtos: List[HeadRequestDTO] = []
@@ -27,7 +26,7 @@ class Feroxbuster:
         self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
         self._max_depth = int(f'{os.environ.get("max_depth")}')
         self._threads = f'{os.environ.get("threads")}'
-        self._request_handler = RequestHandler(cookies, headers)
+        self._request_handler = request_handler
         self._request_checker = RequestChecker()
         self._raw_cookies = raw_cookies
         self._url_ignore_ext_regex = re.compile(

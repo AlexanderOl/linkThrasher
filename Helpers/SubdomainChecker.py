@@ -11,15 +11,12 @@ from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class SubdomainChecker:
-    def __init__(self, domain, headers):
+    def __init__(self, domain: str, request_handler: RequestHandler):
         self._checked_subdomains: List[HeadRequestDTO] = []
         self._domain = domain
         self._tool_name = self.__class__.__name__
         self._last_10_resp_size_attempt = {}
-        cookie_manager = CookieHelper(domain)
-        raw_cookies = cookie_manager.get_raw_cookies()
-        cookies = cookie_manager.get_cookies_dict(raw_cookies)
-        self._request_handler = RequestHandler(cookies, headers)
+        self._request_handler = request_handler
         self._out_of_scope_domains = os.environ.get("out_of_scope_domains")
         self._chunk_size = 100
         self._checked_ips = set()

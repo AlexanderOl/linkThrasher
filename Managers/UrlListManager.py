@@ -15,7 +15,7 @@ class UrlListManager:
     def __init__(self, headers):
         self._headers = headers
         self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
-        self._request_handler = RequestHandler(cookies='', headers=headers)
+        self._request_handler = RequestHandler(headers=headers)
         self._tool_name = self.__class__.__name__
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         self._result: List[HeadRequestDTO] = []

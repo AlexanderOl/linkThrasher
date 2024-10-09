@@ -31,11 +31,11 @@ class SingleUrlManager:
         self._check_mode = os.environ.get('check_mode')
         self._single_url = os.environ.get('single_url')
         self._severity = int(os.environ.get('severity'))
+        self._request_handler = RequestHandler(headers=self._headers)
         disable_warnings(exceptions.InsecureRequestWarning)
 
     def run(self):
-        request_handler = RequestHandler(cookies="", headers=self._headers)
-        response = request_handler.send_head_request(self._single_url)
+        response = self._request_handler.send_head_request(self._single_url)
         self.do_run(response)
 
     def do_run(self, head_dto: HeadRequestDTO):
@@ -53,6 +53,7 @@ class SingleUrlManager:
         raw_cookies = cookie_manager.get_raw_cookies()
         cookies = cookie_manager.get_cookies_dict(raw_cookies)
 
+        self._request_handler = RequestHandler(cookies, self._headers)
         httracker = Httracker(domain)
         httracker.check_single_url(start_url)
 
@@ -63,19 +64,19 @@ class SingleUrlManager:
         if self._check_mode == 'U':
             nuclei.check_single_url(start_url)
 
-        hakrawler = Hakrawler(domain, raw_cookies, self._headers, cookies)
+        hakrawler = Hakrawler(domain, self._request_handler, raw_cookies)
         get_hakrawler_dtos = hakrawler.get_requests_dtos(start_url)
 
-        katana = Katana(domain, raw_cookies, self._headers, cookies)
+        katana = Katana(domain, raw_cookies, self._request_handler)
         katana_dtos = katana.get_requests_dtos(start_url)
 
-        waymore = Waymore(domain, self._headers, cookies)
+        waymore = Waymore(domain, self._request_handler)
         waymore_dtos = waymore.get_requests_dtos()
 
-        waybackurls = Waybackurls(domain, self._headers, cookies)
+        waybackurls = Waybackurls(domain, self._request_handler)
         waybackurls_dtos = waybackurls.get_requests_dtos()
 
-        spider = Spider(domain, cookies, self._headers, main_domain)
+        spider = Spider(domain, self._request_handler, main_domain)
         get_spider_dtos, form_dtos = spider.get_all_links(start_url)
 
         get_hakrawler_dtos.extend(get_spider_dtos)
@@ -83,7 +84,7 @@ class SingleUrlManager:
         get_hakrawler_dtos.extend(waybackurls_dtos)
         get_hakrawler_dtos.extend(waymore_dtos)
 
-        feroxbuster = Feroxbuster(domain, cookies, self._headers, raw_cookies)
+        feroxbuster = Feroxbuster(domain, self._request_handler, raw_cookies)
         all_get_dtos, all_form_dtos = feroxbuster.check_single_url(start_url, get_hakrawler_dtos, form_dtos)
 
         nuclei.fuzz_batch(all_get_dtos)
@@ -98,23 +99,23 @@ class SingleUrlManager:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) will run {len(head_dtos)} dtos')
 
         if self._severity == 1:
-            xss_manager = XssManager(domain, headers=self._headers, cookies=cookies)
+            xss_manager = XssManager(domain, self._request_handler)
             xss_manager.check_get_requests(head_dtos)
             xss_manager.check_form_requests(all_form_dtos)
 
-            ssrf_manager = SsrfManager(domain, headers=self._headers, cookies=cookies)
+            ssrf_manager = SsrfManager(domain, self._request_handler)
             ssrf_manager.check_get_requests(head_dtos)
             ssrf_manager.check_form_requests(all_form_dtos)
 
-        lfi_manager = LfiManager(domain, headers=self._headers, cookies=cookies)
+        lfi_manager = LfiManager(domain, self._request_handler)
         lfi_manager.check_get_requests(head_dtos)
         lfi_manager.check_form_requests(form_dtos)
 
-        sqli_manager = SqliManager(domain, headers=self._headers, cookies=cookies)
+        sqli_manager = SqliManager(domain, self._request_handler)
         sqli_manager.check_get_requests(head_dtos)
         sqli_manager.check_form_requests(all_form_dtos)
 
-        ssti_manager = SstiManager(domain, headers=self._headers, cookies=cookies)
+        ssti_manager = SstiManager(domain, self._request_handler)
         ssti_manager.check_get_requests(head_dtos)
         ssti_manager.check_form_requests(all_form_dtos)
 

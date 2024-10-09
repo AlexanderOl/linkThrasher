@@ -14,7 +14,7 @@ from Models.InjectionFoundDTO import InjectionFoundDTO, InjectionType
 
 class SsrfManager:
 
-    def __init__(self, domain, headers, cookies=''):
+    def __init__(self, domain, request_handler):
         self._domain = domain
         self._ngrok_url = os.environ.get('ngrok_url')
         self._ngrok_url_safe = urllib.parse.quote(self._ngrok_url, safe='')
@@ -26,7 +26,7 @@ class SsrfManager:
         self._tool_dir = f'Results/SsrfManager'
         self._get_domain_log = f'{self._tool_dir}/GET_{self._domain.replace(":","_")}_uids.txt'
         self._form_domain_log = f'{self._tool_dir}/FORM_{self._domain.replace(":","_")}_uids.txt'
-        self._request_handler = RequestHandler(cookies, headers)
+        self._request_handler = request_handler
 
     def check_get_requests(self, dtos: List[HeadRequestDTO]):
 

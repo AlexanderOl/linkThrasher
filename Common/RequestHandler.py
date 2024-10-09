@@ -1,3 +1,4 @@
+import os
 from urllib.parse import urlparse
 
 import requests
@@ -7,9 +8,11 @@ from urllib3 import exceptions, disable_warnings
 
 
 class RequestHandler:
+
     def __init__(self, cookies='', headers={}):
         self._cookies = cookies
         self._headers = headers
+        self._verbose_level = int(os.environ.get("verbose_level"))
         disable_warnings(exceptions.InsecureRequestWarning)
 
     def send_head_request(self, url, except_ssl_action=None, except_ssl_action_args: [] = None, timeout=3):
@@ -88,4 +91,8 @@ class RequestHandler:
         prep = req.prepare()
         prep.url = url
         response = s.send(prep, verify=False, timeout=timeout)
+
+        if self._verbose_level > 1:
+            print(f'URL: {url}, Status: {response.status_code}')
+
         return response
