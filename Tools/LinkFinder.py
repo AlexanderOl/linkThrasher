@@ -1,26 +1,30 @@
 import os
 import pathlib
 from datetime import datetime
+from urllib.parse import urlparse
 
+import inject
+
+from Common.Logger import Logger
 from Models.Constants import URL_IGNORE_EXT_REGEX
 
 
 class LinkFinder:
-    def __init__(self, domain, start_url):
+    def __init__(self):
         self._tool_name = self.__class__.__name__
-        self._domain = domain
         self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'
-        self._start_url = start_url
         self._black_list = ["application/", "text/", "image/", "mm/dd/yyyy", "yyyy/mm/dd", "dd/m/yyyy", "mm/d/yyyy",
                             "request/", "dojo/", "audio/", "video/", "font/", "/x-icon"]
+        self._logger = inject.instance(Logger)
 
-    def search_urls_in_js(self, script_urls: set) -> set:
+    def search_urls_in_js(self, script_urls: set, start_url: str) -> set:
+        domain = urlparse(start_url).netloc
 
         result = set()
         if len(script_urls) == 0:
             return result
 
-        tool_directory = f"{self._tool_result_dir}/{self._domain}"
+        tool_directory = f"{self._tool_result_dir}/{domain}"
         if not os.path.exists(tool_directory):
             os.makedirs(tool_directory)
 
@@ -46,18 +50,18 @@ class LinkFinder:
                 found = found[:-2]
             if not any(word in found for word in self._black_list):
                 if found.startswith('http'):
-                    if self._domain in found:
+                    if domain in found:
                         result.add(found)
                     else:
                         continue
                 elif not found:
                     continue
                 elif found[0] == '/':
-                    result.add(f'{self._start_url.rstrip("/")}/{found[1:]}')
+                    result.add(f'{start_url.rstrip("/")}/{found[1:]}')
                 else:
-                    result.add(f'{self._start_url}/{found}')
+                    result.add(f'{start_url}/{found}')
 
         # shutil.rmtree(tool_directory, ignore_errors=True)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) {self._tool_name} finished')
+        self._logger.log_info(f'({domain}) {self._tool_name} finished')
         return result

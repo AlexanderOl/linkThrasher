@@ -1,11 +1,16 @@
 import os
 from urllib.parse import urlparse
 
+import inject
+
+from Common.Logger import Logger
+
 
 class S500Handler:
     def __init__(self):
         self._res_500_error_key_path = 'Results/500_error_keys.json'
         self._res_500_error_urls_path = 'Results/500_error_urls.txt'
+        self._logger = inject.instance(Logger)
 
     def save_server_errors(self, errors):
         if len(errors) == 0:
@@ -35,7 +40,7 @@ class S500Handler:
             json_file = open(self._res_500_error_key_path, 'r', encoding='utf-8', errors='ignore')
             stored_keys = json_file.readlines()
             json_file.close()
-            filtered_keys = list([k_v for k_v in checked_key_urls if not f'{k_v}\n' in stored_keys])
+            filtered_keys = list([k_v for k_v in checked_key_urls if f'{k_v}\n' not in stored_keys])
             if len(filtered_keys) > 0:
                 json_file = open(self._res_500_error_key_path, 'a')
                 txt_file = open(self._res_500_error_urls_path, 'a')
@@ -46,4 +51,4 @@ class S500Handler:
                 txt_file.close()
             new_errors_count = len(filtered_keys)
 
-        print(f'Added {new_errors_count} unique errors')
+        self._logger.log_warn(f'Added {new_errors_count} unique errors')

@@ -4,6 +4,10 @@ from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime
 from typing import List
+
+import inject
+
+from Common.Logger import Logger
 from Common.ProcessHandler import ProcessHandler
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
@@ -13,8 +17,7 @@ from Models.InjectionFoundDTO import InjectionFoundDTO, InjectionType
 
 
 class LfiManager:
-    def __init__(self, domain, request_handler):
-        self._domain = domain
+    def __init__(self):
         self._url_params = ['cat', 'dir', 'action', 'board', 'date', 'detail', 'file', 'download', 'path', 'folder',
                             'prefix', 'include', 'page', 'inc', 'locate', 'show', 'doc', 'site', 'type', 'view',
                             'content', 'document', 'layout', 'mod', 'conf']
@@ -48,14 +51,16 @@ class LfiManager:
 
         self._expected = ['; for 16-bit app support', 'root:x:0:0:root:']
         self._tool_dir = f'Results/LfiManager'
-        self._request_handler = request_handler
+        self._logger = inject.instance(Logger)
+        self._request_handler = inject.instance(RequestHandler)
+        self._process_handler = inject.instance(ProcessHandler)
 
-    def check_get_requests(self, dtos: List[HeadRequestDTO]):
+    def check_get_requests(self, cache_key: str, dtos: List[HeadRequestDTO]):
 
         if not os.path.exists(self._tool_dir):
             os.makedirs(self._tool_dir)
 
-        cache_manager = CacheHelper('LfiManager/Get', self._domain, 'Results')
+        cache_manager = CacheHelper('LfiManager/Get', cache_key, 'Results')
         result = cache_manager.get_saved_result()
 
         if not result and not isinstance(result, List):
@@ -73,22 +78,22 @@ class LfiManager:
                     self.__check_route_params(dto.url, result)
 
             cache_manager.save_dtos(result)
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found GET LFI: {len(result)}')
+        self._logger.log_warn(f'({cache_key}) Found GET LFI: {len(result)}')
 
-    def check_form_requests(self, form_results: List[FormRequestDTO]):
-        cache_manager = CacheHelper('LfiManager/Form', self._domain, 'Results')
+    def check_form_requests(self, cache_key: str, form_results: List[FormRequestDTO]):
+        cache_manager = CacheHelper('LfiManager/Form', cache_key, 'Results')
         result = cache_manager.get_saved_result()
 
         if not result and not isinstance(result, List):
             result: List[InjectionFoundDTO] = []
             counter = 0
             for item in form_results:
-                print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) LFI FORM counter ({counter} / {len(form_results)})')
+                self._logger.log_info(f'({cache_key}) LFI FORM counter ({counter} / {len(form_results)})')
                 self.__send_lfi_form_request(item, result)
                 counter += 1
 
             cache_manager.save_dtos(result)
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found Form LFI: {len(result)}')
+        self._logger.log_warn(f'({cache_key}) Found Form LFI: {len(result)}')
 
     def __check_path(self, url: str, result: List[InjectionFoundDTO]):
         parsed = urlparse.urlparse(url)
@@ -114,8 +119,7 @@ class LfiManager:
 
     def __check_lfi_payloads(self, payload_url: str, original_url: str, result: List[InjectionFoundDTO]):
         cmd_arr = ['curl', payload_url, "--path-as-is"]
-        pk = ProcessHandler()
-        bash_outputs = pk.run_temp_process(cmd_arr, timeout=5)
+        bash_outputs = self._process_handler.run_temp_process(cmd_arr, timeout=5)
 
         if not any(keyword in output for output in bash_outputs for keyword in self._expected):
             return
@@ -125,7 +129,7 @@ class LfiManager:
 
                     resp = self._request_handler.handle_request(original_url)
                     if resp and keyword in resp.text:
-                        print(f'Lfi doublecheck failed on {keyword} with {original_url}')
+                        self._logger.log_warn(f'Lfi doublecheck failed on {keyword} with {original_url}')
                         continue
 
                     substr_index = output.find(keyword)
@@ -139,7 +143,7 @@ class LfiManager:
                     curr_resp_length = len(output)
                     if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg
                                for dto in result):
-                        print(log_header_msg)
+                        self._logger.log_warn(log_header_msg)
                         result.append(InjectionFoundDTO(InjectionType.Lfi_Get, " ".join(cmd_arr), keyword, output,
                                                         log_header_msg))
 
@@ -179,7 +183,7 @@ class LfiManager:
                                     curr_resp_length = len(response.text)
                                     if not any(dto.response_length == curr_resp_length and
                                                dto.details_msg == log_header_msg for dto in result):
-                                        print(log_header_msg)
+                                        self._logger.log_warn(log_header_msg)
                                         result.append(InjectionFoundDTO(InjectionType.Lfi_PostForm, payload,
                                                                         keyword, response.text, log_header_msg))
                 elif form.method_type == "GET":
@@ -202,7 +206,7 @@ class LfiManager:
 
                                 url = prev_url
                 else:
-                    print("METHOD TYPE NOT FOUND: " + form.method_type)
+                    self._logger.log_error("METHOD TYPE NOT FOUND: " + form.method_type)
                     return
         except Exception as inst:
-            print(f"Exception - ({dto.url}) - {inst}")
+            self._logger.log_error(f"Exception - ({dto.url}) - {inst}")

@@ -45,4 +45,7 @@ class InjectionFoundDTO:
         return self._header_msg
 
     def __str__(self):
-        return f'Url {self._url}, Injection: {self._inj_type}, Details: {self._header_msg.strip()}, Payload: {self._payload}'
+        return (f'Url {self._url}, '
+                f'Injection: {self._inj_type}, '
+                f'Details: {self._header_msg.strip()}, '
+                f'Payload: {self._payload}')

@@ -1,4 +1,7 @@
+import inject
 import mysql.connector as mysql
+
+from Common.Logger import Logger
 
 
 class MysqlRepository:
@@ -9,6 +12,7 @@ class MysqlRepository:
         self._database = 'link_db'
         self._host = '127.0.0.1'
         self._port = 3306
+        self._logger = inject.instance(Logger)
 
     def init_tables(self):
         self.__init_connection()
@@ -87,7 +91,7 @@ class MysqlRepository:
             self._cursor = self._cnx.cursor()
 
         except mysql.Error as err:
-            print("Error connecting to MySQL:", err)
+            self._logger.log_error(f"Error connecting to MySQL: {err}")
 
     def __close_connection(self):
         self._cursor.close()

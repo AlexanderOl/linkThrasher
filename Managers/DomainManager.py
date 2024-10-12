@@ -1,7 +1,9 @@
 import os
+import inject
 import validators
-from urllib3 import exceptions, disable_warnings
+
 from datetime import datetime
+from Common.Logger import Logger
 from Common.RequestHandler import RequestHandler
 from Common.ThreadBucket import ThreadBucket
 from Common.ThreadManager import ThreadManager
@@ -20,50 +22,56 @@ from Tools.Waymore import Waymore
 
 
 class DomainManager:
-    def __init__(self, headers):
+    def __init__(self):
         self._download_path = os.environ.get('download_path')
         self._check_mode = os.environ.get('check_mode')
-        self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
+        self._out_of_scope = os.environ.get("out_of_scope")
         self._domain_batch_size = int(os.environ.get("domain_batch_size"))
         self._severity = int(os.environ.get("severity"))
         self._targets_domains_file = 'Targets/domains.txt'
         self._targets_domains_part_file = 'Targets/domains_part.txt'
         self._tool_name = self.__class__.__name__
-        self._headers = headers
-        disable_warnings(exceptions.InsecureRequestWarning)
-        self._request_handler = RequestHandler(headers=headers)
+
+        self._request_handler = inject.instance(RequestHandler)
+        self._single_url_man = inject.instance(SingleUrlManager)
+        self._thread_man = inject.instance(ThreadManager)
+        self._nuclei = inject.instance(Nuclei)
+        self._amass = inject.instance(Amass)
+        self._knock = inject.instance(Knock)
+        self._waymore = inject.instance(Waymore)
+        self._logger = inject.instance(Logger)
+        self._nmap = inject.instance(Nmap)
+        self._eyewitness = inject.instance(EyeWitness)
+        self._thread_bucket = inject.instance(ThreadBucket)
+        self._subdomain_checker = inject.instance(SubdomainChecker)
+        self._mysql_repository = inject.instance(MysqlRepository)
+        self._cookie_manager = inject.instance(CookieHelper)
 
     def check_ip(self, ip):
         ips = set()
         ips.add(ip)
 
-        subdomain_checker = SubdomainChecker(ip, self._request_handler)
-        start_urls_dtos = subdomain_checker.check_all_subdomains(ips)
+        start_urls_dtos = self._subdomain_checker.check_all_subdomains(ip, ips)
 
-        out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
+        out_of_scope = [x for x in self._out_of_scope.split(';') if x]
         start_urls_dtos = [dto for dto in start_urls_dtos if all(oos not in dto.url for oos in out_of_scope)]
 
         if len(start_urls_dtos) == 0:
-            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({ip}) No live urls found at ip')
+            self._logger.log_info(f'({ip}) No live urls found at ip')
             return
         else:
-            print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({ip}) Found {len(start_urls_dtos)} start urls at ip')
+            self._logger.log_info(f'({ip}) Found {len(start_urls_dtos)} start urls at ip')
 
-        nmap = Nmap(ip, self._request_handler)
-        nmap_get_dtos = nmap.check_ports(start_urls_dtos)
-        start_urls_dtos += nmap_get_dtos
+        nmap_head_dtos = self._nmap.check_ports(ip, start_urls_dtos)
+        start_urls_dtos += nmap_head_dtos
 
-        eyewitness = EyeWitness(ip, self._request_handler)
-        eyewitness.visit_dtos(start_urls_dtos)
+        self._eyewitness.visit_dtos(ip, start_urls_dtos)
 
-        nuclei = Nuclei(ip, self._headers)
-        nuclei.check_multiple_uls(start_urls_dtos)
+        self._nuclei.check_multiple_uls(ip, start_urls_dtos)
 
-        single_url_man = SingleUrlManager(self._headers)
-        thread_man = ThreadManager()
-        thread_man.run_all(single_url_man.do_run, start_urls_dtos, f' ({ip})')
+        self._thread_man.run_all(self._single_url_man.do_run, start_urls_dtos, f' ({ip})')
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: DomainFlowManager done with ip ({ip})')
+        self._logger.log_info(f'DomainFlowManager done with ip ({ip})')
 
     def check_multiple_domains(self):
 
@@ -76,7 +84,7 @@ class DomainManager:
         while True:
             last_domain = self.__process_targets()
             if not last_domain:
-                print(f'[{datetime.now().strftime("%H:%M:%S")}]: DL finished...')
+                self._logger.log_info('DomainList finished...')
                 break
 
             if os.path.exists(self._targets_domains_file):
@@ -98,40 +106,34 @@ class DomainManager:
                 txt_file.close()
 
             else:
-                print(f'DL stopped. {self._targets_domains_file} is missing')
+                self._logger.log_warn(f'DL stopped. {self._targets_domains_file} is missing')
                 break
 
     def __check_batch_domains(self, domain):
-        cookie_manager = CookieHelper(domain)
-        raw_cookies = cookie_manager.get_raw_cookies()
-        cookies = cookie_manager.get_cookies_dict(raw_cookies)
 
-        self._request_handler = RequestHandler(cookies=cookies, headers=self._headers)
-        print(f'Checking {domain} domain...')
-        resp = self._request_handler.send_head_request(f'http://{domain}')
+        cookies = self._cookie_manager.get_cookies_dict(domain)
+        self._logger.log_info(f'Checking {domain} domain...')
+        resp = self._request_handler.send_head_request(f'http://{domain}', cookies)
         if resp is None:
             return
-        print(f'Domain {domain} init status - {resp.status_code}')
+        self._logger.log_info(f'Domain {domain} init status - {resp.status_code}')
         self.check_domain(domain)
-        print(f'Check {domain} finished!')
+        self._logger.log_info(f'Check {domain} finished!')
 
     def check_domain(self, domain):
         domain = domain.lower().replace('www.', '')
         if not validators.domain(domain):
-            print(f'{domain} is not a domain')
+            self._logger.log_info(f'{domain} is not a domain')
             return
 
-        amass = Amass(domain)
-        amass_subdomains = amass.get_subdomains()
+        amass_subdomains = self._amass.get_subdomains(domain)
 
-        knock = Knock(domain)
-        knock_subdomains = knock.get_subdomains()
+        knock_subdomains = self._knock.get_subdomains(domain)
 
         subfinder = SubFinder(domain)
         subfinder_subdomains = subfinder.get_subdomains()
 
-        waymore = Waymore(domain, self._request_handler)
-        waymore_subdomains = waymore.get_domains()
+        waymore_subdomains = self._waymore.get_domains(domain)
 
         massdns_subdomains = set()
         if self._check_mode != 'DL' and self._severity == 1:
@@ -150,14 +152,12 @@ class DomainManager:
         if domain not in all_subdomains:
             all_subdomains.add(domain)
 
-        mysql_repo = MysqlRepository()
-        db_subdomains = mysql_repo.get_tracked_subdomains(domain)
+        db_subdomains = self._mysql_repository.get_tracked_subdomains(domain)
         filtered_domains = set([sub for sub in all_subdomains if all(db_sub != sub for db_sub in db_subdomains)])
 
-        subdomain_checker = SubdomainChecker(domain, self._request_handler)
-        start_urls_dtos = subdomain_checker.check_all_subdomains(filtered_domains)
+        start_urls_dtos = self._subdomain_checker.check_all_subdomains(domain, filtered_domains)
 
-        out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
+        out_of_scope = [x for x in self._out_of_scope.split(';') if x]
         start_urls_dtos = [dto for dto in start_urls_dtos if all(oos not in dto.url for oos in out_of_scope)]
 
         db_subdomains.update(filtered_domains)
@@ -166,29 +166,24 @@ class DomainManager:
         else:
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) Found {len(start_urls_dtos)} start urls')
 
-            nmap = Nmap(domain, self._request_handler)
-            nmap_get_dtos = nmap.check_ports(start_urls_dtos)
+            nmap_get_dtos = self._nmap.check_ports(domain, start_urls_dtos)
             start_urls_dtos += nmap_get_dtos
 
             if len(start_urls_dtos) == 0:
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) No live urls found')
             else:
-                eyewitness = EyeWitness(domain, self._request_handler)
-                eyewitness.visit_dtos(start_urls_dtos)
+                self._eyewitness.visit_dtos(domain, start_urls_dtos)
 
-                nuclei = Nuclei(domain, self._headers)
-                nuclei.check_multiple_uls(start_urls_dtos)
+                self._nuclei.check_multiple_uls(domain, start_urls_dtos)
 
-                single_url_man = SingleUrlManager(self._headers)
-                thread_man = ThreadManager()
-                thread_man.run_all(single_url_man.do_run, start_urls_dtos)
+                self._thread_man.run_all(self._single_url_man.do_run, start_urls_dtos)
 
                 # db_urls.update(set([dto.url for dto in filtered_urls]))
-                # mysql_repo.save_tracker_urls_result(domain, db_urls)
+                # self._mysql_repository.save_tracker_urls_result(domain, db_urls)
 
             print(f'[{datetime.now().strftime("%H:%M:%S")}]: DomainFlowManager done with ({domain})')
 
-        mysql_repo.save_tracker_domains_result(domain, db_subdomains)
+        self._mysql_repository.save_tracker_domains_result(domain, db_subdomains)
 
     def __process_targets(self):
         if os.path.exists(self._targets_domains_part_file):
@@ -197,8 +192,7 @@ class DomainManager:
                 print(f'No fast urls found - {self._targets_domains_part_file}')
                 return
 
-            thread_man = ThreadBucket()
-            thread_man.run_all(self.__check_batch_domains, domains, debug_msg=self._tool_name)
+            self._thread_bucket.run_all(self.__check_batch_domains, domains, debug_msg=self._tool_name)
 
             last_domain = domains[len(domains) - 1]
             print(f'Last URL was processed - {last_domain}')

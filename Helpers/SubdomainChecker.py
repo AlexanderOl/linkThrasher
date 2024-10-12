@@ -1,41 +1,46 @@
 import os
 import socket
+
+import inject
 import validators
 from typing import List
 from urllib.parse import urlparse
+
+from Common.Logger import Logger
 from Helpers.CacheHelper import CacheHelper
-from Helpers.CookieHelper import CookieHelper
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class SubdomainChecker:
-    def __init__(self, domain: str, request_handler: RequestHandler):
+    def __init__(self):
         self._checked_subdomains: List[HeadRequestDTO] = []
-        self._domain = domain
         self._tool_name = self.__class__.__name__
         self._last_10_resp_size_attempt = {}
-        self._request_handler = request_handler
-        self._out_of_scope_domains = os.environ.get("out_of_scope_domains")
+        self._out_of_scope = os.environ.get("out_of_scope")
         self._chunk_size = 100
         self._checked_ips = set()
+        self._logger = inject.instance(Logger)
+        self._request_handler = inject.instance(RequestHandler)
+        self._thread_manager = inject.instance(ThreadManager)
 
-    def check_all_subdomains(self, all_subdomains: set, avoid_cache=False) -> List[HeadRequestDTO]:
-        cache_manager = CacheHelper(self._tool_name, self._domain)
+    def check_all_subdomains(self, domain: str, all_subdomains: set, avoid_cache=False) -> List[HeadRequestDTO]:
+        self._domain = domain
+        cache_manager = CacheHelper(self._tool_name, domain)
         checked_subdomains = cache_manager.get_saved_result()
-        out_of_scope = [x for x in self._out_of_scope_domains.split(';') if x]
+        out_of_scope = [x for x in self._out_of_scope.split(';') if x]
         if (not checked_subdomains and not isinstance(checked_subdomains, List)) or avoid_cache:
 
             subdomains = set(
-                [subdomain.rstrip('.') for subdomain in all_subdomains if all(oos not in subdomain for oos in out_of_scope)])
+                [subdomain.rstrip('.') for subdomain in all_subdomains
+                 if all(oos not in subdomain for oos in out_of_scope)])
 
-            thread_man = ThreadManager()
-            thread_man.run_all(self.__check_subdomain, subdomains, debug_msg=f'{self._tool_name} ({self._domain})')
+            self._thread_manager.run_all(self.__check_subdomain, subdomains, debug_msg=f'{self._tool_name} ({domain})')
 
             if len(self._checked_subdomains) > 2:
-                origin = next((s for s in self._checked_subdomains if f'/{self._domain}/' in s.url), None)
-                www = next((s for s in self._checked_subdomains if f'/www.{self._domain}/' in s.url), None)
+                origin = next((s for s in self._checked_subdomains if f'/{domain}/' in s.url), None)
+                www = next((s for s in self._checked_subdomains if f'/www.{domain}/' in s.url), None)
                 if origin is not None and www is not None and \
                         origin.status_code == www.status_code:
                     self._checked_subdomains.remove(www)
@@ -62,7 +67,7 @@ class SubdomainChecker:
             else:
                 return
         except Exception as inst:
-            print(f'Domain ({subdomain} - check_subdomain) - Exception: {inst}')
+            self._logger.log_error(f'Domain ({subdomain} - check_subdomain) - Exception: {inst}')
 
         url = f'https://{subdomain}'
         response = self._request_handler.send_head_request(url=url,
@@ -85,7 +90,7 @@ class SubdomainChecker:
                      for dto in self._checked_subdomains):
                 self._checked_subdomains.append(HeadRequestDTO(response))
             else:
-                print(f'({url}) url already added')
+                self._logger.log_info(f'({url}) url already added')
 
     def __except_ssl_action(self, args):
         url = args[0]

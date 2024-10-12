@@ -1,71 +1,62 @@
 import os
 from datetime import datetime
-from typing import List, Tuple
+from typing import List
+
+import inject
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
+from Common.Logger import Logger
 from Common.RequestChecker import RequestChecker
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
 from Models.Constants import SOCIAL_MEDIA, URL_IGNORE_EXT_REGEX
-from Models.GetRequestDTO import GetRequestDTO
-from Models.FormRequestDTO import FormRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class Spider:
-    def __init__(self, current_domain, request_handler: RequestHandler, main_domain):
-        self._current_domain = current_domain
-        self._main_domain = main_domain
+    def __init__(self):
         self._max_depth = int(os.environ.get('max_depth'))
         self._checked_urls = set()
         self._checked_hrefs = set()
         self._urls_counter = 0
-
-        self._form_dtos: List[FormRequestDTO] = []
-        self._get_dtos: List[GetRequestDTO] = []
+        self._tool_name = self.__class__.__name__
         self._head_dtos: List[HeadRequestDTO] = []
-        self._file_get_DTOs: List[GetRequestDTO] = []
-        self._request_handler = request_handler
-        self._request_checker = RequestChecker()
+        self._request_handler = inject.instance(RequestHandler)
+        self._request_checker = inject.instance(RequestChecker)
         self._allowed_content_types = [
                     'application/json',
                     'text/plain',
                     'application/ld+json',
                     'text/html'
         ]
+        self._logger = inject.instance(Logger)
 
-    def get_all_links(self, start_url) -> Tuple[List[HeadRequestDTO], List[FormRequestDTO]]:
+    def get_all_links(self, start_url) -> List[HeadRequestDTO]:
 
-        form_cache_manager = CacheHelper('Spider/Form', self._current_domain)
-        head_cache_manager = CacheHelper('Spider/Get', self._current_domain)
-        head_found = head_cache_manager.get_saved_result()
-        form_found = form_cache_manager.get_saved_result()
+        domain = urlparse(start_url).netloc
+        cache_manager = CacheHelper(self._tool_name, domain)
+        head_found = cache_manager.get_saved_result()
 
-        if head_found is None or form_found is None:
+        if head_found is None:
             current_depth = 0
-            self.__recursive_search(start_url, current_depth)
-            head_cache_manager.cache_result(self._head_dtos)
-            form_cache_manager.cache_result(self._form_dtos)
-            file_cache_manager = CacheHelper('Spider/File', self._current_domain)
-            file_cache_manager.cache_result(self._file_get_DTOs)
+            self.__recursive_search(domain, start_url, current_depth)
+            cache_manager.cache_result(self._head_dtos)
         else:
             self._head_dtos = head_found
-            self._form_dtos = form_found
 
-        print(
-            f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._current_domain}) '
-            f'Spider found {len(self._head_dtos)} head_dtos and {len(self._form_dtos)} forms')
-        return self._head_dtos, self._form_dtos
+        self._logger.log_info(f'({domain}) Spider found {len(self._head_dtos)} head_dtos')
 
-    def __recursive_search(self, target_url: str, current_depth: int):
+        return self._head_dtos
+
+    def __recursive_search(self, domain: str, target_url: str, current_depth: int):
 
         if current_depth >= self._max_depth:
             return
         else:
             current_depth += 1
 
-        checked_url = self.__check_target_url(target_url)
+        checked_url = self.__check_target_url(domain, target_url)
         if not checked_url:
             return
 
@@ -79,17 +70,6 @@ class Spider:
         if response is None:
             return
 
-        if ('Content-Type' in response.headers
-                and not any(word in response.headers['Content-Type'] for word in self._allowed_content_types)):
-            self._file_get_DTOs.append(GetRequestDTO(checked_url, response))
-            return
-
-        if len(self._get_dtos) > 0:
-            if any(dto for dto in self._get_dtos if
-                   dto.response_length == len(response.text) and
-                   dto.status_code == response.status_code):
-                return
-
         web_page = response.text
         if 300 <= response.status_code < 400:
             if 'Location' in response.headers:
@@ -100,12 +80,7 @@ class Spider:
                     redirect_url = redirect
                 self.__recursive_search(redirect_url, current_depth - 1)
         elif response.status_code < 300 and len(response.history) <= 2:
-            get_dto = GetRequestDTO(checked_url, response)
-            self._get_dtos.append(get_dto)
             self._head_dtos.append(HeadRequestDTO(response))
-            form_dto = self._request_checker.find_forms(checked_url, web_page, get_dto, self._form_dtos)
-            if form_dto:
-                self._form_dtos.append(form_dto)
 
         else:
             return
@@ -120,7 +95,7 @@ class Spider:
         current_depth = args[1]
         if target_url.startswith('http:'):
             return
-        print(f'Url ({target_url}) - ConnectionError(SSLError)')
+        self._logger.log_warn(f'Url ({target_url}) - ConnectionError(SSLError)')
         target_url = target_url.replace('https:', 'http:')
         self.__recursive_search(target_url, current_depth)
 
@@ -140,12 +115,12 @@ class Spider:
 
         return result
 
-    def __check_target_url(self, url):
+    def __check_target_url(self, domain, url):
 
         parsed = urlparse(url)
         if url in self._checked_urls \
                 or any(word in url for word in SOCIAL_MEDIA) \
-                or self._current_domain not in parsed.netloc:
+                or domain not in parsed.netloc:
             return
 
         self._checked_urls.add(url)
@@ -202,16 +177,11 @@ class Spider:
                                 html_urls.add(f'{target_url.rsplit("/", 1)[0]}/{url_part}')
                             else:
                                 html_urls.add(f'{main_url}/{url_part}')
-                                print(f'Need attention ({target_url} with {url_part}). Temp result is - {main_url}/{url_part}')
+                                self._logger.log_warn(f'Need attention ({target_url} with {url_part}). '
+                                                      f'Temp result is - {main_url}/{url_part}')
                         else:
                             html_urls.add(f'{main_url}/{url_part}')
             except Exception as inst:
-                print(inst)
+                self._logger.log_error(inst)
 
         return html_urls
-
-    def __check_already_added_form(self, action_tag):
-        for dto in self._form_dtos:
-            for form in dto.form_params:
-                if form.action == action_tag:
-                    return True

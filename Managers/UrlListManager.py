@@ -1,5 +1,5 @@
 import os
-import urllib3
+import inject
 from datetime import date, datetime
 from typing import List
 from urllib.parse import urlparse
@@ -12,15 +12,17 @@ from Tools.Nuclei import Nuclei
 
 
 class UrlListManager:
-    def __init__(self, headers):
-        self._headers = headers
-        self._out_of_scope_urls = os.environ.get("out_of_scope_urls")
-        self._request_handler = RequestHandler(headers=headers)
+    def __init__(self):
+        self._out_of_scope = os.environ.get("out_of_scope")
+        self._thread_man = inject.instance(ThreadManager)
         self._tool_name = self.__class__.__name__
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         self._result: List[HeadRequestDTO] = []
         self._cache_keys = str(date.today())
         self._file_path = 'Targets/urls.txt'
+
+        self._nuclei = inject.instance(Nuclei)
+        self._request_handler = inject.instance(RequestHandler)
+        self._single_url_man = inject.instance(SingleUrlManager)
 
     def run(self, urls=None):
         if urls:
@@ -33,22 +35,16 @@ class UrlListManager:
                     continue
                 head_dtos.append(HeadRequestDTO(response))
 
-            nuclei = Nuclei(self._cache_keys, self._headers)
-            nuclei.check_multiple_uls(head_dtos)
+            self._nuclei.check_multiple_uls(str(date.today()), head_dtos)
 
-            single_url_man = SingleUrlManager(self._headers)
-            thread_man = ThreadManager()
-            thread_man.run_all(single_url_man.do_run, head_dtos, debug_msg=self._tool_name)
+            self._thread_man.run_all(self._single_url_man.do_run, head_dtos, debug_msg=self._tool_name)
         elif os.path.exists(self._file_path):
 
             head_dtos = self.__get_cached_dtos(self._file_path)
 
-            nuclei = Nuclei(self._cache_keys, self._headers)
-            nuclei.check_multiple_uls(head_dtos)
+            self._nuclei.check_multiple_uls(str(date.today()), head_dtos)
 
-            single_url_man = SingleUrlManager(self._headers)
-            thread_man = ThreadManager()
-            thread_man.run_all(single_url_man.do_run, head_dtos, debug_msg=self._tool_name)
+            self._thread_man.run_all(self._single_url_man.do_run, head_dtos, debug_msg=self._tool_name)
 
         else:
             print(os.path.dirname(os.path.realpath(__file__)))
@@ -58,7 +54,7 @@ class UrlListManager:
 
         cache_manager = CacheHelper(self._tool_name, self._cache_keys)
         head_dtos = cache_manager.get_saved_result()
-        out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
+        out_of_scope = [x for x in self._out_of_scope.split(';') if x]
 
         if not head_dtos and not isinstance(head_dtos, List):
 
@@ -73,13 +69,12 @@ class UrlListManager:
 
             filtered_urls = [url for url in urls if all(oos not in url for oos in out_of_scope)]
 
-            thread_man = ThreadManager()
-            thread_man.run_all(self.__send_request, filtered_urls, debug_msg=self._tool_name)
+            self._thread_man .run_all(self.__send_request, filtered_urls, debug_msg=self._tool_name)
 
             cache_manager.cache_result(self._result)
             head_dtos = self._result
         else:
-            out_of_scope = [x for x in self._out_of_scope_urls.split(';') if x]
+            out_of_scope = [x for x in self._out_of_scope.split(';') if x]
             filtered_urls = list([dto for dto in head_dtos if all(oos not in dto.url for oos in out_of_scope)])
             head_dtos = filtered_urls
         return head_dtos

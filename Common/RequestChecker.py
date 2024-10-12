@@ -4,7 +4,11 @@ from copy import deepcopy
 from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
+
+import inject
 from bs4 import BeautifulSoup
+
+from Common.Logger import Logger
 from Models.FormRequestDTO import FormDetailsDTO, FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
 
@@ -14,6 +18,7 @@ class RequestChecker:
         self._checked_routes = set()
         self._checked_get_params = set()
         self._checked_form_params = set()
+        self._logger = inject.instance(Logger)
 
     @staticmethod
     def is_date(string):
@@ -97,7 +102,7 @@ class RequestChecker:
 
     def is_get_param_checked(self, original_url, param_k_v, salt) -> bool:
         if '=' not in param_k_v:
-            print(f'Url {original_url} query param without "=" {param_k_v}')
+            self._logger.log_warn(f'Url {original_url} query param without "=" {param_k_v}')
             return True
         main_url_split = original_url.split(param_k_v)
         key = f'{main_url_split[0]};{param_k_v.split("=")[0]}{salt}'

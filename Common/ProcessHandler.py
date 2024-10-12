@@ -4,10 +4,15 @@ import subprocess
 import re
 from typing import List
 
+import inject
+
+from Common.Logger import Logger
+
 
 class ProcessHandler:
     def __init__(self):
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        self._logger = inject.instance(Logger)
 
     def run_temp_process(self, cmd_arr, cache_key=None, timeout=900) -> List[str]:
 
@@ -15,7 +20,7 @@ class ProcessHandler:
         try:
 
             if cache_key:
-                print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({cache_key}) Process started cmd - {" ".join(cmd_arr)}')
+                self._logger.log_info(f'({cache_key}) Process started cmd - {" ".join(cmd_arr)}')
 
             outs, errs = proc.communicate(timeout=timeout)
             lines = list(filter(None, outs.decode('utf-8').strip().split('\n')))
@@ -26,7 +31,7 @@ class ProcessHandler:
                 result = [errs.decode()]
 
             if cache_key:
-                print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({cache_key}) Process finished with code - {proc.returncode}')
+                self._logger.log_info(f'({cache_key}) Process finished with code - {proc.returncode}')
 
             return result
 
@@ -39,6 +44,6 @@ class ProcessHandler:
                 return result
 
         except Exception as inst:
-            print(f'ProcessHandler exception: {inst}')
+            self._logger.log_error(f'ProcessHandler exception: {inst}')
 
         return []

@@ -59,4 +59,4 @@ class FormRequestDTO:
             details += f"{form},"
         if details.endswith(','):
             details = details[:-1]
-        return f'Link:{self._url},FormDetails:[{details}]'
+        return f'Link:{self._url}, FormDetails:[{details}]'

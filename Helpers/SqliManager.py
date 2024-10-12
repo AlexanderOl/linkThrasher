@@ -1,22 +1,24 @@
+import inject
 import urllib
 import urllib.parse as urlparse
+
 from copy import deepcopy
 from datetime import datetime
 from typing import List
-
+from Common.Logger import Logger
 from Common.RequestChecker import RequestChecker
-from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
+from Helpers.CacheHelper import CacheHelper
 from Models.FormRequestDTO import FormRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
 from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
 class SqliManager:
-    def __init__(self, domain, request_handler):
+    def __init__(self):
+        super().__init__()
         self._result: List[InjectionFoundDTO] = []
-        self._domain = domain
         self._false_positives = ['malformed request syntax',
                                  'script tag to avoid syntax errors'
                                  'eval|internal|range|reference|syntax|type']
@@ -46,50 +48,49 @@ class SqliManager:
         ]
         self._bool_diff_rate = 0.05
         self._delay_in_seconds = 5
-        self._request_handler = request_handler
         self._injections_to_check = [' syntax', 'ODBC SQL Server Driver', 'internalerror', 'exception: ']
         self.errors_500 = []
-        self._request_checker = RequestChecker()
 
-    def check_get_requests(self, dtos: List[HeadRequestDTO]):
+        self._thread_manager = inject.instance(ThreadManager)
+        self._logger = inject.instance(Logger)
+        self._request_checker = inject.instance(RequestChecker)
+        self._request_handler = inject.instance(RequestHandler)
 
-        cache_manager = CacheHelper('SqliManager/Get', self._domain, 'Results')
+    def check_get_requests(self, domain: str, dtos: List[HeadRequestDTO]):
+
+        cache_manager = CacheHelper('SqliManager/Get', domain, 'Results')
         self._result = cache_manager.get_saved_result()
 
         if self._result is None:
             self._result: List[InjectionFoundDTO] = []
 
-            thread_man = ThreadManager()
-            thread_man.run_all(self.__check_url, dtos, debug_msg=f'SqliManager/Get/Route ({self._domain})')
+            self._thread_manager.run_all(self.__check_url, dtos, debug_msg=f'SqliManager/Get/Route ({domain})')
 
             dtos_with_params = {}
             for dto in dtos:
                 if ";".join(dto.query_params) not in dtos_with_params and len(dto.query_params) > 0:
                     dtos_with_params[";".join(dto.query_params)] = dto
 
-            thread_man.run_all(self.__check_get_params, list(dtos_with_params.values()),
-                               debug_msg=f'SqliManager/Get/Params ({self._domain})')
+            self._thread_manager.run_all(self.__check_get_params, list(dtos_with_params.values()),
+                                         debug_msg=f'SqliManager/Get/Params ({domain})')
 
             cache_manager.save_dtos(self._result)
 
-        print(
-            f'[{datetime.now().strftime("%H:%M:%S")}]: '
-            f'({self._domain}) SqliManager GET found {len(self._result)} items')
+        self._logger.log_warn(f'({domain}) SqliManager GET found {len(self._result)} items')
 
-    def check_form_requests(self, form_dtos: List[FormRequestDTO]):
+    def check_form_requests(self, domain: str, form_dtos: List[FormRequestDTO]):
 
-        cache_manager = CacheHelper('SqliManager/Form', self._domain, 'Results')
+        cache_manager = CacheHelper('SqliManager/Form', domain, 'Results')
         self._result = cache_manager.get_saved_result()
 
         if self._result is None:
             self._result: List[InjectionFoundDTO] = []
 
-            thread_man = ThreadManager()
-            thread_man.run_all(self.__check_form, form_dtos, debug_msg=f'SqliManager/Form ({self._domain})')
+            self._thread_manager.run_all(self.__check_form, form_dtos, debug_msg=f'SqliManager/Form ({domain})')
 
             cache_manager.save_dtos(self._result)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) Found FORM SQLi: {len(self._result)}')
+        self._logger.log_warn(f'({domain}) Found FORM SQLi: {len(self._result)}')
 
     def __check_form(self, dto: FormRequestDTO):
         for form in dto.form_params:
@@ -156,7 +157,7 @@ class SqliManager:
 
                         url = prev_url
             else:
-                print("METHOD TYPE NOT FOUND: " + form.method_type)
+                self._logger.log_warn("METHOD TYPE NOT FOUND: " + form.method_type)
                 return
 
     def __get_route_payloads(self, url: str, injections: [], salt) -> []:
@@ -264,7 +265,7 @@ class SqliManager:
             self.__check_keywords(response, url, InjectionType.Sqli_Get_Error, original_url=dto.url)
 
         except Exception as inst:
-            print(f"Exception - ({url}) - {inst}")
+            self._logger.log_error(f"Exception - ({url}) - {inst}")
 
     def __send_bool_based_request(self, payloads, url=None, form_params=None, param=None):
         if url:
@@ -363,7 +364,7 @@ class SqliManager:
                         msg = f"SQLiManager bool PARAM length! TRUE:{payloads['TruePld']}; FALSE:{payloads['FalsePld']}"
                         if not any(dto.response_length == len(true2_response.text) and dto.details_msg == msg
                                    for dto in self._result):
-                            print(msg)
+                            self._logger.log_warn(msg)
                             self._result.append(InjectionFoundDTO(InjectionType.Sqli_Get_Bool,
                                                                   url or payloads["TruePld"],
                                                                   msg_payload, 'RESPONSE1 is NONE', msg))
@@ -382,7 +383,7 @@ class SqliManager:
                 msg = f"SQLiManager bool PARAM status_code! TRUE:{payloads['TruePld']} ; FALSE:{payloads['FalsePld']}"
                 if not any(dto.response_length == len(true2_response.text) and dto.details_msg == msg
                            for dto in self._result):
-                    print(msg)
+                    self._logger.log_warn(msg)
                     self._result.append(InjectionFoundDTO(InjectionType.Sqli_Get_Bool, url or payloads["TruePld"],
                                                           msg_payload, 'RESPONSE1 is NONE', msg))
 
@@ -409,7 +410,7 @@ class SqliManager:
                         if t2.total_seconds() >= self._delay_in_seconds:
                             log_header_msg = f"SQLiManager delay FOUND! TRUE:{true_payload} ; FALSE:{false_payload}"
                             if not any(dto.details_msg == log_header_msg for dto in self._result):
-                                print(log_header_msg)
+                                self._logger.log_warn(log_header_msg)
                                 self._result.append(InjectionFoundDTO(
                                     InjectionType.Sqli_Get_Time, true_payload, 'TIME_BASED',
                                     'RESPONSE1 is NONE', log_header_msg))
@@ -442,17 +443,17 @@ class SqliManager:
 
                 if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg
                            for dto in self._result):
-                    print(log_header_msg)
+                    self._logger.log_warn(log_header_msg)
                     self._result.append(
                         InjectionFoundDTO(inj_type, url_payload, post_payload, web_page, log_header_msg))
                 else:
-                    print("Duplicate FORM SQLi: - " + url_payload)
+                    self._logger.log_warn("Duplicate FORM SQLi: - " + url_payload)
 
                 need_to_discard_payload = True
 
         if response.status_code == 500:
             details = response.text[0:200].replace('\n', '').replace('\r', '').strip()
-            print(f"SqliManager: 500 status - {url_payload}; DETAILS: {details}")
+            self._logger.log_warn(f"SqliManager: 500 status - {url_payload}; DETAILS: {details}")
             need_to_discard_payload = True
             self.errors_500.append({'url': url_payload, 'response_len': len(response.text)})
 
@@ -494,11 +495,11 @@ class SqliManager:
                         t2 = datetime.now() - t1
                         if t2.total_seconds() >= self._delay_in_seconds:
                             log_header_msg = (f"SqliManager FORM delay FOUND! TRUE:{payloads['TruePld']}; "
-                                   f"FALSE:{payloads['FalsePld']}")
+                                              f"FALSE:{payloads['FalsePld']}")
                             curr_resp_length = len(response2.text)
                             if not any(dto.response_length == curr_resp_length and dto.details_msg == log_header_msg
                                        for dto in self._result):
-                                print(log_header_msg)
+                                self._logger.log_warn(log_header_msg)
                                 self._result.append(
                                     InjectionFoundDTO(InjectionType.Sqli_PostForm_Time, url, copy_form_params,
                                                       response2.text, log_header_msg))

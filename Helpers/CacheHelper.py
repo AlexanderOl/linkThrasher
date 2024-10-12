@@ -3,6 +3,9 @@ import pickle
 import shutil
 from datetime import datetime
 from typing import List
+
+import inject
+
 from Helpers.Slack import Slack
 from Models import InjectionFoundDTO
 
@@ -14,6 +17,7 @@ class CacheHelper:
         self._result_filepath = f"{self._tool_result_dir}/{domain.replace(':', '_')}.json"
         self._txt_result_filepath = f"{self._tool_result_dir}/{domain.replace(':', '_')}.txt"
         self._domain = domain
+        self._slack = inject.instance(Slack)
 
     def get_saved_result(self):
         try:
@@ -24,7 +28,7 @@ class CacheHelper:
                 data = pickle.load(file)
                 file.close()
                 return data
-        except Exception as inst:
+        except Exception:
             if os.path.exists(self._result_filepath):
                 os.remove(self._result_filepath)
 
@@ -33,11 +37,10 @@ class CacheHelper:
         self.cache_result(result)
 
         if len(result) > 0:
-            slack = Slack()
             checked_msgs = set()
             for item in result:
                 if item.details_msg not in checked_msgs:
-                    slack.send_msg(str(item))
+                    self._slack.send_msg(str(item))
                     checked_msgs.add(item.details_msg)
 
             file = open('Results/Final.txt', 'a')
@@ -49,9 +52,8 @@ class CacheHelper:
         self.cache_result(result)
 
         if len(result) > 0:
-            slack = Slack()
             for item in result:
-                slack.send_msg(str(item))
+                self._slack.send_msg(str(item))
 
             file = open('Results/Final.txt', 'a')
             res = f'[{datetime.now().strftime("%H:%M:%S")}]: {self._result_filepath} found {len(result)} \n'

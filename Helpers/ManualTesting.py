@@ -2,37 +2,29 @@ import os
 import re
 import urllib.parse as urlparse
 from typing import List
-from collections import defaultdict
 from Models.FormRequestDTO import FormRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class ManualTesting:
-    def __init__(self, domain):
-        self._domain = domain
+    def __init__(self):
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self.__class__.__name__}'
         self._already_added_pathes = {}
 
-    def save_urls_for_manual_testing(self, spider_dtos: List[HeadRequestDTO], form_dtos: List[FormRequestDTO]) \
-            -> List[HeadRequestDTO]:
-
-        groups = defaultdict(List[HeadRequestDTO])
-
-        for obj in spider_dtos:
-            groups[obj.url] = obj
-
-        get_dtos = groups.values()
+    def save_urls_for_manual_testing(self, domain: str,
+                                     head_dtos: List[HeadRequestDTO],
+                                     form_dtos: List[FormRequestDTO]):
 
         if not os.path.exists(self._tool_result_dir):
             os.makedirs(self._tool_result_dir)
 
-        txt_filepath = f"{self._tool_result_dir}/{self._domain.replace(':','_')}.txt"
+        txt_filepath = f"{self._tool_result_dir}/{domain.replace(':','_')}.txt"
         if os.path.exists(txt_filepath):
-            return get_dtos
+            return
 
         get_result = set()
         checked_urls = set()
-        for dto in get_dtos:
+        for dto in head_dtos:
 
             is_added = self.__check_if_added(dto.url)
             if is_added:
@@ -58,7 +50,7 @@ class ManualTesting:
                 form_result.add(str(dto))
 
         if len(form_result) == 0 and len(get_result) == 0:
-            return get_dtos
+            return
 
         txt_file = open(txt_filepath, 'a')
         for item in get_result:
@@ -70,8 +62,6 @@ class ManualTesting:
             for item in form_result:
                 txt_file.write("%s\n" % str(item))
         txt_file.close()
-
-        return get_dtos
 
     def __check_if_added(self, url):
         is_already_added = False

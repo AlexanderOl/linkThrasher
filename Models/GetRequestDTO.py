@@ -1,7 +1,3 @@
-from typing import List
-from urllib.parse import urlparse
-
-
 class GetRequestDTO:
     def __init__(self, *args):
         self._url = args[0]

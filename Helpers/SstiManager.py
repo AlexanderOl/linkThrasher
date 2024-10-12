@@ -1,8 +1,10 @@
 from copy import deepcopy
-from datetime import datetime
 import urllib.parse as urlparse
 from typing import List
 
+import inject
+
+from Common.Logger import Logger
 from Common.RequestChecker import RequestChecker
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
@@ -13,40 +15,39 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 
 class SstiManager:
-    def __init__(self, domain, request_handler):
+    def __init__(self):
         self.errors_500 = []
         self._result = None
-        self._domain = domain
         self._payloads = ['{{888*888}}', '{888*888}', '@(888*888)', '${888*888}', '%0a888*888']
         self._double_check = '777*777'
         self._expected = '788544'
         self._double_check_expected = '603729'
-        self._request_handler = request_handler
-        self._request_checker = RequestChecker()
+        self._logger = inject.instance(Logger)
+        self._request_checker = inject.instance(RequestChecker)
+        self._request_handler = inject.instance(RequestHandler)
+        self._thread_manager = inject.instance(ThreadManager)
 
-    def check_get_requests(self, dtos: List[HeadRequestDTO]):
+    def check_get_requests(self, domain: str, dtos: List[HeadRequestDTO]):
 
-        cache_manager = CacheHelper('SstiManager/Get', self._domain, 'Results')
+        cache_manager = CacheHelper('SstiManager/Get', domain, 'Results')
         self._result = cache_manager.get_saved_result()
 
         if self._result is None:
             self._result: List[InjectionFoundDTO] = []
 
-            thread_man = ThreadManager()
-            thread_man.run_all(self.__check_url, dtos, debug_msg=f'SstiManager/Get/Route ({self._domain})')
+            self._thread_manager.run_all(self.__check_url, dtos, debug_msg=f'SstiManager/Get/Route ({domain})')
 
             dtos_with_params = {}
             for dto in dtos:
                 if ";".join(dto.query_params) not in dtos_with_params and len(dto.query_params) > 0:
                     dtos_with_params[";".join(dto.query_params)] = dto
 
-            thread_man.run_all(self.__check_get_params, list(dtos_with_params.values()),
-                               debug_msg=f'SstiManager/Get/Param ({self._domain})')
+            self._thread_manager.run_all(self.__check_get_params, list(dtos_with_params.values()),
+                                         debug_msg=f'SstiManager/Get/Param ({domain})')
 
             cache_manager.save_dtos(self._result)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) '
-              f'SstiManager GET found {len(self._result)} items')
+        self._logger.log_warn(f'({domain}) SstiManager GET found {len(self._result)} items')
 
     def __check_url(self, dto: HeadRequestDTO):
 
@@ -68,19 +69,18 @@ class SstiManager:
                 return
             self.__check_keywords(response, url, InjectionType.Ssti_Get)
 
-    def check_form_requests(self, form_dtos: List[FormRequestDTO]):
-        cache_manager = CacheHelper('SstiManager/Form', self._domain, 'Results')
+    def check_form_requests(self, domain: str, form_dtos: List[FormRequestDTO]):
+        cache_manager = CacheHelper('SstiManager/Form', domain, 'Results')
         self._result = cache_manager.get_saved_result()
 
         if self._result is None:
             self._result: List[InjectionFoundDTO] = []
 
-            thread_man = ThreadManager()
-            thread_man.run_all(self.__check_form_request, form_dtos, debug_msg=f'SstiManager/Form ({self._domain})')
+            self._thread_manager.run_all(self.__check_form_request, form_dtos, debug_msg=f'SstiManager/Form ({domain})')
 
             cache_manager.save_dtos(self._result)
 
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({self._domain}) SstiManager FORM SSTI: {len(self._result)}')
+        self._logger.log_warn(f'({domain}) SstiManager FORM SSTI: {len(self._result)}')
 
     def __check_form_request(self, dto: FormRequestDTO):
         try:
@@ -133,10 +133,10 @@ class SstiManager:
                             if response.status_code == 400:
                                 url = prev_url
                 else:
-                    print("METHOD TYPE NOT FOUND: " + form.method_type)
+                    self._logger.log_warn("METHOD TYPE NOT FOUND: " + form.method_type)
                     return
         except Exception as inst:
-            print(f"Exception - ({dto.url}) - {inst}")
+            self._logger.log_error(f"Exception - ({dto.url}) - {inst}")
 
     def __check_keywords(self, response, url, inj_type: InjectionType, param=None):
         web_page = response.text
@@ -151,14 +151,13 @@ class SstiManager:
                 substr_index = web_page.find(self._expected)
                 start_index = substr_index - 50 if substr_index - 50 > 0 else 0
                 last_index = substr_index + 50 if substr_index + 50 < len(web_page) else substr_index
-                details = web_page[start_index:last_index].replace('/n','').replace('/r','').strip()
+                details = web_page[start_index:last_index].replace('/n', '').replace('/r', '').strip()
                 log_header_msg = f'injFOUND: {self._expected};' \
                                  f'URL: {url}' \
                                  f'DETAILS: {details};'
-                print(log_header_msg)
+                self._logger.log_warn(log_header_msg)
                 return self._result.append(InjectionFoundDTO(inj_type, url, param, web_page, log_header_msg))
         if response.status_code == 500:
             details = response.text[0:200].replace('\n', '').replace('\r', '').strip()
-            print(f"SstiManager: 500 status - {url}; DETAILS: {details}")
+            self._logger.log_warn(f"SstiManager: 500 status - {url}; DETAILS: {details}")
             self.errors_500.append({'url': url, 'response_len': len(response.text)})
-

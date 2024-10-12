@@ -1,15 +1,7 @@
 import os
-from datetime import datetime
+import inject
 from urllib.parse import urlparse
-
-
-def _try_parse_url(url: str):
-    try:
-        parsed_url = urlparse(url)
-        return parsed_url
-    except:
-        print("Error parsing URL:", url)
-        return None
+from Common.Logger import Logger
 
 
 class BbManager:
@@ -24,6 +16,7 @@ class BbManager:
         self._targets_path = os.environ.get("app_targets_path")
         self._black_list = ['github.com', 'google.com', 'immunefi.com', 'linkedin.com', 'apple.com']
         self._wildcards_match = ['.*', '[', '}', '[', '{', '|']
+        self._logger = inject.instance(Logger)
 
     def run(self):
 
@@ -37,29 +30,37 @@ class BbManager:
                    f"grep -e ' URL' -e ' WILDCARD' >> {self._res_file}")
         stream = os.popen(command)
         stream.read()
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: H1 done')
+        self._logger.log_info('H1 done')
 
         command = f"bbscope bc -t {self._bc_session_id} -b -o tcu | grep -e ' website' -e ' api' >> {self._res_file}"
         stream = os.popen(command)
         stream.read()
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Bc done')
+        self._logger.log_info('Bc done')
 
         command = f"bbscope it -t {self._it_id} -b -o tcu | grep -e ' Url' >> {self._res_file}"
         stream = os.popen(command)
         stream.read()
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Intigrity done')
+        self._logger.log_info('Intigrity done')
 
         command = f"bbscope ywh -t {self._ywh_id} -b -o tcu | grep -e ' web-application' -e ' api' >> {self._res_file}"
         stream = os.popen(command)
         stream.read()
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Ywh done')
+        self._logger.log_info(f'Ywh done')
 
         command = f"bbscope immunefi -b -o tcu | grep 'websites_and_applications' >> {self._res_file}"
         stream = os.popen(command)
         stream.read()
-        print(f'[{datetime.now().strftime("%H:%M:%S")}]: Immunefi done')
+        self._logger.log_info('Immunefi done')
 
         self._parse_cmd()
+
+    def _try_parse_url(self, url: str):
+        try:
+            parsed_url = urlparse(url)
+            return parsed_url
+        except:
+            self._logger.log_error(f"Error parsing URL: {url}")
+            return None
 
     def _parse_cmd(self):
 
@@ -71,7 +72,7 @@ class BbManager:
 
         for line in lines:
             if any(word in line for word in self._black_list):
-                print(f'IGNORED: {line}')
+                self._logger.log_error(f'IGNORED: {line}')
                 continue
             split = line.split(' ', 1)[0]
             if any(word in split for word in self._wildcards_match):
@@ -84,7 +85,7 @@ class BbManager:
                         domains.add(split[index + 2:].rstrip('/').replace('*', ''))
                         continue
                 else:
-                    parsed = _try_parse_url(split)
+                    parsed = self._try_parse_url(split)
                     if parsed:
                         urls.add(f'{parsed.scheme}://{parsed.netloc}')
                     continue
@@ -118,6 +119,6 @@ class BbManager:
             txt_file.write(f"{line}\n")
         txt_file.close()
 
-        print(f'WILDCARD found - {len(wildcards)}')
-        print(f'URL found - {len(urls)}')
-        print(f'DOMAIN found - {len(domains)}')
+        self._logger.log_warn(f'WILDCARD found - {len(wildcards)}')
+        self._logger.log_warn(f'URL found - {len(urls)}')
+        self._logger.log_warn(f'DOMAIN found - {len(domains)}')

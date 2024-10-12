@@ -2,6 +2,10 @@ import glob
 import ipaddress
 from csv import reader
 from datetime import date
+
+import inject
+
+from Common.Logger import Logger
 from Common.RequestHandler import RequestHandler
 from Common.ThreadManager import ThreadManager
 from Helpers.CacheHelper import CacheHelper
@@ -10,15 +14,18 @@ from Managers.UrlListManager import UrlListManager
 
 
 class CsvManager:
-    def __init__(self, headers):
-        self._headers = headers
+    def __init__(self):
         self._tool_name = self.__class__.__name__
         self._target_files = f'Targets/*.csv'
-        self._request_handler = RequestHandler(headers=headers)
         self._domains = set()
         self._urls = set()
         self._ips = set()
         self._cache_keys = str(date.today())
+        self._logger = inject.instance(Logger)
+        self._request_handler = inject.instance(RequestHandler)
+        self._multiple_man = inject.instance(UrlListManager)
+        self._domain_man = inject.instance(DomainManager)
+        self._thread_manager = inject.instance(ThreadManager)
 
     def run(self):
 
@@ -28,16 +35,14 @@ class CsvManager:
         print(f'FOUND URLS: {", ".join(self._urls)}')
         print(f'FOUND IPS: {", ".join(self._ips)}')
 
-        domain_man = DomainManager(self._headers)
         for domain in self._domains:
-            domain_man.check_domain(domain)
+            self._domain_man.check_domain(domain)
 
         for ip in self._ips:
-            domain_man.check_ip(ip)
+            self._domain_man.check_ip(ip)
 
         if len(self._urls):
-            multiple_man = UrlListManager(self._headers)
-            multiple_man.run(self._urls)
+            self._multiple_man.run(self._urls)
 
     def __parse_csv(self):
 
@@ -81,10 +86,9 @@ class CsvManager:
                     else:
                         print(f"NotEligible/OOS: {', '.join(row)}")
 
-        thread_man = ThreadManager()
-        thread_man.run_all(self.__ping_domain, domains)
-        thread_man.run_all(self.__ping_url, urls)
-        thread_man.run_all(self.__ping_ip, ips)
+        self._thread_manager.run_all(self.__ping_domain, domains)
+        self._thread_manager.run_all(self.__ping_url, urls)
+        self._thread_manager.run_all(self.__ping_ip, ips)
 
         cache_man.cache_result({'urls': self._urls, 'domains': self._domains, 'ips': self._ips})
 

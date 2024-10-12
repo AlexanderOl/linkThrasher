@@ -1,6 +1,8 @@
 import os
 import shutil
 
+import inject
+
 from Common.ProcessHandler import ProcessHandler
 from Helpers.CacheHelper import CacheHelper
 
@@ -11,6 +13,7 @@ class Dnsx:
         self._tool_name = self.__class__.__name__
         self._cache_manager = CacheHelper(self._tool_name, domain, 'Results')
         self._domain_folder = f'{os.environ.get("app_cache_result_path")}{self._tool_name}/{self._domain}'
+        self._process_handler = inject.instance(ProcessHandler)
 
     def get_dnsx_report(self, subdomains):
 
@@ -27,8 +30,7 @@ class Dnsx:
             json_file.close()
 
             cmd_arr = ['dnsx', '-l', subs_file, '-recon']
-            pk = ProcessHandler()
-            bash_outputs = pk.run_temp_process(cmd_arr, self._domain, timeout=1200)
+            bash_outputs = self._process_handler.run_temp_process(cmd_arr, self._domain, timeout=1200)
 
             lines = set()
 
