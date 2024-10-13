@@ -1,9 +1,8 @@
-from copy import deepcopy
-import urllib.parse as urlparse
-from typing import List
-
 import inject
+import urllib.parse as urlparse
 
+from copy import deepcopy
+from typing import List
 from Common.Logger import Logger
 from Common.RequestChecker import RequestChecker
 from Helpers.CacheHelper import CacheHelper

@@ -1,11 +1,9 @@
 import os
-from datetime import datetime
-from typing import List
-
 import inject
+
+from typing import List
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
-
 from Common.Logger import Logger
 from Common.RequestChecker import RequestChecker
 from Helpers.CacheHelper import CacheHelper
@@ -66,7 +64,7 @@ class Spider:
 
         response = self._request_handler.handle_request(url=checked_url,
                                                         except_ssl_action=self.__except_ssl_action,
-                                                        except_ssl_action_args=[checked_url, current_depth])
+                                                        except_ssl_action_args=[checked_url, current_depth, domain])
         if response is None:
             return
 
@@ -78,7 +76,7 @@ class Spider:
                     redirect_url = f"{target_url}{redirect}"
                 else:
                     redirect_url = redirect
-                self.__recursive_search(redirect_url, current_depth - 1)
+                self.__recursive_search(domain, redirect_url, current_depth - 1)
         elif response.status_code < 300 and len(response.history) <= 2:
             self._head_dtos.append(HeadRequestDTO(response))
 
@@ -88,16 +86,17 @@ class Spider:
         urls_for_search = self.__get_urls_for_search(web_page, checked_url)
 
         for item in urls_for_search:
-            self.__recursive_search(item, current_depth)
+            self.__recursive_search(domain, item, current_depth)
 
     def __except_ssl_action(self, args: []):
         target_url = args[0]
         current_depth = args[1]
+        domain = args[2]
         if target_url.startswith('http:'):
             return
         self._logger.log_warn(f'Url ({target_url}) - ConnectionError(SSLError)')
         target_url = target_url.replace('https:', 'http:')
-        self.__recursive_search(target_url, current_depth)
+        self.__recursive_search(domain, target_url, current_depth)
 
     def __check_href(self, href, target_url):
         result = False

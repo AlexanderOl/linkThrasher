@@ -61,7 +61,7 @@ class RequestHandler:
             self._logger.log_error(f'Url ({url}) - Exception: {inst}')
             return
 
-    def handle_request(self, url, post_data=None, except_ssl_action=None, except_ssl_action_args: [] = None,
+    def handle_request(self, url: str, post_data=None, except_ssl_action=None, except_ssl_action_args: [] = None,
                        timeout=10):
 
         try:
