@@ -5,7 +5,6 @@ from typing import List
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from Common.Logger import Logger
-from Common.RequestChecker import RequestChecker
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
 from Models.Constants import SOCIAL_MEDIA, URL_IGNORE_EXT_REGEX
@@ -21,7 +20,6 @@ class Spider:
         self._tool_name = self.__class__.__name__
         self._head_dtos: List[HeadRequestDTO] = []
         self._request_handler = inject.instance(RequestHandler)
-        self._request_checker = inject.instance(RequestChecker)
         self._allowed_content_types = [
                     'application/json',
                     'text/plain',
@@ -132,7 +130,8 @@ class Spider:
         links_urls = self.__get_url_from_html(tag='link', attr='href', web_page=web_page, target_url=target_url)
         data_url = self.__get_url_from_html(tag='div', attr='data-url', web_page=web_page, target_url=target_url)
         form_url = self.__get_url_from_html(tag='form', attr='action', web_page=web_page, target_url=target_url)
-        action_urlsrc_url = self.__get_url_from_html(tag='action', attr='urlsrc', web_page=web_page, target_url=target_url)
+        action_urlsrc_url = self.__get_url_from_html(tag='action', attr='urlsrc', web_page=web_page,
+                                                     target_url=target_url)
 
         href_urls.update(links_urls)
         href_urls.update(data_url)

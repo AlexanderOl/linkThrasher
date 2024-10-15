@@ -1,15 +1,12 @@
 import os
+import inject
+
 from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
-
-import inject
-
 from Common.RequestChecker import RequestChecker
-from Common.RequestHandler import RequestHandler
-from Common.ThreadManager import ThreadManager
 from Helpers.CacheHelper import CacheHelper
-from Models.Constants import URL_IGNORE_EXT_REGEX, VALID_STATUSES
+from Models.Constants import URL_IGNORE_EXT_REGEX
 from Models.GetRequestDTO import GetRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
 
@@ -25,10 +22,10 @@ class Waybackurls:
         self._out_of_scope = os.environ.get("out_of_scope")
         self._wayback_max_size = 50000
         self._request_checker = inject.instance(RequestChecker)
-        self._request_handler = inject.instance(RequestHandler)
-        self._thread_manager = inject.instance(ThreadManager)
 
-    def get_requests_dtos(self, domain) -> List[HeadRequestDTO]:
+    def get_requests_dtos(self, start_url) -> set[str]:
+
+        domain = urlparse(start_url).netloc
         cache_manager = CacheHelper(self._tool_name, domain)
         result = cache_manager.get_saved_result()
         if result is None:
@@ -36,14 +33,14 @@ class Waybackurls:
             out_of_scope = [x for x in self._out_of_scope.split(';') if x]
             if any(oos in domain for oos in out_of_scope):
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) out of scope waybackurls')
-                return []
+                return set()
             result = self.__get_urls(domain)
             cache_manager.cache_result(result)
 
         print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) {self._tool_name} found {len(result)} items')
         return result
 
-    def __get_urls(self, domain: str) -> List[HeadRequestDTO]:
+    def __get_urls(self, domain: str) -> set[str]:
         res_file = f'{self._tool_result_dir}/{domain.replace(":", "_")}.txt'
 
         command = f"echo '{domain}' | waybackurls > {res_file}"
@@ -61,29 +58,9 @@ class Waybackurls:
 
         urls = self.__filter_urls(href_urls)
 
-        self._thread_manager.run_all(self.__check_href_urls, urls, debug_msg=f'{self._tool_name} ({domain})')
+        return urls
 
-        return self._result
-
-    def __check_href_urls(self, url: str):
-        url_parts = urlparse(url)
-        if url_parts.path in self._checked_hrefs or URL_IGNORE_EXT_REGEX.search(url):
-            return
-        else:
-            self._checked_hrefs.add(url_parts.path)
-
-        check = self._request_handler.send_head_request(url)
-        if check is None:
-            return
-
-        response = self._request_handler.send_head_request(url, timeout=3)
-        if response is None:
-            return
-
-        if response.status_code in VALID_STATUSES:
-            self._result.append(HeadRequestDTO(response))
-
-    def __filter_urls(self, href_urls) -> set:
+    def __filter_urls(self, href_urls) -> set[str]:
         urls = set()
         checked_key = set()
 

@@ -1,16 +1,12 @@
 import os
-from urllib.parse import urlparse, parse_qs
-from datetime import datetime
-from typing import List
-
 import inject
 
+from typing import List
+from urllib.parse import urlparse, parse_qs
 from Common.Logger import Logger
-from Common.ThreadManager import ThreadManager
 from Helpers.CacheHelper import CacheHelper
-from Common.RequestHandler import RequestHandler
 from Helpers.CookieHelper import CookieHelper
-from Models.Constants import SOCIAL_MEDIA, URL_IGNORE_EXT_REGEX, VALID_STATUSES
+from Models.Constants import SOCIAL_MEDIA
 from Models.HeadRequestDTO import HeadRequestDTO
 from Tools.LinkFinder import LinkFinder
 
@@ -20,15 +16,13 @@ class Hakrawler:
         self._max_depth = os.environ.get('max_depth')
         self._threads = f'{os.environ.get("threads")}'
         self._tool_name = self.__class__.__name__
-        self._request_handler = inject.instance(RequestHandler)
-        self._thread_man = inject.instance(ThreadManager)
         self._link_finder = inject.instance(LinkFinder)
         self._logger = inject.instance(Logger)
         self._head_dtos: List[HeadRequestDTO] = []
-        self._checked_hrefs = set()
         self._cookie_manager = inject.instance(CookieHelper)
 
-    def get_requests_dtos(self, start_url) -> List[HeadRequestDTO]:
+    def get_requests_dtos(self, start_url) -> set[str]:
+
         domain = urlparse(start_url).netloc
         cache_manager = CacheHelper('Hakrawler', domain)
         result = cache_manager.get_saved_result()
@@ -39,7 +33,7 @@ class Hakrawler:
         self._logger.log_info(f'({domain}) {self._tool_name} found {len(result)} items')
         return result
 
-    def __get_urls(self, domain: str, start_url) -> list[HeadRequestDTO]:
+    def __get_urls(self, domain: str, start_url) -> set[str]:
 
         raw_cookies = self._cookie_manager.get_raw_cookies(domain)
 
@@ -81,28 +75,6 @@ class Hakrawler:
             unique_keys[key] += 1
             result_lines.add(line)
 
-        self._thread_man.run_all(self.__check_href_urls, result_lines, debug_msg=f'{self._tool_name} ({domain})')
-
-        return self._head_dtos
-
-    def __check_href_urls(self, url: str):
-        try:
-            url_parts = urlparse(url)
-            if url_parts.path in self._checked_hrefs or URL_IGNORE_EXT_REGEX.search(url):
-                return
-            else:
-                self._checked_hrefs.add(url_parts.path)
-            response = self._request_handler.send_head_request(url, timeout=5)
-            if response is None:
-                return
-
-            if response.status_code in VALID_STATUSES:
-                self._head_dtos.append(HeadRequestDTO(response))
-
-            return self._head_dtos
-
-        except Exception as inst:
-            self._logger.log_error(f'[{datetime.now().strftime("%H:%M:%S")}]: Unable to parse url - {url}. '
-                                   f'Hakrawler exception: {inst}')
+        return result_lines
 
 

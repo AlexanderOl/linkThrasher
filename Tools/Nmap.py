@@ -32,12 +32,12 @@ class Nmap:
         if not self._port_head_dtos and not isinstance(self._port_head_dtos, List):
             self._port_head_dtos: List[HeadRequestDTO] = []
             start = time.time()
-
             bash_outputs = self.__run_nmap_command(domain, subdomains)
             url_with_ports = self.__parse_cmd_output(domain, bash_outputs)
 
             self._existing_get_dtos = get_dtos
 
+            self._domain = domain
             self._thread_manager.run_all(self.__check_url_with_port, url_with_ports,
                                          debug_msg=f'{self._tool_name} ({domain})')
 
@@ -95,11 +95,12 @@ class Nmap:
         os.remove(txt_filepath)
         return bash_outputs
 
-    def __check_url_with_port(self, domain: str, url):
+    def __check_url_with_port(self, url):
         ssl_action_args = [url, False]
         response = self._request_handler.send_head_request(url,
                                                            except_ssl_action=self.__except_ssl_action,
-                                                           except_ssl_action_args=ssl_action_args)
+                                                           except_ssl_action_args=ssl_action_args,
+                                                           timeout=5)
         if response is not None:
             if str(response.status_code).startswith('3') and 'Location' in response.headers:
                 redirect = response.headers['Location']
@@ -117,7 +118,7 @@ class Nmap:
                 return
             if str(response.status_code).startswith('3') and 'Location' in response.headers:
                 redirect = response.headers['Location']
-                if redirect[0] != '/' and domain not in redirect:
+                if redirect[0] != '/' and self._domain not in redirect:
                     return
 
             resp_length = len(response.text)

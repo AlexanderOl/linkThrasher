@@ -17,10 +17,10 @@ from Models.InjectionFoundDTO import InjectionType, InjectionFoundDTO
 
 class SqliManager:
     def __init__(self):
-        super().__init__()
+
         self._result: List[InjectionFoundDTO] = []
         self._false_positives = ['malformed request syntax',
-                                 'script tag to avoid syntax errors'
+                                 'script tag to avoid syntax errors',
                                  'eval|internal|range|reference|syntax|type']
         self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
         self._time_based_payloads = [

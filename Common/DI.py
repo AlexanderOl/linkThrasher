@@ -13,6 +13,7 @@ from Helpers.Spider import Spider
 from Helpers.SqliManager import SqliManager
 from Helpers.SubdomainChecker import SubdomainChecker
 from Helpers.XssManager import XssManager
+from Helpers.UrlChecker import UrlChecker
 from Managers.BbManager import BbManager
 from Managers.CsvManager import CsvManager
 from Managers.DomainManager import DomainManager
@@ -28,6 +29,7 @@ from Tools.Nmap import Nmap
 from Tools.Nuclei import Nuclei
 from Tools.Waybackurls import Waybackurls
 from Tools.Waymore import Waymore
+
 
 class DI:
     @staticmethod
@@ -62,4 +64,4 @@ class DI:
         binder.bind_to_provider(Slack, Slack)
         binder.bind_to_provider(Httracker, Httracker)
         binder.bind_to_provider(MysqlRepository, MysqlRepository)
-
+        binder.bind_to_provider(UrlChecker, UrlChecker)

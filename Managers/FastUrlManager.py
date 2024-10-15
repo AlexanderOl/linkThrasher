@@ -23,7 +23,7 @@ from Tools.Nuclei import Nuclei
 
 class FastUrlManager:
     def __init__(self):
-        super().__init__()
+
         self._tool_name = self.__class__.__name__
         self._out_of_scope = os.environ.get("out_of_scope")
         self._severity = int(os.environ.get("severity"))

@@ -5,9 +5,14 @@ from Models import GetRequestDTO
 
 class FormDetailsDTO:
     def __init__(self, action: str, params: {}, method_type: str):
+        self._key = f"{action};{';'.join(params.keys())}"
         self._action = action
         self._params = params
         self._method_type = method_type
+
+    @property
+    def key(self):
+        return self._key
 
     @property
     def action(self):
@@ -32,6 +37,11 @@ class FormRequestDTO:
         self._status_code = parent_get_dto.status_code
         self._response_length = parent_get_dto.response_length
         self._parent_url = parent_get_dto.url
+        self._key = ';'.join([param.key for param in form_params])
+
+    @property
+    def key(self):
+        return self._key
 
     @property
     def url(self):

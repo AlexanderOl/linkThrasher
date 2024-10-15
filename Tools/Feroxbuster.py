@@ -1,67 +1,37 @@
 import os
 import inject
+
 from typing import List
 from urllib.parse import urlparse
 from Common.Logger import Logger
 from Common.ProcessHandler import ProcessHandler
-from Common.RequestChecker import RequestChecker
 from Helpers.CacheHelper import CacheHelper
-from Common.RequestHandler import RequestHandler
-from Common.ThreadManager import ThreadManager
 from Helpers.CookieHelper import CookieHelper
-from Models.Constants import VALID_STATUSES, URL_IGNORE_EXT_REGEX
-from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class Feroxbuster:
     def __init__(self):
-        self._head_dtos: List[HeadRequestDTO] = []
         self._tool_name = self.__class__.__name__
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._app_wordlists_path = f'{os.environ.get("app_wordlists_path")}'
         self._max_depth = int(f'{os.environ.get("max_depth")}')
         self._threads = f'{os.environ.get("threads")}'
-
-        self._request_checker = inject.instance(RequestChecker)
-        self._request_handler = inject.instance(RequestHandler)
         self._process_handler = inject.instance(ProcessHandler)
-        self._thread_man = inject.instance(ThreadManager)
         self._cookie_manager = inject.instance(CookieHelper)
         self._logger = inject.instance(Logger)
 
-    def check_single_url(self, url):
+    def check_single_url(self, url) -> set[str]:
         domain = urlparse(url).netloc
         cache_manager = CacheHelper(self._tool_name, domain)
-        dtos = cache_manager.get_saved_result()
+        ready_urls = cache_manager.get_saved_result()
 
-        if not dtos and not isinstance(dtos, List):
+        if not ready_urls and not isinstance(ready_urls, set):
 
             report_lines = self.__run_tool_cmd(domain, url)
-
             ready_urls = self.__get_ready_urls(domain, report_lines)
+            cache_manager.cache_result(ready_urls)
 
-            self._thread_man.run_all(self.__check_url, ready_urls, debug_msg=f'{self._tool_name} ({domain})')
-
-            cache_manager.cache_result(self._head_dtos)
-
-        else:
-            self._head_dtos = dtos
-
-        return self._head_dtos
-
-    def __check_url(self, url):
-        if URL_IGNORE_EXT_REGEX.search(url):
-            self._logger.log_warn(f'({url}) Feroxbuster ignored')
-            return
-
-        head_check = self._request_handler.send_head_request(url)
-        if head_check is None:
-            return
-
-        if head_check.status_code not in VALID_STATUSES:
-            return
-
-        self._head_dtos.append(HeadRequestDTO(head_check))
+        return ready_urls
 
     def __run_tool_cmd(self, domain, url) -> [str]:
 

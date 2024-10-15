@@ -1,13 +1,12 @@
 import re
 import uuid
+import inject
+
 from copy import deepcopy
 from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
-
-import inject
 from bs4 import BeautifulSoup
-
 from Common.Logger import Logger
 from Models.FormRequestDTO import FormDetailsDTO, FormRequestDTO
 from Models.GetRequestDTO import GetRequestDTO
@@ -182,8 +181,8 @@ class RequestChecker:
                                     default_value = ''
                                 params[param_name] = default_value
 
-                if not any(action_tag.strip() in form_detail.action and str.upper(method) == form_detail.method_type
-                           for form_detail in form_details):
+                if all(form_detail.key != f"{action_tag.strip()};{''.join(params.keys())}"
+                       for form_detail in form_details):
                     form_details.append(FormDetailsDTO(action_tag.strip(), params, str.upper(method)))
 
             if len(form_details) > 0:

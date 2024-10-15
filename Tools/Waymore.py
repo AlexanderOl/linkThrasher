@@ -1,17 +1,14 @@
 import os
+import inject
+
 from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
-
-import inject
-
 from Common.Logger import Logger
 from Common.ProcessHandler import ProcessHandler
 from Common.RequestChecker import RequestChecker
-from Common.RequestHandler import RequestHandler
-from Common.ThreadManager import ThreadManager
 from Helpers.CacheHelper import CacheHelper
-from Models.Constants import URL_IGNORE_EXT_REGEX, VALID_STATUSES
+from Models.Constants import URL_IGNORE_EXT_REGEX
 from Models.HeadRequestDTO import HeadRequestDTO
 
 
@@ -25,11 +22,9 @@ class Waymore:
         self._checked_hrefs = set()
         self._out_of_scope = os.environ.get("out_of_scope")
         self._wayback_max_size = 50000
-        self._request_handler = inject.instance(RequestHandler)
         self._request_checker = inject.instance(RequestChecker)
         self._process_handler = inject.instance(ProcessHandler)
         self._logger = inject.instance(Logger)
-        self._thread_man = inject.instance(ThreadManager)
 
     def get_domains(self, domain: str) -> set:
         cache_manager = CacheHelper(f'{self._tool_name}_domains', domain)
@@ -46,7 +41,9 @@ class Waymore:
         self._logger.log_info(f'({domain}) {self._tool_name} found {len(result)} items')
         return result
 
-    def get_requests_dtos(self, domain) -> List[HeadRequestDTO]:
+    def get_requests_dtos(self, start_url) -> set[str]:
+
+        domain = urlparse(start_url).netloc
         cache_manager = CacheHelper(f'{self._tool_name}_urls', domain)
         result = cache_manager.get_saved_result()
         if result is None:
@@ -54,7 +51,7 @@ class Waymore:
             out_of_scope = [x for x in self._out_of_scope.split(';') if x]
             if any(oos in domain for oos in out_of_scope):
                 print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) out of scope waymore')
-                return []
+                return set()
             result = self.__get_urls(domain)
             cache_manager.cache_result(result)
 
@@ -80,7 +77,7 @@ class Waymore:
 
         return domains
 
-    def __get_urls(self, domain: str) -> List[HeadRequestDTO]:
+    def __get_urls(self, domain: str) -> set[str]:
         res_file = f'{self._tool_result_dir}/{domain.replace(":", "_")}.txt'
 
         if not os.path.exists(res_file):
@@ -89,10 +86,10 @@ class Waymore:
 
             self._process_handler.run_temp_process(cmd, 'waymore')
 
-        if not os.path.exists(res_file):
-            return self._head_dtos
-
         href_urls = set()
+        if not os.path.exists(res_file):
+            return href_urls
+
         text_file = open(res_file, 'r', encoding='utf-8', errors='ignore')
         lines = text_file.readlines()
         for line in lines:
@@ -103,23 +100,7 @@ class Waymore:
 
         urls = self.__filter_urls(href_urls)
 
-        self._thread_man.run_all(self.__check_href_urls, urls, debug_msg=f'{self._tool_name} ({domain})')
-
-        return self._head_dtos
-
-    def __check_href_urls(self, url: str):
-        url_parts = urlparse(url)
-        if url_parts.path in self._checked_hrefs or URL_IGNORE_EXT_REGEX.search(url):
-            return
-        else:
-            self._checked_hrefs.add(url_parts.path)
-
-        response = self._request_handler.send_head_request(url)
-        if response is None:
-            return
-
-        if response.status_code in VALID_STATUSES:
-            self._head_dtos.append(HeadRequestDTO(response))
+        return urls
 
     def __filter_urls(self, href_urls) -> set:
         urls = set()
