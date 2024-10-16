@@ -1,11 +1,10 @@
 import os
 import socket
-
 import inject
 import validators
+
 from typing import List
 from urllib.parse import urlparse
-
 from Common.Logger import Logger
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
@@ -97,7 +96,12 @@ class SubdomainChecker:
         url = url.replace('https:', 'http:')
         if validators.url(url):
             response = self._request_handler.send_head_request(url, timeout=5)
-            if response is not None:
+            if response is not None and (len(response.history) > 0
+                                         and str(response.history[0].status_code).startswith('3')
+                                         and 'Location' in response.history[0].headers):
+                redirect = response.history[0].headers['Location']
+                self.__check_redirect_urls(url, redirect)
+            elif response is not None:
                 self._checked_subdomains.append(HeadRequestDTO(response))
 
     def __check_redirect_urls(self, base_url, redirect):

@@ -1,14 +1,10 @@
 import os
 import inject
 
-from datetime import datetime
-from typing import List, Tuple
 from urllib.parse import urlparse
 from Common.Logger import Logger
-from Common.RequestChecker import RequestChecker
 from Common.RequestHandler import RequestHandler
 from Common.S500Handler import S500Handler
-from Common.ThreadManager import ThreadManager
 from Helpers.LfiManager import LfiManager
 from Helpers.ManualTesting import ManualTesting
 from Helpers.Spider import Spider
@@ -17,8 +13,6 @@ from Helpers.SsrfManager import SsrfManager
 from Helpers.SstiManager import SstiManager
 from Helpers.UrlChecker import UrlChecker
 from Helpers.XssManager import XssManager
-from Models.FormRequestDTO import FormRequestDTO
-from Models.GetRequestDTO import GetRequestDTO
 from Models.HeadRequestDTO import HeadRequestDTO
 from Tools.Feroxbuster import Feroxbuster
 from Tools.Gobuster import Gobuster
@@ -33,9 +27,8 @@ from Tools.Waymore import Waymore
 class SingleUrlManager:
     def __init__(self):
 
-        self.ngrok_url = os.environ.get('ngrok_url')
-        self.check_mode = os.environ.get('check_mode')
-        self.single_url = os.environ.get('single_url')
+        self._check_mode = os.environ.get('check_mode')
+        self._single_url = os.environ.get('single_url')
         self._severity = int(os.environ.get('severity'))
 
         self._s500 = inject.instance(S500Handler)
@@ -59,14 +52,14 @@ class SingleUrlManager:
         self._url_checker = inject.instance(UrlChecker)
 
     def run(self):
-        response = self._request_handler.send_head_request(self.single_url)
+        response = self._request_handler.send_head_request(self._single_url)
         self.do_run(response)
 
     def do_run(self, head_dto: HeadRequestDTO):
 
         start_url = head_dto.url
         if 404 <= head_dto.status_code < 500:
-            self._logger.log_info(f'SingleUrlFlowManager done with ({start_url}) - status: {head_dto.status_code}')
+            self._logger.log_warn(f'SingleUrlFlowManager done with ({start_url}) - status: {head_dto.status_code}')
             return
 
         domain = urlparse(start_url).netloc
@@ -75,7 +68,7 @@ class SingleUrlManager:
 
         self._gobuster.check_single_url(start_url)
 
-        if self.check_mode == 'U':
+        if self._check_mode == 'U':
             self._nuclei.check_single_url(start_url)
 
         spider_dtos = self._spider.get_all_links(start_url)
@@ -104,10 +97,10 @@ class SingleUrlManager:
         self._manual_testing.save_urls_for_manual_testing(domain, head_dtos, form_dtos)
 
         if len(head_dtos) == 0:
-            self._logger.log_info(f'({domain}) request DTOs not found')
+            self._logger.log_warn(f'({domain}) request DTOs not found')
             return
         else:
-            self._logger.log_info(f'({domain}) will run {len(head_dtos)} heads, {len(form_dtos)} forms')
+            self._logger.log_warn(f'({domain}) will run {len(head_dtos)} heads, {len(form_dtos)} forms')
 
         if self._severity == 1:
             self._xss_manager.check_get_requests(domain, head_dtos)
@@ -128,7 +121,7 @@ class SingleUrlManager:
         errors = self._sqli_manager.errors_500 + self._ssti_manager.errors_500
         self._s500.save_server_errors(errors)
 
-        if self.check_mode == 'UL':
+        if self._check_mode == 'UL':
             with open("Targets/urls.txt", "r", encoding='utf-8', errors='ignore') as f:
                 lines = f.readlines()
             with open("Targets/urls.txt", "w") as f:
@@ -136,5 +129,4 @@ class SingleUrlManager:
                     if start_url.rstrip('/') not in line.strip("\n"):
                         f.write(line)
 
-        self._logger.log_info(f'SingleUrlFlowManager done with ({start_url})')
-
+        self._logger.log_warn(f'SingleUrlFlowManager done with ({start_url})')

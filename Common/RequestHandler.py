@@ -1,10 +1,12 @@
+import os
+import time
 import inject
 import requests
+
 from requests import Response
 from urllib.parse import urlparse
 from requests.exceptions import SSLError, Timeout, ConnectionError
 from urllib3 import exceptions, disable_warnings
-
 from Common.Logger import Logger
 from Helpers.CookieHelper import CookieHelper
 from Models.Constants import HEADERS
@@ -13,9 +15,9 @@ from Models.Constants import HEADERS
 class RequestHandler:
 
     def __init__(self):
+        self._delay_seconds = float(os.environ.get('delay_seconds'))
         self._cookie_helper = inject.instance(CookieHelper)
         self._logger = inject.instance(Logger)
-
         disable_warnings(exceptions.InsecureRequestWarning)
 
     def send_head_request(self, url, except_ssl_action=None,
@@ -92,6 +94,8 @@ class RequestHandler:
             return
 
     def __send_prepared_request(self, method, url, post_data, timeout, cookie) -> Response:
+
+        time.sleep(self._delay_seconds)
         s = requests.Session()
         req = requests.Request(method=method,
                                url=url,
@@ -103,7 +107,7 @@ class RequestHandler:
         prep.url = url
         response = s.send(prep, verify=False, timeout=timeout)
 
-        self._logger.log_info(f'URL: {url}, METHOD: {method}, STATUS: {response.status_code}', )
-        self._logger.log_debug(f'URL: {url}, METHOD: {method}, STATUS: {response.status_code}', )
+        self._logger.log_info(f'URL: {url.rstrip()}, METHOD: {method}, STATUS: {response.status_code}', )
+        self._logger.log_debug(f'URL: {url.rstrip()}, METHOD: {method}, STATUS: {response.status_code}', )
 
         return response

@@ -37,7 +37,7 @@ class UrlChecker:
 
         if not result and not isinstance(result, List):
 
-            self._thread_manager.run_all(self.__check_urls, lines, debug_msg='urls_checking')
+            self._thread_manager.run_all(self.__check_urls, lines, debug_msg=f'({domain}): Urls checking')
 
             checked_keys = set()
             out_of_scope = [x for x in self._out_of_scope.split(';') if x]
@@ -49,7 +49,7 @@ class UrlChecker:
 
             filtered_urls = [dto.url for dto in self._head_dtos]
 
-            self._thread_manager.run_all(self.__get_forms, filtered_urls, debug_msg='forms_searching')
+            self._thread_manager.run_all(self.__get_forms, filtered_urls, debug_msg=f'({domain}): Forms searching')
 
             cache_manager.cache_result({head_key: self._head_dtos, form_key: self._form_dtos},
                                        cleanup_prev_results=True)
