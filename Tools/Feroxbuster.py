@@ -96,26 +96,26 @@ class Feroxbuster:
                 url = line[index:]
                 parsed = urlparse(url)
                 if domain in parsed.netloc:
-                    filtered_output.add(url.strip())
+                    filtered_output.add(url.rstrip())
             elif ' => ' in line:
                 redirect = line.split(' => ', 1)[1]
                 if redirect.startswith('http'):
                     parsed = urlparse(redirect)
                     if domain in parsed.netloc:
-                        filtered_output.add(redirect.strip())
+                        filtered_output.add(redirect.rstrip())
                 elif redirect.strip().endswith('/'):
                     index = line.find('http')
                     url = f'{line[index:].split(" ")[0]}/'
                     parsed = urlparse(url)
                     if domain in parsed.netloc:
-                        filtered_output.add(url.strip())
+                        filtered_output.add(url.rstrip())
 
             elif 'http' in line:
                 index = line.find('http')
                 redirected_url = line[index:]
                 parsed = urlparse(redirected_url)
                 if domain in parsed.netloc:
-                    filtered_output.add(redirected_url.strip())
+                    filtered_output.add(redirected_url.rstrip())
             else:
                 self._logger.log_warn(f'FEROXBUSTER error! Unable to parse - ({line})')
 

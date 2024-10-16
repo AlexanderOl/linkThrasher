@@ -50,7 +50,7 @@ class Katana:
         for line in lines:
             netloc = urlparse(line).netloc
             if domain in netloc:
-                href_urls.add(line)
+                href_urls.add(line.rstrip())
         json_file.close()
 
         return href_urls

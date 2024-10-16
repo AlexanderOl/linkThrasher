@@ -50,7 +50,7 @@ class Waymore:
 
             out_of_scope = [x for x in self._out_of_scope.split(';') if x]
             if any(oos in domain for oos in out_of_scope):
-                print(f'[{datetime.now().strftime("%H:%M:%S")}]: ({domain}) out of scope waymore')
+                self._logger.log_warn(f'({domain}) out of scope waymore')
                 return set()
             result = self.__get_urls(domain)
             cache_manager.cache_result(result)
@@ -95,7 +95,7 @@ class Waymore:
         for line in lines:
             netloc = urlparse(line).netloc
             if domain in netloc:
-                href_urls.add(line)
+                href_urls.add(line.rstrip())
         text_file.close()
 
         urls = self.__filter_urls(href_urls)

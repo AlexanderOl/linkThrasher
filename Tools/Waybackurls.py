@@ -53,7 +53,7 @@ class Waybackurls:
         for line in lines:
             netloc = urlparse(line).netloc
             if domain in netloc:
-                href_urls.add(line)
+                href_urls.add(line.rstrip())
         text_file.close()
 
         urls = self.__filter_urls(href_urls)

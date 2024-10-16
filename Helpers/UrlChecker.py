@@ -35,7 +35,35 @@ class UrlChecker:
 
         result = cache_manager.get_saved_result()
 
-        if not result and not isinstance(result, List):
+        if not result and not isinstance(result, dict):
+
+            if len(lines) > 1000:
+                filtered = set()
+                checked_keys = set()
+                for line in lines:
+                    parsed_parts = urlparse(line)
+                    key = ''
+                    if '?' in line:
+                        params = parsed_parts.query.split('&')
+                        for param in params:
+                            split = param.split('=')
+                            key += split[0]
+                    else:
+                        split_path = parsed_parts.path.split('/')
+                        for part in split_path:
+                            if part.isdigit():
+                                key += 'numb'
+                            elif self._request_checker.is_valid_hash(part):
+                                key += 'guid'
+                            elif self._request_checker.is_date(part):
+                                key += 'date'
+                            else:
+                                key += '_'
+                    if key not in checked_keys:
+                        filtered.add(line)
+                        checked_keys.add(key)
+
+                lines = filtered
 
             self._thread_manager.run_all(self.__check_urls, lines, debug_msg=f'({domain}): Urls checking')
 
@@ -51,8 +79,7 @@ class UrlChecker:
 
             self._thread_manager.run_all(self.__get_forms, filtered_urls, debug_msg=f'({domain}): Forms searching')
 
-            cache_manager.cache_result({head_key: self._head_dtos, form_key: self._form_dtos},
-                                       cleanup_prev_results=True)
+            cache_manager.cache_result({head_key: self._head_dtos, form_key: self._form_dtos})
 
         return self._head_dtos, self._form_dtos
 
@@ -77,11 +104,10 @@ class UrlChecker:
 
     def __check_urls(self, url: str):
 
-        url_parts = urlparse(url)
-        if url_parts.path in self._checked_hrefs or URL_IGNORE_EXT_REGEX.search(url):
+        key = self._request_checker.get_url_key(url)
+        if key in self._checked_hrefs or URL_IGNORE_EXT_REGEX.search(url):
             return
-        else:
-            self._checked_hrefs.add(url_parts.path)
+        self._checked_hrefs.add(key)
 
         check = self._request_handler.send_head_request(url)
         if check is None:

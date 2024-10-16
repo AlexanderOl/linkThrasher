@@ -73,7 +73,7 @@ class Hakrawler:
             if unique_keys[key] >= 100:
                 continue
             unique_keys[key] += 1
-            result_lines.add(line)
+            result_lines.add(line.rstrip())
 
         return result_lines
 

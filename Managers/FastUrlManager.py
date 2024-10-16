@@ -125,7 +125,7 @@ class FastUrlManager:
         self._head_dtos: List[HeadRequestDTO] = []
         self._form_dtos: List[FormRequestDTO] = []
 
-        if not dtos and not isinstance(dtos, List):
+        if not dtos and not isinstance(dtos, dict):
 
             filtered_urls = [url for url in raw_urls if all(oos not in url for oos in out_of_scope)]
 

@@ -210,3 +210,5 @@ class RequestChecker:
                 path_key += 'date'
             else:
                 path_key += part
+
+        return path_key

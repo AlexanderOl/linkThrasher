@@ -107,7 +107,7 @@ class RequestHandler:
         prep.url = url
         response = s.send(prep, verify=False, timeout=timeout)
 
-        self._logger.log_info(f'URL: {url.rstrip()}, METHOD: {method}, STATUS: {response.status_code}', )
-        self._logger.log_debug(f'URL: {url.rstrip()}, METHOD: {method}, STATUS: {response.status_code}', )
+        self._logger.log_info(f'URL: {url}, METHOD: {method}, STATUS: {response.status_code}', )
+        self._logger.log_debug(f'URL: {url}, METHOD: {method}, STATUS: {response.status_code}', )
 
         return response
