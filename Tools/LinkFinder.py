@@ -1,12 +1,11 @@
 import os
 import pathlib
-from datetime import datetime
-from urllib.parse import urlparse
-
 import inject
 
+from urllib.parse import urlparse
 from Common.Logger import Logger
-from Models.Constants import URL_IGNORE_EXT_REGEX
+from Helpers.CacheHelper import CacheHelper
+from Models.Constants import URL_IGNORE_EXT_REGEX, SOCIAL_MEDIA
 
 
 class LinkFinder:
@@ -17,8 +16,24 @@ class LinkFinder:
                             "request/", "dojo/", "audio/", "video/", "font/", "/x-icon"]
         self._logger = inject.instance(Logger)
 
-    def search_urls_in_js(self, script_urls: set, start_url: str) -> set:
+    def get_urls_from_js(self, all_urls: set[str], start_url) -> set[str]:
+
         domain = urlparse(start_url).netloc
+        cache_manager = CacheHelper(self._tool_name, domain)
+        result = cache_manager.get_saved_result()
+
+        if not result and not isinstance(result, set):
+            result = self.__search_urls_in_js(all_urls, start_url)
+            cache_manager.cache_result(result)
+
+        self._logger.log_info(f'({domain}) {self._tool_name} found {len(result)} items')
+        return result
+
+    def __search_urls_in_js(self, all_urls: set[str], start_url: str) -> set[str]:
+        domain = urlparse(start_url).netloc
+
+        script_urls = [line for line in all_urls if urlparse(line).path.endswith('.js') and
+                       all(word not in line for word in SOCIAL_MEDIA)]
 
         result = set()
         if len(script_urls) == 0:

@@ -19,12 +19,12 @@ class HeadRequestDTO:
             self._content_type = 'No Content-Type'
 
     @property
-    def query_params(self) -> List[str]:
-        return self._query_params
-
-    @property
     def key(self) -> str:
         return self._key
+
+    @property
+    def query_params(self) -> List[str]:
+        return self._query_params
 
     @property
     def url(self) -> str:

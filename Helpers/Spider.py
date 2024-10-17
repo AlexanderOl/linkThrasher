@@ -67,6 +67,7 @@ class Spider:
             return
 
         web_page = response.text
+        new_dto = HeadRequestDTO(response)
         if 300 <= response.status_code < 400:
             if 'Location' in response.headers:
                 redirect = response.headers['Location']
@@ -75,8 +76,9 @@ class Spider:
                 else:
                     redirect_url = redirect
                 self.__recursive_search(domain, redirect_url, current_depth - 1)
-        elif response.status_code < 300 and len(response.history) <= 2:
-            self._head_dtos.append(HeadRequestDTO(response))
+        elif (response.status_code < 300 and len(response.history) <= 2 and
+              all(new_dto.key != dto.key for dto in self._head_dtos)):
+            self._head_dtos.append(new_dto)
 
         else:
             return

@@ -19,6 +19,7 @@ from Tools.Gobuster import Gobuster
 from Tools.Hakrawler import Hakrawler
 from Tools.Httracker import Httracker
 from Tools.Katana import Katana
+from Tools.LinkFinder import LinkFinder
 from Tools.Nuclei import Nuclei
 from Tools.Waybackurls import Waybackurls
 from Tools.Waymore import Waymore
@@ -50,6 +51,7 @@ class SingleUrlManager:
         self._manual_testing = inject.instance(ManualTesting)
         self._request_handler = inject.instance(RequestHandler)
         self._url_checker = inject.instance(UrlChecker)
+        self._link_finder = inject.instance(LinkFinder)
 
     def run(self):
         response = self._request_handler.send_head_request(self._single_url)
@@ -90,17 +92,20 @@ class SingleUrlManager:
         all_lines.update(waybackurls_lines)
         all_lines.update(feroxbuster_lines)
 
+        get_urls_from_js = self._link_finder.get_urls_from_js(all_lines, start_url)
+        all_lines.update(get_urls_from_js)
+
         head_dtos, form_dtos = self._url_checker.filter_dtos(domain, spider_dtos, all_lines)
-
-        self._nuclei.fuzz_batch(domain, head_dtos)
-
-        self._manual_testing.save_urls_for_manual_testing(domain, head_dtos, form_dtos)
 
         if len(head_dtos) == 0:
             self._logger.log_warn(f'({domain}) request DTOs not found')
             return
         else:
             self._logger.log_warn(f'({domain}) will run {len(head_dtos)} heads, {len(form_dtos)} forms')
+
+        self._nuclei.fuzz_batch(domain, head_dtos)
+
+        self._manual_testing.save_urls_for_manual_testing(domain, head_dtos, form_dtos)
 
         if self._severity == 1:
             self._xss_manager.check_get_requests(domain, head_dtos)

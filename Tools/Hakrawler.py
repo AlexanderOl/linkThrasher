@@ -8,7 +8,6 @@ from Helpers.CacheHelper import CacheHelper
 from Helpers.CookieHelper import CookieHelper
 from Models.Constants import SOCIAL_MEDIA
 from Models.HeadRequestDTO import HeadRequestDTO
-from Tools.LinkFinder import LinkFinder
 
 
 class Hakrawler:
@@ -16,7 +15,6 @@ class Hakrawler:
         self._max_depth = os.environ.get('max_depth')
         self._threads = f'{os.environ.get("threads")}'
         self._tool_name = self.__class__.__name__
-        self._link_finder = inject.instance(LinkFinder)
         self._logger = inject.instance(Logger)
         self._head_dtos: List[HeadRequestDTO] = []
         self._cookie_manager = inject.instance(CookieHelper)
@@ -24,7 +22,7 @@ class Hakrawler:
     def get_requests_dtos(self, start_url) -> set[str]:
 
         domain = urlparse(start_url).netloc
-        cache_manager = CacheHelper('Hakrawler', domain)
+        cache_manager = CacheHelper(self._tool_name, domain)
         result = cache_manager.get_saved_result()
         if result is None:
             result = self.__get_urls(domain, start_url)
@@ -45,7 +43,6 @@ class Hakrawler:
         stream = os.popen(command)
         bash_outputs = stream.readlines()
         href_urls = set()
-        script_urls = set()
         for output in bash_outputs:
             if output.endswith('\n'):
                 output = output[:-1]
@@ -55,13 +52,6 @@ class Hakrawler:
                 output = output.replace('[href] ', '')
                 if not any(word in output for word in SOCIAL_MEDIA) and domain in output:
                     href_urls.add(output)
-            elif output.startswith('[script] '):
-                output = output.replace('[script] ', '')
-                if not any(word in output for word in SOCIAL_MEDIA) and domain in output:
-                    script_urls.add(output)
-
-        get_urls_from_js = self._link_finder.search_urls_in_js(script_urls, start_url)
-        href_urls.update(get_urls_from_js)
 
         result_lines = set()
         unique_keys = {}
