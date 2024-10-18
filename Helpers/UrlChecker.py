@@ -38,32 +38,7 @@ class UrlChecker:
         if not result and not isinstance(result, dict):
 
             if len(lines) > 1000:
-                filtered = set()
-                checked_keys = set()
-                for line in lines:
-                    parsed_parts = urlparse(line)
-                    key = ''
-                    if '?' in line:
-                        params = parsed_parts.query.split('&')
-                        for param in params:
-                            split = param.split('=')
-                            key += split[0]
-                    else:
-                        split_path = parsed_parts.path.split('/')
-                        for part in split_path:
-                            if part.isdigit():
-                                key += 'numb'
-                            elif self._request_checker.is_valid_hash(part):
-                                key += 'guid'
-                            elif self._request_checker.is_date(part):
-                                key += 'date'
-                            else:
-                                key += '_'
-                    if key not in checked_keys:
-                        filtered.add(line)
-                        checked_keys.add(key)
-
-                lines = filtered
+                lines = self.__reduce_urls_qty(lines)
 
             self._thread_manager.run_all(self.__check_urls, lines, debug_msg=f'({domain}): Urls checking')
 
@@ -71,7 +46,7 @@ class UrlChecker:
             out_of_scope = [x for x in self._out_of_scope.split(';') if x]
 
             for dto in spider_head_dtos:
-                if dto.key not in checked_keys and all(oos not in dto.url for oos in out_of_scope):
+                if dto.key not in checked_keys and all(oos not in urlparse(dto.url).netloc for oos in out_of_scope):
                     checked_keys.add(dto.key)
                     self._head_dtos.append(dto)
 
@@ -80,6 +55,9 @@ class UrlChecker:
             self._thread_manager.run_all(self.__get_forms, filtered_urls, debug_msg=f'({domain}): Forms searching')
 
             cache_manager.cache_result({head_key: self._head_dtos, form_key: self._form_dtos})
+        else:
+            self._head_dtos = result[head_key]
+            self._form_dtos = result[form_key]
 
         return self._head_dtos, self._form_dtos
 
@@ -119,3 +97,31 @@ class UrlChecker:
 
         if response.status_code in VALID_STATUSES:
             self._head_dtos.append(HeadRequestDTO(response))
+
+    def __reduce_urls_qty(self, lines):
+        filtered = set()
+        checked_keys = set()
+        for line in lines:
+            parsed_parts = urlparse(line)
+            key = ''
+            if '?' in line:
+                params = parsed_parts.query.split('&')
+                for param in params:
+                    split = param.split('=')
+                    key += split[0]
+            else:
+                split_path = parsed_parts.path.split('/')
+                for part in split_path:
+                    if part.isdigit():
+                        key += 'numb'
+                    elif self._request_checker.is_valid_hash(part):
+                        key += 'guid'
+                    elif self._request_checker.is_date(part):
+                        key += 'date'
+                    else:
+                        key += '_'
+            if key not in checked_keys:
+                filtered.add(line)
+                checked_keys.add(key)
+
+        return filtered
