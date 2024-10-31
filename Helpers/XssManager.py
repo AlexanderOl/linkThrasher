@@ -164,7 +164,7 @@ class XssManager:
                     mime_type = response.headers["Content-Type"]
 
                 if 'text/html' not in mime_type:
-                    self._logger.log_warn(f'Url ({url}) with wrong mime-type: {mime_type}')
+                    self._logger.log_warn(f'URL: ({url}) with wrong mime-type: {mime_type}')
                     return
                 details = web_page[start_index:last_index].replace('/n', '').replace('/r', '').strip()
                 log_header_msg = f'injFOUND: {keyword};' \

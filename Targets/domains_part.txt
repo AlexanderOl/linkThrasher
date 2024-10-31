@@ -1,13 +1,3 @@
-developer.swapcard.com
-api.deezer.com
-clearxchange.com
-sales.staging-enviso.io
-api.ys7.com
-www.icann.org
-api.payfit.com
-vfsevisa.com
-business.kinepolis.lu
-www.underarmour.co.uk
-www.coolblue.be
-share-accpt.portofantwerp.com
-autointerface.stag.visma.net
+mondoo.com
+vnet.mondoo.com
+webmail.mondoo.com

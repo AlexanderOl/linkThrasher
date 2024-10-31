@@ -9,7 +9,7 @@ HEADERS = {
               'application/signed-exchange;v=b3;q=0.9'
 }
 
-VALID_STATUSES = [101, 200, 204, 301, 302, 307, 308, 401, 403, 405, 500]
+VALID_STATUSES = [101, 200, 204, 301, 302, 307, 308, 401, 403, 405, 500, 501, 502]
 URL_IGNORE_EXT_REGEX = re.compile(
     '\.jpg$|\.jpeg$|\.svg$|\.gif$|\.png$|\.zip$|\.pdf$|\.ashx$|\.exe$|\.dmg$|\.txt$|\.xlsx$|\.xls$|\.doc$'
     '|\.docx$|\.m4v$|\.pptx$|\.ppt$|\.mp4$|\.avi$|\.mp3$|\.css$',

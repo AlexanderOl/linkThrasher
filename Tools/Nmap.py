@@ -5,6 +5,8 @@ import inject
 from datetime import datetime
 from typing import List
 from urllib.parse import urlparse
+
+from Common.Logger import Logger
 from Common.ProcessHandler import ProcessHandler
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
@@ -24,6 +26,7 @@ class Nmap:
         self._process_handler = inject.instance(ProcessHandler)
         self._request_handler = inject.instance(RequestHandler)
         self._thread_manager = inject.instance(ThreadManager)
+        self._logger = inject.instance(Logger)
 
     def check_ports(self, domain: str, get_dtos: List[HeadRequestDTO]) -> List[HeadRequestDTO]:
         subdomains = list((urlparse(dto.url).netloc for dto in get_dtos))
@@ -57,6 +60,11 @@ class Nmap:
         current_domain = ''
         ips = set()
         ip_already_added = False
+
+        if len(bash_outputs) > 1000:
+            self._logger.log_warn(f'Nmap ({domain}) found to many open ports - {len(bash_outputs)}')
+            return url_with_ports
+
         for line in bash_outputs:
 
             if line.startswith('Nmap scan report for '):
@@ -69,7 +77,7 @@ class Nmap:
             elif ' open ' in line and not ip_already_added:
                 txt_file.write(f"{line}\n")
                 port = line.split('/', 1)[0]
-                if port in ['80', '443']:
+                if port in ['80', '443', '8443']:
                     continue
                 url_with_ports.add(f'https://{current_domain}:{port}/')
         txt_file.close()

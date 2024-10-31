@@ -45,7 +45,7 @@ class RequestHandler:
                     (head_response.headers['Content-Type'] == 'application/octet-stream' or
                      head_response.headers['Content-Type'] == 'application/x-gzip' or
                      head_response.headers['Content-Type'] == 'video/mp4'):
-                self._logger.log_warn(f'Url ({url}) content type - {head_response.headers["Content-Type"]}')
+                self._logger.log_warn(f'URL: ({url}) content type - {head_response.headers["Content-Type"]}')
                 return
             if 'content-disposition' in head_response.headers \
                     and 'attachment' in head_response.headers['content-disposition']:
@@ -57,10 +57,10 @@ class RequestHandler:
             if except_ssl_action_args:
                 return except_ssl_action(except_ssl_action_args)
         except (ConnectionError, Timeout):
-            self._logger.log_warn(f'Url ({url}) - Timeout, ConnectionError')
+            self._logger.log_warn(f'URL: ({url}) - Timeout, ConnectionError')
             return
         except Exception as inst:
-            self._logger.log_error(f'Url ({url}) - Exception: {inst}')
+            self._logger.log_error(f'URL: ({url}) - Exception: {inst}')
             return
 
     def handle_request(self, url: str, post_data=None, except_ssl_action=None, except_ssl_action_args: [] = None,
@@ -79,7 +79,7 @@ class RequestHandler:
                 response = self.__send_prepared_request('GET', url, {}, timeout, cookies)
 
             if len(response.text) > 5000000:
-                self._logger.log_warn(f'Url ({url}) response too long')
+                self._logger.log_warn(f'URL: ({url}) response too long')
                 return
 
             return response
@@ -90,7 +90,7 @@ class RequestHandler:
         except (ConnectionError, Timeout):
             return
         except Exception as inst:
-            self._logger.log_error(f'Url ({url}) - Exception: {inst}')
+            self._logger.log_error(f'URL: ({url}) - Exception: {inst}')
             return
 
     def __send_prepared_request(self, method, url, post_data, timeout, cookie) -> Response:

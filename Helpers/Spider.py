@@ -94,7 +94,7 @@ class Spider:
         domain = args[2]
         if target_url.startswith('http:'):
             return
-        self._logger.log_warn(f'Url ({target_url}) - ConnectionError(SSLError)')
+        self._logger.log_warn(f'URL: ({target_url}) - ConnectionError(SSLError)')
         target_url = target_url.replace('https:', 'http:')
         self.__recursive_search(domain, target_url, current_depth)
 
