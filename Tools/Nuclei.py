@@ -99,11 +99,13 @@ class Nuclei:
             print(line)
         main_txt_file.close()
 
+        report_lines = set()
         if os.path.exists(main_txt_fuzzing_filepath):
             main_txt_file = open(main_txt_fuzzing_filepath, 'r')
             report_lines = set(main_txt_file.readlines())
-            cache_manager.save_lines(report_lines)
             os.remove(main_txt_fuzzing_filepath)
+
+        cache_manager.save_lines(report_lines)
 
         if os.path.exists(filepath):
             os.remove(filepath)

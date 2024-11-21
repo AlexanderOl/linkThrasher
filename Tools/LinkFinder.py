@@ -1,5 +1,7 @@
 import os
 import pathlib
+from collections import defaultdict
+
 import inject
 
 from urllib.parse import urlparse
@@ -38,6 +40,13 @@ class LinkFinder:
         result = set()
         if len(script_urls) == 0:
             return result
+
+        grouped_urls = defaultdict(str)
+        for url in script_urls:
+            file_name = urlparse(url).path.split('/')[-1]
+            grouped_urls[file_name] = url
+
+        script_urls = set(grouped_urls.values())
 
         tool_directory = f"{self._tool_result_dir}/{domain}"
         if not os.path.exists(tool_directory):

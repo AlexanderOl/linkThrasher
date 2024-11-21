@@ -50,7 +50,7 @@ class UrlChecker:
                     checked_keys.add(dto.key)
                     self._head_dtos.append(dto)
 
-            filtered_urls = [dto.url for dto in self._head_dtos]
+            filtered_urls = [dto.url for dto in self._head_dtos if not urlparse(dto.url).path.endswith('.js')]
 
             self._thread_manager.run_all(self.__get_forms, filtered_urls, debug_msg=f'({domain}): Forms searching')
 

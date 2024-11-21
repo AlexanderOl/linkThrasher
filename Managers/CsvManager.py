@@ -68,6 +68,10 @@ class CsvManager:
                     if len(row) >= 5 and row[3] == 'true' and row[4] == 'true' \
                             and row[1].upper() in ['WILDCARD', 'URL', 'OTHER', 'CIDR', 'IP_ADDRESS', 'API']:
                         target = str(row[0])
+
+                        if 'play.google.com' in target or 'apps.apple.com' in target:
+                            continue
+
                         if row[1].upper() == 'IP_ADDRESS':
                             ips.add(target)
                         elif target.startswith('http'):
