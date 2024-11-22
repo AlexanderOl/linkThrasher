@@ -1,4 +1,6 @@
 import os
+import queue
+
 import inject
 
 from typing import List, Tuple
@@ -21,9 +23,6 @@ class UrlChecker:
         self._thread_manager = inject.instance(ThreadManager)
         self._request_handler = inject.instance(RequestHandler)
         self._request_checker = inject.instance(RequestChecker)
-        self._get_dtos: List[GetRequestDTO] = []
-        self._head_dtos: List[HeadRequestDTO] = []
-        self._form_dtos: List[FormRequestDTO] = []
         self._checked_hrefs = set()
 
     def filter_dtos(self, domain: str, spider_head_dtos: List[HeadRequestDTO], lines: set[str]) \
@@ -40,47 +39,60 @@ class UrlChecker:
             if len(lines) > 1000:
                 lines = self.__reduce_urls_qty(lines)
 
-            self._thread_manager.run_all(self.__check_urls, lines, debug_msg=f'({domain}): Urls checking')
+            head_queue = queue.Queue()
+            self._thread_manager.run_all(self.__check_urls, lines, debug_msg=f'({domain}): Urls checking',
+                                         args2=head_queue)
 
-            checked_keys = set()
+            head_dtos = list(head_queue.queue)
+
             out_of_scope = [x for x in self._out_of_scope.split(';') if x]
+            checked_keys = set([dto.key for dto in head_dtos])
 
             for dto in spider_head_dtos:
                 if dto.key not in checked_keys and all(oos not in urlparse(dto.url).netloc for oos in out_of_scope):
                     checked_keys.add(dto.key)
-                    self._head_dtos.append(dto)
+                    head_dtos.append(dto)
 
-            filtered_urls = [dto.url for dto in self._head_dtos if not urlparse(dto.url).path.endswith('.js')]
+            filtered_urls = [dto.url for dto in head_dtos if not urlparse(dto.url).path.endswith('.js')]
 
-            self._thread_manager.run_all(self.__get_forms, filtered_urls, debug_msg=f'({domain}): Forms searching')
+            get_queue = queue.Queue()
+            form_queue = queue.Queue()
+            queues = (get_queue, form_queue)
 
-            cache_manager.cache_result({head_key: self._head_dtos, form_key: self._form_dtos})
+            self._thread_manager.run_all(self.__get_forms, filtered_urls, debug_msg=f'({domain}): Forms searching',
+                                         args2=queues)
+
+            form_dtos = list(queues[1].queue)
+            cache_manager.cache_result({head_key: head_dtos, form_key: form_dtos})
         else:
-            self._head_dtos = result[head_key]
-            self._form_dtos = result[form_key]
+            head_dtos = result[head_key]
+            form_dtos = result[form_key]
 
-        return self._head_dtos, self._form_dtos
+        return head_dtos, form_dtos
 
-    def __get_forms(self, url: str):
+    def __get_forms(self, url: str, queues: Tuple[queue, queue]):
 
         response = self._request_handler.handle_request(url, timeout=3)
         if response is None:
             return
 
+        get_dtos = list(queues[1].queue)
         if any(dto.response_length == len(response.text) and
                dto.status_code == response.status_code and
                urlparse(dto.url).netloc == urlparse(url).netloc
-               for dto in self._get_dtos):
+               for dto in get_dtos):
             return
 
         get_dto = GetRequestDTO(url, response)
-        self._get_dtos.append(get_dto)
+        queues[0].put(get_dto)
 
-        form_dto = self._request_checker.find_forms(url, response.text, get_dto, self._form_dtos)
-        if form_dto and not all(form_dto.key != dto.key for dto in self._form_dtos):
-            self._form_dtos.append(form_dto)
+        form_dtos = list(queues[1].queue)
 
-    def __check_urls(self, url: str):
+        form_dto = self._request_checker.find_forms(url, response.text, get_dto, form_dtos)
+        if form_dto and not all(form_dto.key != dto.key for dto in form_dtos):
+            queues[1].put.append(form_dto)
+
+    def __check_urls(self, url: str, result_queue: queue):
 
         key = self._request_checker.get_url_key(url)
         if key in self._checked_hrefs or URL_IGNORE_EXT_REGEX.search(url):
@@ -95,8 +107,8 @@ class UrlChecker:
         if response is None:
             return
 
-        if response.status_code in VALID_STATUSES:
-            self._head_dtos.append(HeadRequestDTO(response))
+        if response.status_code in VALID_STATUSES and urlparse(url).netloc == urlparse(response.url).netloc:
+            result_queue.put(HeadRequestDTO(response))
 
     def __reduce_urls_qty(self, lines):
         filtered = set()

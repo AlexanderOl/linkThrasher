@@ -2,21 +2,16 @@ import os
 import inject
 
 from datetime import datetime
-from typing import List
 from urllib.parse import urlparse
 from Common.RequestChecker import RequestChecker
 from Helpers.CacheHelper import CacheHelper
 from Models.Constants import URL_IGNORE_EXT_REGEX
-from Models.GetRequestDTO import GetRequestDTO
-from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class Waybackurls:
 
     def __init__(self):
         self._tool_name = self.__class__.__name__
-        self._result: List[HeadRequestDTO] = []
-        self._get_dtos: List[GetRequestDTO] = []
         self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'
         self._checked_hrefs = set()
         self._out_of_scope = os.environ.get("out_of_scope")

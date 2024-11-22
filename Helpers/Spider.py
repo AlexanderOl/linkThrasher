@@ -18,7 +18,6 @@ class Spider:
         self._checked_hrefs = set()
         self._urls_counter = 0
         self._tool_name = self.__class__.__name__
-        self._head_dtos: List[HeadRequestDTO] = []
         self._request_handler = inject.instance(RequestHandler)
         self._allowed_content_types = [
                     'application/json',
@@ -35,17 +34,16 @@ class Spider:
         head_found = cache_manager.get_saved_result()
 
         if head_found is None:
+            head_dtos: List[HeadRequestDTO] = []
             current_depth = 0
-            self.__recursive_search(domain, start_url, current_depth)
-            cache_manager.cache_result(self._head_dtos)
-        else:
-            self._head_dtos = head_found
+            self.__recursive_search(domain, start_url, current_depth, head_dtos)
+            cache_manager.cache_result(head_found)
 
-        self._logger.log_info(f'({domain}) Spider found {len(self._head_dtos)} head_dtos')
+        self._logger.log_info(f'({domain}) Spider found {len(head_found)} head_dtos')
 
-        return self._head_dtos
+        return head_found
 
-    def __recursive_search(self, domain: str, target_url: str, current_depth: int):
+    def __recursive_search(self, domain: str, target_url: str, current_depth: int, result: List[HeadRequestDTO]):
 
         if current_depth >= self._max_depth:
             return
@@ -62,7 +60,8 @@ class Spider:
 
         response = self._request_handler.handle_request(url=checked_url,
                                                         except_ssl_action=self.__except_ssl_action,
-                                                        except_ssl_action_args=[checked_url, current_depth, domain])
+                                                        except_ssl_action_args=[checked_url, current_depth, domain,
+                                                                                result])
         if response is None:
             return
 
@@ -75,10 +74,10 @@ class Spider:
                     redirect_url = f"{target_url}{redirect}"
                 else:
                     redirect_url = redirect
-                self.__recursive_search(domain, redirect_url, current_depth - 1)
+                self.__recursive_search(domain, redirect_url, current_depth - 1, result)
         elif (response.status_code < 300 and len(response.history) <= 2 and
-              all(new_dto.key != dto.key for dto in self._head_dtos)):
-            self._head_dtos.append(new_dto)
+              all(new_dto.key != dto.key for dto in result)):
+            result.append(new_dto)
 
         else:
             return
@@ -86,17 +85,18 @@ class Spider:
         urls_for_search = self.__get_urls_for_search(web_page, checked_url)
 
         for item in urls_for_search:
-            self.__recursive_search(domain, item, current_depth)
+            self.__recursive_search(domain, item, current_depth, result)
 
     def __except_ssl_action(self, args: []):
         target_url = args[0]
         current_depth = args[1]
         domain = args[2]
+        result = args[3]
         if target_url.startswith('http:'):
             return
         self._logger.log_warn(f'URL: ({target_url}) - ConnectionError(SSLError)')
         target_url = target_url.replace('https:', 'http:')
-        self.__recursive_search(domain, target_url, current_depth)
+        self.__recursive_search(domain, target_url, current_depth, result)
 
     def __check_href(self, href, target_url):
         result = False

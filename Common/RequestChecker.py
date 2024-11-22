@@ -199,7 +199,7 @@ class RequestChecker:
             if len(split) == 2:
                 query_params.append(split[1])
 
-        split_path = f'{parsed.netloc};{parsed.path}'.split('/')
+        split_path = f'{parsed.netloc};{parsed.path}'.rstrip('/?').split('/')
         path_key = ''
         for part in split_path:
             if part.isdigit():

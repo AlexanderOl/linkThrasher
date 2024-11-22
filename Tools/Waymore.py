@@ -1,21 +1,17 @@
 import os
 import inject
 
-from datetime import datetime
-from typing import List
 from urllib.parse import urlparse
 from Common.Logger import Logger
 from Common.ProcessHandler import ProcessHandler
 from Common.RequestChecker import RequestChecker
 from Helpers.CacheHelper import CacheHelper
 from Models.Constants import URL_IGNORE_EXT_REGEX
-from Models.HeadRequestDTO import HeadRequestDTO
 
 
 class Waymore:
     def __init__(self):
         self._tool_name = self.__class__.__name__
-        self._head_dtos: List[HeadRequestDTO] = []
         self._tool_result_dir = f'{os.environ.get("app_cache_result_path")}{self._tool_name}'
         if not os.path.exists(self._tool_result_dir):
             os.makedirs(self._tool_result_dir)

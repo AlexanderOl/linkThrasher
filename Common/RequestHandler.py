@@ -44,6 +44,7 @@ class RequestHandler:
             if 'Content-Type' in head_response.headers and \
                     (head_response.headers['Content-Type'] == 'application/octet-stream' or
                      head_response.headers['Content-Type'] == 'application/x-gzip' or
+                     head_response.headers['Content-Type'] == 'application/gzip' or
                      head_response.headers['Content-Type'] == 'video/mp4'):
                 self._logger.log_warn(f'URL: ({url}) content type - {head_response.headers["Content-Type"]}')
                 return
