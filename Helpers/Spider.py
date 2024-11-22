@@ -34,9 +34,8 @@ class Spider:
         head_found = cache_manager.get_saved_result()
 
         if head_found is None:
-            head_dtos: List[HeadRequestDTO] = []
-            current_depth = 0
-            self.__recursive_search(domain, start_url, current_depth, head_dtos)
+            head_found: List[HeadRequestDTO] = []
+            self.__recursive_search(domain, start_url, current_depth=0, result=head_found)
             cache_manager.cache_result(head_found)
 
         self._logger.log_info(f'({domain}) Spider found {len(head_found)} head_dtos')
