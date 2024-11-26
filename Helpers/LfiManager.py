@@ -1,4 +1,5 @@
 import os
+import queue
 import urllib.parse as urlparse
 from collections import defaultdict
 from copy import deepcopy
@@ -9,6 +10,7 @@ import inject
 
 from Common.Logger import Logger
 from Common.ProcessHandler import ProcessHandler
+from Common.ThreadManager import ThreadManager
 from Helpers.CacheHelper import CacheHelper
 from Common.RequestHandler import RequestHandler
 from Models.FormRequestDTO import FormRequestDTO
@@ -85,13 +87,11 @@ class LfiManager:
         result = cache_manager.get_saved_result()
 
         if not result and not isinstance(result, List):
-            result: List[InjectionFoundDTO] = []
-            counter = 0
-            for item in form_results:
-                self._logger.log_info(f'({cache_key}) LFI FORM counter ({counter} / {len(form_results)})')
-                self.__send_lfi_form_request(item, result)
-                counter += 1
-
+            thread_man = ThreadManager()
+            result_queue = queue.Queue()
+            thread_man.run_all(self.__send_lfi_form_request, form_results, debug_msg=f'LfiManager/Form ({cache_key})',
+                               args2=result_queue)
+            result = list(result.queue)
             cache_manager.save_dtos(result)
         self._logger.log_warn(f'({cache_key}) Found Form LFI: {len(result)}')
 
@@ -158,9 +158,11 @@ class LfiManager:
 
         return payloads
 
-    def __send_lfi_form_request(self, dto: FormRequestDTO, result: List[InjectionFoundDTO]):
+    def __send_lfi_form_request(self, dto: FormRequestDTO, result_queue: queue):
         try:
             for form in dto.form_params:
+                result = list(result_queue.queue)
+
                 if form.method_type == "POST":
                     for param in form.params:
                         if any(s in str(param).lower() for s in self._url_params):
@@ -181,11 +183,12 @@ class LfiManager:
                                                      f'URL: {dto.url};' \
                                                      f'DETAILS: {details}'
                                     curr_resp_length = len(response.text)
+
                                     if not any(dto.response_length == curr_resp_length and
                                                dto.details_msg == log_header_msg for dto in result):
                                         self._logger.log_warn(log_header_msg)
-                                        result.append(InjectionFoundDTO(InjectionType.Lfi_PostForm, payload,
-                                                                        keyword, response.text, log_header_msg))
+                                        result_queue.put(InjectionFoundDTO(InjectionType.Lfi_PostForm, payload,
+                                                                           keyword, response.text, log_header_msg))
                 elif form.method_type == "GET":
                     parsed = urlparse.urlparse(dto.url)
                     url_ending = len(form.action) * -1
@@ -203,7 +206,6 @@ class LfiManager:
                                 url += (param + f'={keyword}&')
 
                                 self.__check_lfi_payloads(url, prev_url, result)
-
                                 url = prev_url
                 else:
                     self._logger.log_error("METHOD TYPE NOT FOUND: " + form.method_type)

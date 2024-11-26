@@ -11081,6 +11081,8 @@ admin/health/chart-image/
 admin/health/index
 admin/health/parameters
 admin/help
+admin/help.cgi
+admin/help.cgi.bak
 admin/helpdesk
 admin/helper-compat-update
 admin/helper/deletearticle
@@ -11784,6 +11786,7 @@ admin/wfb
 admin/wg_user-info.ml
 admin/widget/json/
 admin/widgets
+admin/WS_FTP.LOG
 admin/x_image
 admin/xsell
 admin/zone-delete
@@ -21705,6 +21708,7 @@ confirm
 confirm-prod.php
 confirm.asp
 confirm.aspx
+confirm.asp.bak
 confirm.cfm
 confirm.cgi
 confirm.gif
@@ -23999,6 +24003,7 @@ default-test.aspx
 default.asp
 default.aspx
 default.aspx.cs
+default.asp.bak
 default.cfm
 default.css
 default.css.php
@@ -24743,7 +24748,7 @@ discuz/post
 discview
 disdls.php
 diseno-web.html
-diseñoweb.swf
+diseï¿½oweb.swf
 dish
 disiliskiler/index
 disk.php
@@ -31197,13 +31202,13 @@ gotobissite.php
 gotoforum.php
 gotoframe.php
 gotoitem.php
-gotoitem.php£¿
+gotoitem.phpï¿½ï¿½
 gotojob.html
 gotolink.asp
 gotopage.php
 gotoprofile.htm
 gotoshop.php
-gotoshop.php£¿
+gotoshop.phpï¿½ï¿½
 gotostore.php
 gotourl
 gotourl.asp
@@ -33591,6 +33596,7 @@ include/client
 include/comm_post
 include/common
 include/common.func
+include/common.inc
 include/common/common-func-acl
 include/common_function
 include/common_functions
@@ -38658,8 +38664,9 @@ login.action
 login.action?anon=1&logout=1
 login.artdeco
 login.asp
+login.asp.bak
 login.aspx
-login.aspx.vb
+login.aspx.vbfv
 login.bhtml.
 login.cfm
 login.cgi
@@ -47673,6 +47680,7 @@ pinboxes/template
 pincode-verification
 pindetails
 pindex.asp
+pindex.asp.bak
 pindex.html
 pinfo
 pinfo.php
@@ -53395,6 +53403,8 @@ root_includes/root_modules/forum_admin
 rootadmin
 rootca.crt
 rootdesc
+rootlogin.asp.bak
+rootlogin.asp.old
 ror.xml
 rorentity.aspx
 rorindex.aspx
@@ -61401,6 +61411,7 @@ trac.cgi
 trace
 trace-results.html
 trace.axd
+trace.axd?id=1
 trace.axd::$data
 trace.htm
 trace.log
