@@ -63,6 +63,8 @@ class Waymore:
             self._process_handler.run_temp_process(cmd, 'waymore')
 
         domains = set()
+        if not os.path.exists(res_file):
+            return domains
         text_file = open(res_file, 'r', encoding='utf-8', errors='ignore')
         lines = text_file.readlines()
         for line in lines:

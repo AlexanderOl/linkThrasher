@@ -94,6 +94,8 @@ class CsvManager:
         self._thread_manager.run_all(self.__ping_url, urls)
         self._thread_manager.run_all(self.__ping_ip, ips)
 
+        self._domains = list(sorted(self._domains, key=lambda s: s.count('.')))
+
         cache_man.cache_result({'urls': self._urls, 'domains': self._domains, 'ips': self._ips})
 
     def __ping_domain(self, domain):
@@ -102,6 +104,7 @@ class CsvManager:
         if response is not None:
             self._domains.add(domain)
             return
+
         url = f'https://{domain}'
         response = self._request_handler.send_head_request(url, timeout=15)
         if response is not None:
