@@ -91,7 +91,7 @@ class LfiManager:
             result_queue = queue.Queue()
             thread_man.run_all(self.__send_lfi_form_request, form_results, debug_msg=f'LfiManager/Form ({cache_key})',
                                args2=result_queue)
-            result = list(result.queue)
+            result = list(result_queue.queue)
             cache_manager.save_dtos(result)
         self._logger.log_warn(f'({cache_key}) Found Form LFI: {len(result)}')
 
