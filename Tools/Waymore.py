@@ -60,7 +60,7 @@ class Waymore:
             cmd = ["python", "/root/Desktop/TOOLs/waymore/waymore.py", "-i", domain, "-oU", res_file,
                    "-mode", "U", "-t", "10"]
 
-            self._process_handler.run_temp_process(cmd, 'waymore')
+            self._process_handler.run_temp_process(cmd, domain)
 
         domains = set()
         if not os.path.exists(res_file):
@@ -82,7 +82,7 @@ class Waymore:
             cmd = ["python", "/root/Desktop/TOOLs/waymore/waymore.py", "-i", domain, "-oU", res_file,
                    "-mode", "U", "-t", "5"]
 
-            self._process_handler.run_temp_process(cmd, 'waymore')
+            self._process_handler.run_temp_process(cmd, domain)
 
         href_urls = set()
         if not os.path.exists(res_file):

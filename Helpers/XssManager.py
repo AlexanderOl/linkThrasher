@@ -185,6 +185,7 @@ class XssManager:
     def __check_route(self, dto: HeadRequestDTO):
 
         route_url_payloads = self._request_checker.get_route_payloads(dto.url, self._injections_to_check)
+        route_url_payloads.append(f"{dto.url}?{self._injections_to_check[0]}={self._injections_to_check[1]}")
 
         for url in route_url_payloads:
             response = self._request_handler.handle_request(url)

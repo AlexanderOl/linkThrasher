@@ -42,7 +42,7 @@ class RequestChecker:
         except ValueError:
             return False
 
-    def get_route_payloads(self, url: str, injections: [], salt='', check_specific_type=False) -> List[str]:
+    def get_route_payloads(self, url: str, injections: [str], salt='', check_specific_type=False) -> List[str]:
         parsed = urlparse(url)
         route_parts = [r for r in parsed.path.split('/') if r.strip()]
         route_url_payloads = []
