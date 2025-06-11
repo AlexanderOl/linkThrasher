@@ -72,7 +72,7 @@ class SubdomainChecker:
         response = self._request_handler.send_head_request(url=url,
                                                            except_ssl_action=self.__except_ssl_action,
                                                            except_ssl_action_args=[url],
-                                                           timeout=5)
+                                                           timeout=3)
 
         if response is not None:
             if (len(response.history) > 0

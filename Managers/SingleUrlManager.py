@@ -87,6 +87,8 @@ class SingleUrlManager:
         get_urls_from_js = link_finder.get_urls_from_js(all_lines, start_url)
         all_lines.update(get_urls_from_js)
 
+
+
         url_checker = inject.instance(UrlChecker)
         head_dtos, form_dtos = url_checker.filter_dtos(domain, spider_dtos, all_lines)
 

@@ -19,28 +19,35 @@ class Nuclei:
         self._tool_name = self.__class__.__name__
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._tool_result_fuzzing_dir = f'{self._tool_result_dir}_fuzzing'
-        self._expected = ['[info]', '[medium]', '[high]', '[critical]', '[unknown]', '[network]']
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         self._chunk_size = 30
         self._already_added_pathes = {}
-        self._template_args = "-t /root/Desktop/TOOLs/nuclei-templates/fuzzing " \
-                              "-t /root/Desktop/TOOLs/nuclei-templates/vulnerabilities " \
-                              "-t /root/Desktop/TOOLs/nuclei-templates/miscellaneous " \
-                              "-t /root/Desktop/TOOLs/nuclei-templates/exposures " \
-                              "-t /root/Desktop/TOOLs/nuclei-templates/takeovers " \
-                              "-t /root/Desktop/TOOLs/nuclei-templates/cves " \
-                              "-t /root/Desktop/TOOLs/nuclei-templates/etc " \
-                              "-t /root/Desktop/TOOLs/nuclei-templates/default-logins " \
-                              "-t /root/Desktop/TOOLs/nuclei-templates/cnvd " \
-                              "-et /root/Desktop/TOOLs/nuclei-templates/cves/2022/CVE-2022-45362.yaml " \
-                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-csp.yaml " \
-                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-hsts.yaml " \
-                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/display-via-header.yaml " \
-                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/missing-x-frame-options.yaml " \
-                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/detect-dns-over-https.yaml " \
-                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/tabnabbing-check.yaml " \
-                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/email-extractor.yaml " \
-                              "-et /root/Desktop/TOOLs/nuclei-templates/miscellaneous/google-floc-disabled.yaml "
+        self._template_args = ("-em http-missing-security-headers,"
+                               "missing-hsts,"
+                               "missing-csp,"
+                               "cookies-without-secure,"
+                               "xss-deprecated-header,"
+                               "aws-cloudfront-service,"
+                               "azure-domain-tenant,"
+                               "httponly-cookie-detect,"
+                               "http-trace,"
+                               "aws-detect,"
+                               "waf-detect,"
+                               "cookies-without-httponly-secure,"
+                               "akamai-detect,"
+                               "akamai-cache-detect,"
+                               "akamai-bot-manager-detect,"
+                               "nginx-version,"
+                               "aws-cloudfront-service,"
+                               "apache-detect,"
+                               "cors-misconfig,"
+                               "form-detection,"
+                               "favicon-detect,"
+                               "apple-app-site-association,"
+                               "google-floc-disabled,"
+                               "security-txt "
+                               "-ept dns,ssl "
+                               "-et sri,dsl ")
         self._cookie_manager = inject.instance(CookieHelper)
 
     def fuzz_batch(self, cache_key: str, head_dtos: List[HeadRequestDTO]):
@@ -85,7 +92,7 @@ class Nuclei:
         txt_file.close()
 
         filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
-        command = f"nuclei --list {filepath} -t /root/Desktop/TOOLs/fuzzing-templates "
+        command = f"nuclei --list {filepath} -t  {self._template_args} "
 
         stream = os.popen(command)
         bash_outputs = stream.readlines()
@@ -93,9 +100,7 @@ class Nuclei:
         main_txt_file = open(main_txt_fuzzing_filepath, 'w')
         for line in bash_outputs:
             encoded_line = self._ansi_escape.sub('', line)
-            for keyword in self._expected:
-                if keyword in encoded_line:
-                    main_txt_file.write(f"{encoded_line}")
+            main_txt_file.write(f"{encoded_line}")
             print(line)
         main_txt_file.close()
 
@@ -169,9 +174,7 @@ class Nuclei:
             result = set()
             for line in bash_outputs:
                 encoded_line = self._ansi_escape.sub('', line)
-                for keyword in self._expected:
-                    if keyword in encoded_line:
-                        result.add(encoded_line)
+                result.add(encoded_line)
                 print(line)
 
             cache_manager.save_lines(result)
@@ -199,9 +202,7 @@ class Nuclei:
         main_txt_file = open(main_txt_filepath, 'a')
         for line in bash_outputs:
             encoded_line = self._ansi_escape.sub('', line)
-            for keyword in self._expected:
-                if keyword in encoded_line:
-                    main_txt_file.write(f"{encoded_line}")
+            main_txt_file.write(f"{encoded_line}")
             print(line)
         main_txt_file.close()
 

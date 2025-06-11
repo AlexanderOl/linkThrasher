@@ -20,6 +20,7 @@ class SqliManager:
 
         self._result: List[InjectionFoundDTO] = []
         self._false_positives = ['malformed request syntax',
+                                 'instanceof syntaxerror',
                                  'script tag to avoid syntax errors',
                                  'eval|internal|range|reference|syntax|type']
         self._error_based_payloads = ['\'', '\\', '"', '%27', '%5C', '%2F']
