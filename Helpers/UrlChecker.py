@@ -94,8 +94,9 @@ class UrlChecker:
 
     def __check_urls(self, url: str, result_queue: queue):
 
+        parsed_url = urlparse(url)
         key = self._request_checker.get_url_key(url)
-        if key in self._checked_hrefs or URL_IGNORE_EXT_REGEX.search(url):
+        if key in self._checked_hrefs or URL_IGNORE_EXT_REGEX.search(parsed_url.path):
             return
         self._checked_hrefs.add(key)
 
@@ -107,7 +108,7 @@ class UrlChecker:
         if response is None:
             return
 
-        if response.status_code in VALID_STATUSES and urlparse(url).netloc == urlparse(response.url).netloc:
+        if response.status_code in VALID_STATUSES and parsed_url.netloc == urlparse(response.url).netloc:
             result_queue.put(HeadRequestDTO(response))
 
     def __reduce_urls_qty(self, lines):

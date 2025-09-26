@@ -20,10 +20,10 @@ class Spider:
         self._tool_name = self.__class__.__name__
         self._request_handler = inject.instance(RequestHandler)
         self._allowed_content_types = [
-                    'application/json',
-                    'text/plain',
-                    'application/ld+json',
-                    'text/html'
+            'application/json',
+            'text/plain',
+            'application/ld+json',
+            'text/html'
         ]
         self._logger = inject.instance(Logger)
 
@@ -147,12 +147,12 @@ class Spider:
 
     def __get_url_from_html(self, tag, attr, web_page, target_url):
         html_urls = set()
-        urls = BeautifulSoup(web_page, "html.parser").findAll(tag)
-        url_parts = urlparse(target_url)
-        main_url = f"{url_parts.scheme}://{url_parts.hostname}"
+        try:
+            urls = BeautifulSoup(web_page, "html.parser").findAll(tag)
+            url_parts = urlparse(target_url)
+            main_url = f"{url_parts.scheme}://{url_parts.hostname}"
 
-        for url in urls:
-            try:
+            for url in urls:
                 href = url.get(attr)
                 if not href:
                     continue
@@ -180,7 +180,7 @@ class Spider:
                                                       f'Temp result is - {main_url}/{url_part}')
                         else:
                             html_urls.add(f'{main_url}/{url_part}')
-            except Exception as inst:
-                self._logger.log_error(inst)
+        except Exception as inst:
+            self._logger.log_error(inst)
 
         return html_urls
