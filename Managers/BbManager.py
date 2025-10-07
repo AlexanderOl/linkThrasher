@@ -9,7 +9,7 @@ class BbManager:
         self._h1_api_key = os.environ.get("h1_api_key")
         self._h1_user = os.environ.get("h1_user")
         self._bc_session_id = os.environ.get("bc_session_id")
-        self._it_id = os.environ.get("it_id")
+        self._it_id = os.environ.get("intigriti_id")
         self._ywh_id = os.environ.get("ywh_id")
         self._app_cache_result_path = f'{os.environ.get("app_cache_result_path")}'
         self._res_file = f'{self._app_cache_result_path}{self.__class__.__name__}.txt'

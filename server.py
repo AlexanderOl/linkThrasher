@@ -21,7 +21,7 @@ print(f'Running - {check_mode} mode')
 mysql_repo = inject.instance(MysqlRepository)
 mysql_repo.init_tables()
 
-if check_mode == 'SC':
+if check_mode == 'CSV':
     csv_man = inject.instance(CsvManager)
     csv_man.run()
 

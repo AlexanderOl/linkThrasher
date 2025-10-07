@@ -20,7 +20,7 @@ class Nuclei:
         self._tool_result_dir = f'{os.environ.get("app_result_path")}{self._tool_name}'
         self._tool_result_fuzzing_dir = f'{self._tool_result_dir}_fuzzing'
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-        self._chunk_size = 5
+        self._chunk_size = 10
         self._already_added_pathes = {}
         self._template_args = ("-em http-missing-security-headers,"
                                "missing-hsts,"
@@ -48,7 +48,7 @@ class Nuclei:
                                "security-txt "
                                "-ept dns,ssl "
                                "-et sri,dsl "
-                               "-timeout 5 -irt 0m30s")
+                               "-timeout 5 -irt 0m20s -nh")
         self._cookie_manager = inject.instance(CookieHelper)
 
     def fuzz_batch(self, cache_key: str, head_dtos: List[HeadRequestDTO]):
