@@ -51,7 +51,7 @@ class Nuclei:
                                "-timeout 5 -irt 0m20s -nh")
         self._cookie_manager = inject.instance(CookieHelper)
 
-    def fuzz_batch(self, cache_key: str, head_dtos: List[HeadRequestDTO]):
+    def fuzz_urls_batch(self, cache_key: str, head_dtos: List[HeadRequestDTO]):
         cache_key = cache_key.replace(':', '_')
         main_txt_fuzzing_filepath = f"{self._tool_result_fuzzing_dir}/MAIN_{cache_key}.txt"
         cache_manager = CacheHelper(self._tool_name, cache_key, 'Results')
@@ -93,7 +93,7 @@ class Nuclei:
         txt_file.close()
 
         filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
-        command = f"nuclei --list {filepath} {self._template_args}"
+        command = f"nuclei --list {filepath} -t /root/Desktop/TOOLs/fuzzing-templates"
 
         stream = os.popen(command)
         bash_outputs = stream.readlines()

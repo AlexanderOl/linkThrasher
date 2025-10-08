@@ -85,7 +85,7 @@ class FastUrlManager:
             domain = parsed_parts.netloc
             head_dtos, form_dtos = self.__get_cached_dtos(raw_urls, domain)
 
-            self._nuclei.fuzz_batch(domain, head_dtos)
+            self._nuclei.fuzz_urls_batch(domain, head_dtos)
 
             if self._severity == 1:
                 self._xss_manager.check_get_requests(domain, head_dtos)

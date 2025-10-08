@@ -87,8 +87,6 @@ class SingleUrlManager:
         get_urls_from_js = link_finder.get_urls_from_js(all_lines, start_url)
         all_lines.update(get_urls_from_js)
 
-
-
         url_checker = inject.instance(UrlChecker)
         head_dtos, form_dtos = url_checker.filter_dtos(domain, spider_dtos, all_lines)
 
@@ -98,7 +96,7 @@ class SingleUrlManager:
         else:
             logger.log_warn(f'({domain}) will run {len(head_dtos)} heads, {len(form_dtos)} forms')
 
-        nuclei.fuzz_batch(domain, head_dtos)
+        nuclei.fuzz_urls_batch(domain, head_dtos)
 
         manual_testing = inject.instance(ManualTesting)
         manual_testing.save_urls_for_manual_testing(domain, head_dtos, form_dtos)
