@@ -93,7 +93,7 @@ class Nuclei:
         txt_file.close()
 
         filepath = os.path.join(pathlib.Path().resolve(), txt_filepath)
-        command = f"nuclei --list {filepath} -t /root/Desktop/TOOLs/fuzzing-templates"
+        command = f"nuclei --list {filepath} /root/Desktop/TOOLs/fuzzing-templates"
 
         stream = os.popen(command)
         bash_outputs = stream.readlines()
